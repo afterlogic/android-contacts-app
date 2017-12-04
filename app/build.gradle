@@ -1,0 +1,161 @@
+apply plugin: 'com.android.application'
+
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
+
+apply plugin: 'io.fabric'
+
+apply plugin: 'me.sunnydaydev.autoversion'
+
+apply plugin: 'com.github.ben-manes.versions'
+
+buildscript {
+
+    addRepos(repositories)
+
+    dependencies {
+
+        classpath deps.gradlePlugin.autoversion
+        classpath deps.gradlePlugin.fabric
+        classpath deps.gradlePlugin.dependencies_versions
+
+    }
+
+}
+
+android {
+
+    compileSdkVersion 27
+
+    defaultConfig {
+
+        applicationId "com.afterlogic.aurora.contactscalendar"
+
+        minSdkVersion 15
+        targetSdkVersion 27
+
+        versionCode autoVersion.versionCode
+        versionName autoVersion.versionName
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+        vectorDrawables.useSupportLibrary = true
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = ["room.schemaLocation": "$projectDir/schemas".toString()]
+            }
+        }
+
+    }
+
+    dataBinding {
+        enabled = true
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    sourceSets {
+
+        androidTest.assets.srcDirs += files("$projectDir/schemas".toString())
+
+    }
+
+}
+
+autoVersion {
+
+    increments {
+
+        general {
+            onVariants "release"
+            versionNameIncrement "0.0.1"
+            versionCodeIncrement 1
+            confirmByDialog true
+        }
+
+    }
+
+}
+
+dependencies {
+
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    testImplementation deps.testing.junit
+    androidTestImplementation deps.testing.testRunner
+    androidTestImplementation deps.testing.espresso
+
+    androidTestImplementation deps.arch.room_testing
+    androidTestImplementation deps.arch.core_testing
+
+    implementation deps.core.kotlin_stdlib
+    kapt deps.core.databinding_compiler
+
+    // Multi dex
+    implementation deps.core.multidex
+
+    // Dagger - Dependency Injection
+    implementation deps.core.dagger
+    implementation deps.core.dagger_android
+    implementation deps.core.dagger_android_support
+    kapt deps.core.dagger_android_processor
+    kapt deps.core.dagger_compiler
+
+    // Rx
+    implementation deps.core.rx
+    implementation deps.core.rx_android
+    implementation deps.core.rx_kotlin
+
+    // Network
+    implementation deps.network.retrofit
+    implementation deps.network.converter_gson
+    implementation deps.network.rx_java
+    implementation deps.network.okhttp
+    implementation deps.network.logging
+    implementation deps.core.gson
+
+    // Compat
+    implementation deps.support.appcompat
+    implementation deps.support.design
+    implementation deps.support.recyclerView
+    implementation deps.support.card
+    implementation deps.support.constraint_layout
+
+    // Pictures load
+    implementation deps.network.glide
+    kapt deps.network.glide_compiler
+
+    // Preferences
+    implementation deps.core.prefs
+
+    // Crash and use analytics
+    compile(deps.core.crashlytics) { transitive = true }
+
+    // Google Services
+    implementation deps.googleServices.firebase_jobdispatcher
+
+    // Android Architecture Components
+    implementation deps.arch.extensions
+    kapt deps.arch.lifecycle_compiler
+
+    implementation deps.arch.room_runtime
+    implementation deps.arch.room_rxjava
+    kapt deps.arch.room_compiler
+
+    // Navigation
+    implementation deps.core.cicirone
+
+    // RecyclerView binding adapter
+    implementation deps.core.last_adapter
+
+    // Logging
+    implementation deps.core.timber
+
+}

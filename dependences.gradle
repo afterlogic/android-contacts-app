@@ -1,0 +1,239 @@
+/**
+ * Shared file between builds so that they can all use the same dependencies and
+ * maven repositories.
+ **/
+
+apply plugin: DependenciesPlugin
+
+class DependenciesPlugin implements Plugin<Project> {
+
+    @Override
+    void apply(Project target) {
+        target.extensions.create("deps", Dependencies.class)
+    }
+
+}
+
+@SuppressWarnings("GroovyUnusedDeclaration")
+class Dependencies {
+
+    Dependencies() {
+    }
+
+    public def versions = new Versions()
+
+    public def gradlePlugin = new GradlePlugin(versions)
+    public def testing = new Testing(versions)
+    public def core  = new Core(versions)
+    public def network = new Network(versions)
+    public def support = new Support(versions)
+    public def arch = new Arch(versions)
+    public def googleServices = new GoogleServices(versions)
+    public def debuging = new Debuging(versions)
+
+    class Versions {
+
+        public def android_plugin = '3.0.0'
+        public def fabric_gradle_plugin = '1.25.0'
+        public def gms_gradle_plugin = '3.1.2'
+        public def autoversion_gradle_plugin = '0.0.8'
+        public def kotlin = "1.2.0"
+        public def dependencies_versions_plugin = '0.17.0'
+
+        public def multidexVersion = '1.0.2'
+        public def daggerVersion = '2.13'
+        public def rxVersion = '2.1.7'
+        public def rxAndroidVersion = '2.0.1'
+        public def rxKotlinVersion = '2.2.0'
+        public def eventBusVersion = '3.1.1'
+        public def crashlyticsVersion = '2.8.0'
+
+        public def architectureComponentsLifeCycle = '1.0.3'
+        public def architectureComponentsVersion = '1.0.0'
+        public def ciceroneVersion = '2.1.0'
+        public def mapstructVersion = '1.2.0.Final'
+        public def firebaseJobDispatcherVersion = '0.8.5'
+        public def googleServicesVersion = '11.6.2'
+        public def compatVersion = '27.0.2'
+        public def okhttpVersoin = '3.9.1'
+        public def retrofitVersion = '2.3.0'
+        public def trayPrefsVersion = '0.12.0'
+        public def glideVersion = '4.3.1'
+        public def caligraphyVersion = '2.3.0'
+        public def constraintVersion = '1.1.0-beta3'
+        public def lastAdapterVersion = '2.3.0'
+        public def flex_layout = '0.3.1'
+        public def gson = '2.8.0'
+        public def timber = '4.6.0'
+
+        // Testing
+        public def espresso = '3.0.1'
+        public def junit = '4.12'
+        public def mockito = '2.12.0'
+        public def testRunner = '1.0.1'
+
+        // Debuging
+        public def idescout_sql_server = '2.1'
+
+    }
+
+    class GradlePlugin {
+
+        private Versions versions
+
+        GradlePlugin(Versions versions) {
+            this.versions = versions
+        }
+
+        public def android = "com.android.tools.build:gradle:$versions.android_plugin"
+        public def fabric = "io.fabric.tools:gradle:$versions.fabric_gradle_plugin"
+        public def gms = "com.google.gms:google-services:$versions.gms_gradle_plugin"
+        public def autoversion = "me.sunnydaydev:autoversion:$versions.autoversion_gradle_plugin"
+        public def dependencies_versions = "com.github.ben-manes:gradle-versions-plugin:$versions.dependencies_versions_plugin"
+
+        public def kotlin = "org.jetbrains.kotlin:kotlin-gradle-plugin:$versions.kotlin"
+        public def kotlin_extensions = "org.jetbrains.kotlin:kotlin-android-extensions:$versions.kotlin"
+
+    }
+
+    class Debuging {
+
+        private Versions versions
+
+        Debuging(Versions versions) {
+            this.versions = versions
+        }
+
+        public def idescout_sql_server = "com.idescout.sql:sqlscout-server:$versions.idescout_sql_server"
+
+    }
+
+    class Testing {
+
+        private Versions versions
+
+        Testing(Versions versions) {
+            this.versions = versions
+        }
+
+        public def espresso = "com.android.support.test.espresso:espresso-core:$versions.espresso"
+        public def junit = "junit:junit:$versions.junit"
+        public def mockito = "org.mockito:mockito-core:$versions.mockito"
+        public def testRunner = "com.android.support.test:runner:$versions.testRunner"
+
+    }
+
+    class Core {
+
+        private Versions versions
+
+        Core(Versions versions) {
+            this.versions = versions
+        }
+
+        public def multidex = "com.android.support:multidex:$versions.multidexVersion"
+        public def kotlin_stdlib = "org.jetbrains.kotlin:kotlin-stdlib-jre7:$versions.kotlin"
+        public def databinding_compiler = "com.android.databinding:compiler:$versions.android_plugin"
+        public def dagger = "com.google.dagger:dagger:$versions.daggerVersion"
+        public def dagger_android = "com.google.dagger:dagger-android:$versions.daggerVersion"
+        public def dagger_android_support = "com.google.dagger:dagger-android-support:$versions.daggerVersion"
+        public def dagger_android_processor = "com.google.dagger:dagger-android-processor:$versions.daggerVersion"
+        public def dagger_compiler = "com.google.dagger:dagger-compiler:$versions.daggerVersion"
+        public def rx =  "io.reactivex.rxjava2:rxjava:$versions.rxVersion"
+        public def rx_android = "io.reactivex.rxjava2:rxandroid:$versions.rxAndroidVersion"
+        public def rx_kotlin = "io.reactivex.rxjava2:rxkotlin:$versions.rxKotlinVersion"
+        public def prefs = "net.grandcentrix.tray:tray:$versions.trayPrefsVersion"
+        public def mapstruct = "org.mapstruct:mapstruct:$versions.mapstructVersion"
+        public def mapstruct_processor = "org.mapstruct:mapstruct-processor:$versions.mapstructVersion"
+        public def eventbus = "org.greenrobot:eventbus:$versions.eventBusVersion"
+        public def crashlytics = "com.crashlytics.sdk.android:crashlytics:$versions.crashlyticsVersion@aar"
+        public def calligraphy = "uk.co.chrisjenx:calligraphy:$versions.caligraphyVersion"
+        public def cicirone = "ru.terrakok.cicerone:cicerone:$versions.ciceroneVersion"
+        public def last_adapter = "com.github.nitrico.lastadapter:lastadapter:$versions.lastAdapterVersion"
+        public def gson = "com.google.code.gson:gson:$versions.gson"
+        public def timber = "com.jakewharton.timber:timber:$versions.timber"
+
+    }
+
+    class Network {
+
+        private Versions versions
+
+        Network(Versions versions) {
+            this.versions = versions
+        }
+
+        public def retrofit = "com.squareup.retrofit2:retrofit:$versions.retrofitVersion"
+        public def converter_gson =  "com.squareup.retrofit2:converter-gson:$versions.retrofitVersion"
+        public def rx_java = "com.squareup.retrofit2:adapter-rxjava2:$versions.retrofitVersion"
+        public def okhttp = "com.squareup.okhttp3:okhttp:$versions.okhttpVersoin"
+        public def logging = "com.squareup.okhttp3:logging-interceptor:$versions.okhttpVersoin"
+        public def glide = "com.github.bumptech.glide:glide:$versions.glideVersion"
+        public def glide_compiler = "com.github.bumptech.glide:compiler:$versions.glideVersion"
+
+    }
+
+    class Support {
+
+        private Versions versions
+
+        Support(Versions versions) {
+            this.versions = versions
+        }
+
+        public def appcompat = "com.android.support:appcompat-v7:$versions.compatVersion"
+        public def design = "com.android.support:design:$versions.compatVersion"
+        public def recyclerView = "com.android.support:recyclerview-v7:$versions.compatVersion"
+        public def constraint_layout = "com.android.support.constraint:constraint-layout:$versions.constraintVersion"
+        public def card = "com.android.support:cardview-v7:$versions.compatVersion"
+        public def flex_layout = "com.google.android:flexbox:$versions.flex_layout"
+
+    }
+
+    class Arch {
+
+        private Versions versions
+
+        Arch(Versions versions) {
+            this.versions = versions
+        }
+
+        //public def runtime = "android.arch.lifecycle:runtime:$versions.architectureComponentsLifeCycle"
+        public def extensions = "android.arch.lifecycle:extensions:$versions.architectureComponentsVersion"
+        public def lifecycle_compiler = "android.arch.lifecycle:compiler:$versions.architectureComponentsVersion"
+        public def room_runtime = "android.arch.persistence.room:runtime:$versions.architectureComponentsVersion"
+        public def room_rxjava = "android.arch.persistence.room:rxjava2:$versions.architectureComponentsVersion"
+        public def room_compiler = "android.arch.persistence.room:compiler:$versions.architectureComponentsVersion"
+        public def room_testing = "android.arch.persistence.room:testing:$versions.architectureComponentsVersion"
+        public def core_testing = "android.arch.core:core-testing:$versions.architectureComponentsVersion"
+
+    }
+
+    class GoogleServices {
+
+        private Versions versions
+
+        GoogleServices(Versions versions) {
+            this.versions = versions
+        }
+
+        public def gcm = "com.google.android.gms:play-services-gcm:$versions.googleServicesVersion"
+        public def firebase_messaging = "com.google.firebase:firebase-messaging:$versions.googleServicesVersion"
+        public def firebase_jobdispatcher = "com.firebase:firebase-jobdispatcher:$versions.firebaseJobDispatcherVersion"
+        public def location = "com.google.android.gms:play-services-location:$versions.googleServicesVersion"
+
+    }
+
+}
+
+@SuppressWarnings("GroovyUnusedDeclaration")
+static def addRepos(RepositoryHandler handler) {
+    handler.google()
+    handler.jcenter()
+    handler.mavenCentral()
+    handler.maven { url 'https://maven.fabric.io/public' }
+    handler.flatDir { dirs 'libs' }
+    handler.maven { url 'http://www.idescout.com/maven/repo/' }
+}
+
+ext.addRepos = this.&addRepos
