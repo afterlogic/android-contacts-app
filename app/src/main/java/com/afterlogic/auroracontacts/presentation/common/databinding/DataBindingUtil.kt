@@ -19,9 +19,9 @@ import kotlin.reflect.KProperty
 fun <V: ViewDataBinding> Activity.setContentBinding(@LayoutRes layoutId: Int): V =
         DataBindingUtil.setContentView(this, layoutId)
 
-fun LayoutInflater.inflateBinding(@LayoutRes layoutId: Int,
+fun <V: ViewDataBinding> LayoutInflater.inflateBinding(@LayoutRes layoutId: Int,
                                   root: ViewGroup?,
-                                  attachToRoot: Boolean = false): ViewDataBinding =
+                                  attachToRoot: Boolean = false): V =
         DataBindingUtil.inflate(this, layoutId, root, attachToRoot)
 
 class BindableDelegate<in R: ObservableViewModel, T: Any?>(

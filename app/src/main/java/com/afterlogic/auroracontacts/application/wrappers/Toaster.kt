@@ -1,7 +1,7 @@
-package com.afterlogic.auroracontacts.core.contextWrappers
+package com.afterlogic.auroracontacts.application.wrappers
 
-import android.content.Context
 import android.widget.Toast
+import com.afterlogic.auroracontacts.application.App
 
 import javax.inject.Inject
 
@@ -10,7 +10,7 @@ import javax.inject.Inject
  */
 
 class Toaster @Inject
-constructor(private val context: Context) {
+constructor(private val context: App) {
 
     fun showLong(text: String) {
         Toast.makeText(context, text, Toast.LENGTH_LONG).show()

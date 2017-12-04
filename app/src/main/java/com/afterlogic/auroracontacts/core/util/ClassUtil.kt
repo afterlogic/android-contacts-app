@@ -6,5 +6,5 @@ package com.afterlogic.auroracontacts.core.util
  */
 
 interface Tagged {
-    val classTag: String get() = this::class.java.name
+    val classTag: String get() = this::class.java.simpleName
 }

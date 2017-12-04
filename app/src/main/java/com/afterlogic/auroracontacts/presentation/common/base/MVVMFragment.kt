@@ -1,23 +1,26 @@
 package com.afterlogic.auroracontacts.presentation.common.base
 
-import android.arch.lifecycle.*
+import android.arch.lifecycle.ViewModelProvider
+import android.arch.lifecycle.ViewModelProviders
 import android.databinding.ViewDataBinding
 import android.os.Bundle
 import android.support.annotation.CallSuper
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import com.afterlogic.auroracontacts.BR
 import com.afterlogic.auroracontacts.core.rx.Subscriber
 import com.afterlogic.auroracontacts.core.util.Tagged
 import com.afterlogic.auroracontacts.presentation.common.databinding.ViewModelFactory
-import dagger.android.support.DaggerAppCompatActivity
+import dagger.android.support.DaggerFragment
 import javax.inject.Inject
 
 /**
  * Created by sunny on 04.12.2017.
  * mail: mail@sunnydaydev.me
  */
-
-abstract class MVVMActivity<VM: ObservableViewModel, VDB: ViewDataBinding> :
-        DaggerAppCompatActivity(), Tagged, HasLifecycleDisposables {
+abstract class MVVMFragment<VM: ObservableViewModel, VDB: ViewDataBinding> :
+        DaggerFragment(), Tagged, HasLifecycleDisposables {
 
     protected var viewModelKey = BR.vm
 
@@ -30,7 +33,7 @@ abstract class MVVMActivity<VM: ObservableViewModel, VDB: ViewDataBinding> :
     @set:Inject
     override lateinit var subscriber: Subscriber
 
-    protected val binding: VDB by lazy { bindView() }
+    protected lateinit var binding: VDB
 
     protected val viewModel: VM by lazy {
         val provider = getViewModelProvider(viewModelFactory)
@@ -45,9 +48,18 @@ abstract class MVVMActivity<VM: ObservableViewModel, VDB: ViewDataBinding> :
 
         lifecycle.addObserver(viewModel)
 
-        binding.setVariable(viewModelKey, viewModel)
-
         lifecycleDisposables.onCreate()
+
+    }
+
+    @CallSuper
+    override fun onCreateView(inflater: LayoutInflater,
+                              container: ViewGroup?,
+                              savedInstanceState: Bundle?): View? {
+
+        binding = bindView(inflater, container)
+        binding.setVariable(viewModelKey, viewModel)
+        return binding.root
 
     }
 
@@ -76,13 +88,19 @@ abstract class MVVMActivity<VM: ObservableViewModel, VDB: ViewDataBinding> :
     }
 
     @CallSuper
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding.unbind()
+    }
+
+    @CallSuper
     override fun onDestroy() {
         super.onDestroy()
-        binding.unbind()
         lifecycleDisposables.onDestroy()
     }
 
-    abstract protected fun bindView(): VDB
+    abstract protected fun bindView(inflater: LayoutInflater,
+                                    container: ViewGroup?): VDB
 
     abstract protected fun getViewModel(provider: ViewModelProvider): VM
 

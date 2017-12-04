@@ -1,7 +1,7 @@
 package com.afterlogic.auroracontacts.core.rx
 
 import com.afterlogic.auroracontacts.BuildConfig
-import com.afterlogic.auroracontacts.core.contextWrappers.Toaster
+import com.afterlogic.auroracontacts.application.wrappers.Toaster
 import com.afterlogic.auroracontacts.core.util.isAnyNetworkError
 import io.reactivex.*
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -17,7 +17,7 @@ import javax.inject.Singleton
  * Created by aleksandrcikin on 25.04.17.
  *
  */
-@Singleton
+
 class Subscriber @Inject constructor(private val toaster: Toaster) {
 
     private val classPackage = this::class.java.name.split(".")

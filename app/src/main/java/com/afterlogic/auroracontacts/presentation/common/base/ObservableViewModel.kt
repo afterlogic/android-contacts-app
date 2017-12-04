@@ -1,7 +1,6 @@
 package com.afterlogic.auroracontacts.presentation.common.base
 
 import android.arch.lifecycle.LifecycleObserver
-import android.databinding.BaseObservable
 import android.databinding.Bindable
 import android.databinding.Observable
 import android.databinding.PropertyChangeRegistry
