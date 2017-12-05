@@ -6,7 +6,6 @@ import com.afterlogic.auroracontacts.data.errors.NotSupportedApiError
 import io.reactivex.Maybe
 import io.reactivex.Single
 import okhttp3.HttpUrl
-import java.util.*
 import javax.inject.Inject
 
 /**
@@ -21,41 +20,62 @@ class LoginInteractor @Inject constructor(
 
         return Single.defer {
 
-            val manual: Boolean
-
-            val domain: HttpUrl?
-            if (host.contains("://")) {
-                manual = true
-                domain = HttpUrl.parse(host)
-            } else {
-                manual = false
-                domain = HttpUrl.parse("http://" + host)
-            }
-
-            if (domain == null) {
-                throw IllegalArgumentException("Unparselable url: $host")
-            }
-
-            val domains = ArrayList<HttpUrl>()
-
-            if (manual) {
-                domains.add(domain)
-            } else {
-                domains.add(domain.newBuilder().scheme("https").build())
-                domains.add(domain.newBuilder().scheme("http").build())
-            }
-
-            domains
-                    .map {url -> authenticatorService.getApiType(url.toString())
-                            .filter { it != ApiType.UNKNOWN }
-                            .map { url }
-                    }
-                    .let { Maybe.merge(it) }
+            host.let(this::checkAndParseUrl)
+                    .let(this::collectUrlsForCheck)
+                    .map(this::checkApiType)
+                    .let { Maybe.concat(it) }
                     .firstElement()
                     .switchIfEmpty(Maybe.error(NotSupportedApiError()))
                     .toSingle()
 
         }
+
+    }
+
+    private fun checkAndParseUrl(host: String): Pair<HttpUrl, Boolean> {
+
+        return if (host.contains("://")) {
+            HttpUrl.parse(host) to true
+        }  else {
+            HttpUrl.parse("http://" + host) to false
+        } .let { (url, manual) ->
+
+            url ?: throw IllegalArgumentException("Unparselable url: $host")
+
+            url to manual
+
+        }
+
+    }
+
+    private fun collectUrlsForCheck(checkedUrl: Pair<HttpUrl, Boolean>): List<HttpUrl> {
+
+        return checkedUrl
+                .let { (url, manual) ->
+                    if (manual) {
+                        listOf(url)
+                    } else {
+                        listOf(
+                                url.newBuilder().scheme("https").build(),
+                                url.newBuilder().scheme("http").build()
+                        )
+                    }
+                }
+
+    }
+
+    private fun checkApiType(url: HttpUrl): Maybe<HttpUrl> {
+
+        return authenticatorService.getApiType(url)
+                .filter { it != ApiType.UNKNOWN }
+                .map { url }
+
+    }
+
+    fun login(host: HttpUrl, email: String, password: String): Single<Boolean> {
+
+        return authenticatorService.login(host, email, password)
+                .map { true }
 
     }
 

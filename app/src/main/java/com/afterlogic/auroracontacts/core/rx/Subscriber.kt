@@ -11,7 +11,6 @@ import org.reactivestreams.Subscription
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
-import javax.inject.Singleton
 
 /**
  * Created by aleksandrcikin on 25.04.17.
@@ -73,7 +72,10 @@ class Subscriber @Inject constructor(private val toaster: Toaster) {
 
     private fun onUnhandledError(e: UnhandledError) {
 
-        val cause = e.cause
+        val cause = e.cause?.let {
+            if (it is ShadowedError) it.cause
+            else it
+        }
 
         if (cause == null) {
             Timber.e(e)
@@ -174,6 +176,10 @@ class Subscriber @Inject constructor(private val toaster: Toaster) {
 
 }
 
+abstract class ShadowedError(cause: Throwable): Throwable(
+        if (cause is ShadowedError) cause.cause else cause
+)
+
 typealias ErrorHandler = (Throwable) -> Boolean
 typealias ResultHandler<T> = (T) -> Unit
 typealias CompleteHandler = () -> Unit
@@ -183,6 +189,15 @@ class SuccessErrorHandler(private val action: (Throwable) -> Unit): ErrorHandler
     override fun invoke(p1: Throwable): Boolean {
         action(p1)
         return true
+    }
+
+}
+
+class FailErrorHandler(private val action: (Throwable) -> Unit): ErrorHandler {
+
+    override fun invoke(p1: Throwable): Boolean {
+        action(p1)
+        return false
     }
 
 }
@@ -220,6 +235,19 @@ class CompletableSubscribtioning(private val source: Completable,
 
 fun Completable.subscribeWith(subs: Subscriber): Disposable = with(subs).subscribe()
 
+inline fun Completable.shadowError(crossinline mapper: (Throwable) -> ShadowedError): Completable {
+    return onErrorResumeNext { it: Throwable ->
+        Completable.error(mapper(it))
+    }
+}
+
+inline fun Completable.shadowErrorIfNot(crossinline mapper: (Throwable) -> ShadowedError): Completable {
+    return onErrorResumeNext { it: Throwable ->
+        if (it is ShadowedError) Completable.error(it)
+        else Completable.error(mapper(it))
+    }
+}
+
 //endregion
 
 //region// Maybe
@@ -238,6 +266,19 @@ class MaybeSubscribtioning<out T>(private val source: Maybe<T>,
 
 fun <T> Maybe<T>.subscribeWith(subs: Subscriber): Disposable = with(subs).subscribe()
 
+inline fun <T> Maybe<T>.shadowError(crossinline mapper: (Throwable) -> ShadowedError): Maybe<T> {
+    return onErrorResumeNext { it: Throwable ->
+        Maybe.error(mapper(it))
+    }
+}
+
+inline fun <T> Maybe<T>.shadowErrorIfNot(crossinline mapper: (Throwable) -> ShadowedError): Maybe<T> {
+    return onErrorResumeNext { it: Throwable ->
+        if (it is ShadowedError) Maybe.error(it)
+        else Maybe.error(mapper(it))
+    }
+}
+
 //endregion
 
 //region// Single
@@ -254,6 +295,19 @@ class SingleSubscribtioning<out T>(private val source: Single<T>,
 }
 
 fun <T> Single<T>.subscribeWith(subs: Subscriber): Disposable = with(subs).subscribe()
+
+inline fun <T> Single<T>.shadowError(crossinline mapper: (Throwable) -> ShadowedError): Single<T> {
+    return onErrorResumeNext { it: Throwable ->
+        Single.error(mapper(it))
+    }
+}
+
+inline fun <T> Single<T>.shadowErrorIfNot(crossinline mapper: (Throwable) -> ShadowedError): Single<T> {
+    return onErrorResumeNext { it: Throwable ->
+        if (it is ShadowedError) Single.error(it)
+        else Single.error(mapper(it))
+    }
+}
 
 //endregion
 
@@ -273,6 +327,18 @@ class ObservableSubscribtioning<out T>(private val source: Observable<T>,
 
 fun <T> Observable<T>.subscribeWith(subs: Subscriber): Disposable = with(subs).subscribe()
 
+inline fun <T> Observable<T>.shadowError(crossinline mapper: (Throwable) -> ShadowedError): Observable<T> {
+    return onErrorResumeNext { it: Throwable ->
+        Observable.error(mapper(it))
+    }
+}
+
+inline fun <T> Observable<T>.shadowErrorIfNot(crossinline mapper: (Throwable) -> ShadowedError): Observable<T> {
+    return onErrorResumeNext { it: Throwable ->
+        if (it is ShadowedError) Observable.error(it)
+        else Observable.error(mapper(it))
+    }
+}
 
 //endregion
 

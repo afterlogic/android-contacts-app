@@ -6,6 +6,7 @@ import com.afterlogic.auroracontacts.data.api.p7.model.AuthTokenP7
 import com.afterlogic.auroracontacts.data.api.p7.model.SystemAppDataP7
 import com.afterlogic.auroracontacts.data.api.p7.util.checkResponseAndGetData
 import io.reactivex.Single
+import okhttp3.HttpUrl
 import javax.inject.Inject
 
 /**
@@ -16,7 +17,7 @@ import javax.inject.Inject
 internal class P7AuthenticatorNetworkService @Inject
 constructor(private val api: DynamicLazyApiP7<AuthApiP7>) {
 
-    fun getSystemAppData(host: String): Single<SystemAppDataP7> {
+    fun getSystemAppData(host: HttpUrl): Single<SystemAppDataP7> {
 
         return api[host].getSystemAppData()
                 .checkResponseAndGetData()
@@ -24,7 +25,7 @@ constructor(private val api: DynamicLazyApiP7<AuthApiP7>) {
     }
 
     fun getLoggedSystemAppData(
-            host: String, authToken: String
+            host: HttpUrl, authToken: String
     ): Single<Pair<Long, SystemAppDataP7>> {
 
         return api[host].getSystemAppData(authToken)
@@ -32,7 +33,7 @@ constructor(private val api: DynamicLazyApiP7<AuthApiP7>) {
 
     }
 
-    fun login(host: String, login: String, pass: String): Single<AuthTokenP7> {
+    fun login(host: HttpUrl, login: String, pass: String): Single<AuthTokenP7> {
 
         return api[host].login(login, pass)
                 .checkResponseAndGetData { it.data!!.copy(userId = it.accountId!!) }

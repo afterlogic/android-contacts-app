@@ -7,6 +7,6 @@ package com.afterlogic.auroracontacts.data.api.p7
  * mail: sunnyday.development@gmail.com
  */
 
-interface ContactsApiP7 : ApiP7 {
+interface ContactsApiP7 {
 
 }

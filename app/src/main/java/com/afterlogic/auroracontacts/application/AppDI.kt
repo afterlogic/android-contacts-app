@@ -2,11 +2,9 @@ package com.afterlogic.auroracontacts.application
 
 import com.afterlogic.auroracontacts.core.CoreModule
 import com.afterlogic.auroracontacts.data.DataModule
+import com.afterlogic.auroracontacts.presentation.AppScope
 import com.afterlogic.auroracontacts.presentation.PresentationModule
-import dagger.BindsInstance
 import dagger.Component
-import dagger.Module
-import dagger.Provides
 import dagger.android.AndroidInjector
 
 /**
@@ -14,6 +12,7 @@ import dagger.android.AndroidInjector
  * mail: mail@sunnydaydev.me
  */
 
+@AppScope
 @Component(modules = [
     CoreModule::class,
     DataModule::class,

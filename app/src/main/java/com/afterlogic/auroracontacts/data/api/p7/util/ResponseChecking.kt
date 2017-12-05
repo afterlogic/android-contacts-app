@@ -21,4 +21,4 @@ fun <T, R> Single<ApiResponseP7<T>>.checkResponseAndGetData(
 ): Single<R> = checkResponse().map(mapper)
 
 fun <T> Single<ApiResponseP7<T>>.checkResponseAndGetData(): Single<T> =
-        checkResponse().map { it.data!! }
+        checkResponseAndGetData { it.data!! }

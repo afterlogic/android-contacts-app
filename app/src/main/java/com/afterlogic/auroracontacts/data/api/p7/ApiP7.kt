@@ -7,17 +7,9 @@ package com.afterlogic.auroracontacts.data.api.p7
  * mail: sunnyday.development@gmail.com
  */
 
-interface ApiP7 {
+object ApiP7 {
 
-    companion object {
-
-        const val AJAX = "?/Ajax/"
-
-        fun completeUrl(base: String): String {
-            return base + ApiP7.AJAX
-        }
-
-    }
+    const val AJAX = "?/Ajax/"
 
     object Actions {
         const val SYSTEM_GET_APP_DATA = "SystemGetAppData"

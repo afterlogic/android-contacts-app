@@ -3,6 +3,7 @@ package com.afterlogic.auroracontacts.data.auth
 
 import com.afterlogic.auroracontacts.data.auth.model.AuthorizedAuroraSession
 import io.reactivex.Single
+import okhttp3.HttpUrl
 
 /**
  * Created by aleksandrcikin on 25.08.17.
@@ -11,8 +12,8 @@ import io.reactivex.Single
 
 internal interface AuthenticatorSubService {
 
-    fun login(host: String, email: String, pass: String): Single<AuthorizedAuroraSession>
+    fun login(host: HttpUrl, email: String, pass: String): Single<AuthorizedAuroraSession>
 
-    fun isApiHost(host: String): Single<Boolean>
+    fun isApiHost(host: HttpUrl): Single<Boolean>
 
 }

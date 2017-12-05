@@ -19,6 +19,7 @@
     <string name="error_unrechable_host">This host is unreachable.</string>
     <string name="prompt_domain">Server</string>
     <string name="error_pass_or_login">Invalid login or password.</string>
+    <string name="error_connection_to_domain">Connection to server failed.</string>
     <string name="dialog_ok">Ok</string>
     <string name="dialog_cancel">Cancel</string>
 

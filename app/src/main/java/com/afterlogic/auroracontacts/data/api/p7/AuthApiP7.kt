@@ -1,6 +1,12 @@
 package com.afterlogic.auroracontacts.data.api.p7
 
-import com.afterlogic.auroracontacts.data.api.p7.ApiP7.Companion.AJAX
+import com.afterlogic.auroracontacts.data.api.p7.ApiP7.AJAX
+import com.afterlogic.auroracontacts.data.api.p7.ApiP7.Actions.SYSTEM_GET_APP_DATA
+import com.afterlogic.auroracontacts.data.api.p7.ApiP7.Actions.SYSTEM_LOGIN
+import com.afterlogic.auroracontacts.data.api.p7.ApiP7.Fields.ACTION
+import com.afterlogic.auroracontacts.data.api.p7.ApiP7.Fields.AUTH_TOKEN
+import com.afterlogic.auroracontacts.data.api.p7.ApiP7.Fields.EMAIL
+import com.afterlogic.auroracontacts.data.api.p7.ApiP7.Fields.INC_PASSWORD
 import com.afterlogic.auroracontacts.data.api.p7.model.ApiResponseP7
 import com.afterlogic.auroracontacts.data.api.p7.model.AuthTokenP7
 import com.afterlogic.auroracontacts.data.api.p7.model.SystemAppDataP7
@@ -16,21 +22,21 @@ import retrofit2.http.POST
  * mail: sunnyday.development@gmail.com
  */
 
-interface AuthApiP7 : ApiP7 {
+interface AuthApiP7 {
 
     @FormUrlEncoded
     @POST(AJAX)
     fun getSystemAppData(
-            @Field(ApiP7.Fields.AUTH_TOKEN) token: String? = null,
-            @Field(ApiP7.Fields.ACTION) action: String = ApiP7.Actions.SYSTEM_GET_APP_DATA
+            @Field(AUTH_TOKEN) token: String? = null,
+            @Field(ACTION) action: String = SYSTEM_GET_APP_DATA
     ): Single<ApiResponseP7<SystemAppDataP7>>
 
     @FormUrlEncoded
     @POST(AJAX)
     fun login(
-            @Field(ApiP7.Fields.EMAIL) email: String,
-            @Field(ApiP7.Fields.INC_PASSWORD) password: String,
-            @Field(ApiP7.Fields.ACTION) action: String = ApiP7.Actions.SYSTEM_LOGIN
+            @Field(EMAIL) email: String,
+            @Field(INC_PASSWORD) password: String,
+            @Field(ACTION) action: String = SYSTEM_LOGIN
     ): Single<ApiResponseP7<AuthTokenP7>>
 
 }

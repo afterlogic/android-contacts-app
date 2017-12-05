@@ -1,9 +1,10 @@
 package com.afterlogic.auroracontacts.data.api.p7
 
 import com.afterlogic.auroracontacts.BuildConfig
+import com.afterlogic.auroracontacts.core.gson.registerTypeAdapter
 import com.afterlogic.auroracontacts.data.api.P7
 import com.afterlogic.auroracontacts.data.api.p7.converters.ApiResponseP7Deserializer
-import com.afterlogic.auroracontacts.data.api.p7.model.ApiResponseP7
+import com.afterlogic.auroracontacts.presentation.AppScope
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import dagger.Module
@@ -14,8 +15,6 @@ import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicReference
-import javax.inject.Singleton
 
 /**
  * Created by sashka on 03.02.17.
@@ -27,53 +26,51 @@ import javax.inject.Singleton
 class ApiP7Module {
 
     @P7
-    @Singleton
+    @AppScope
     @Provides
     internal fun provideClient(): OkHttpClient {
-        val clientBuilder = OkHttpClient.Builder()
 
-        //Add logging for debug
-        if (BuildConfig.DEBUG) {
-            val interceptor = HttpLoggingInterceptor().apply {
-                level = HttpLoggingInterceptor.Level.BODY
-            }
-            clientBuilder.addInterceptor(interceptor)
-        }
-
-        return clientBuilder
+        return OkHttpClient.Builder()
                 .connectTimeout(1, TimeUnit.MINUTES)
                 .readTimeout(1, TimeUnit.MINUTES)
                 .writeTimeout(1, TimeUnit.MINUTES)
+                .apply {
+
+                    //Add logging for debug
+                    if (BuildConfig.DEBUG) {
+                        val interceptor = HttpLoggingInterceptor().apply {
+                            level = HttpLoggingInterceptor.Level.BODY
+                        }
+                        addInterceptor(interceptor)
+                    }
+
+                }
                 .build()
+
     }
 
     @P7
-    @Singleton
+    @AppScope
     @Provides
     internal fun provideGson(): Gson {
 
-        val gson = AtomicReference<Gson>()
+        fun builder(): GsonBuilder = GsonBuilder()
 
-        return GsonBuilder()
-                .registerTypeAdapter(ApiResponseP7::class.java, ApiResponseP7Deserializer(gson))
+        return builder()
+                .registerTypeAdapter(ApiResponseP7Deserializer(builder().create()))
                 .create()
-                .also { gson.set(it) }
 
     }
 
     @P7
     @Provides
-    internal fun provideRetrofit(gson: Gson, client: OkHttpClient): Retrofit {
+    internal fun provideRetrofit(@P7 gson: Gson, @P7 client: OkHttpClient): Retrofit.Builder {
+
         return Retrofit.Builder()
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .client(client)
-                .build()
-    }
 
-    @Provides
-    internal fun provideApi(retrofit: Retrofit): AuthApiP7 {
-        return retrofit.create(AuthApiP7::class.java)
     }
 
     @Provides

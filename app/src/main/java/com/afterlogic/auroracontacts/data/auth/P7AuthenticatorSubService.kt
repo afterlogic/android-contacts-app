@@ -18,7 +18,7 @@ import javax.inject.Inject
 internal class P7AuthenticatorSubService @Inject
 constructor(private val service: P7AuthenticatorNetworkService) : AuthenticatorSubService {
 
-    override fun login(host: String, email: String, pass: String): Single<AuthorizedAuroraSession> {
+    override fun login(host: HttpUrl, email: String, pass: String): Single<AuthorizedAuroraSession> {
 
         return service.login(host, email, pass)
                 .flatMap { (token, _) -> service.getLoggedSystemAppData(host, token)
@@ -28,7 +28,7 @@ constructor(private val service: P7AuthenticatorNetworkService) : AuthenticatorS
 
     }
 
-    override fun isApiHost(host: String): Single<Boolean> {
+    override fun isApiHost(host: HttpUrl): Single<Boolean> {
 
         return service.getSystemAppData(host)
                 .map { true }
@@ -40,7 +40,7 @@ constructor(private val service: P7AuthenticatorNetworkService) : AuthenticatorS
     }
 
     private fun handleLoginResult(loginResult: LoginResult,
-                                  host: String,
+                                  host: HttpUrl,
                                   email: String?,
                                   pass: String?): AuthorizedAuroraSession {
 
@@ -65,7 +65,7 @@ constructor(private val service: P7AuthenticatorNetworkService) : AuthenticatorS
                 loginResult.accountId, // TODO: Check is really need it
                 email!!,
                 pass!!,
-                HttpUrl.parse(host)!!,
+                host,
                 ApiType.P7.code
         )
 

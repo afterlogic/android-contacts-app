@@ -6,7 +6,6 @@ import dagger.Module
 import dagger.android.ContributesAndroidInjector
 import dagger.android.support.AndroidSupportInjectionModule
 import javax.inject.Scope
-import javax.inject.Singleton
 
 /**
  * Created by sunny on 04.12.2017.
@@ -23,6 +22,9 @@ abstract class PresentationModule {
     abstract fun contributeMainActivity(): MainActivity
 
 }
+
+@Scope
+annotation class AppScope
 
 @Scope
 annotation class ActivityScope

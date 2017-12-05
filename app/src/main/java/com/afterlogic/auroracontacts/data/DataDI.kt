@@ -1,5 +1,6 @@
 package com.afterlogic.auroracontacts.data
 
+import com.afterlogic.auroracontacts.data.api.p7.ApiP7Module
 import dagger.Module
 
 /**
@@ -7,7 +8,7 @@ import dagger.Module
  * mail: mail@sunnydaydev.me
  */
 
-@Module
-class DataModule {
-
-}
+@Module(includes = [
+    ApiP7Module::class
+])
+class DataModule

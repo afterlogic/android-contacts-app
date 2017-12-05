@@ -3,17 +3,18 @@ package com.afterlogic.auroracontacts.data.auth
 import com.afterlogic.auroracontacts.data.api.ApiType
 import com.afterlogic.auroracontacts.data.auth.model.AuthorizedAuroraSession
 import com.afterlogic.auroracontacts.data.errors.NotSupportedApiError
+import com.afterlogic.auroracontacts.presentation.AppScope
 import io.reactivex.Maybe
 import io.reactivex.Single
+import okhttp3.HttpUrl
 import javax.inject.Inject
-import javax.inject.Singleton
 
 /**
  * Created by aleksandrcikin on 25.08.17.
  * mail: mail@sunnydaydev.me
  */
 
-@Singleton
+@AppScope
 class AuthenticatorService @Inject
 internal constructor(
         p7AuthenticatorService: P7AuthenticatorSubService
@@ -30,12 +31,12 @@ internal constructor(
 
     }
 
-    fun login(host: String, login: String, password: String): Single<AuthorizedAuroraSession> {
+    fun login(host: HttpUrl, login: String, password: String): Single<AuthorizedAuroraSession> {
         return getAuthenticatorService(host)
-                .flatMap { service -> service.login(host, login, password) }
+                .flatMap { it.login(host, login, password) }
     }
 
-    fun getApiType(host: String): Single<ApiType> {
+    fun getApiType(host: HttpUrl): Single<ApiType> {
 
         // TODO add api 8
         return listOf(p7AuthenticatorSubService to ApiType.P7)
@@ -45,12 +46,12 @@ internal constructor(
                             else Maybe.empty()
                         }
                 }
-                .let { Maybe.merge(it) }
+                .let { Maybe.concat(it) }
                 .first(ApiType.UNKNOWN)
 
     }
 
-    private fun getAuthenticatorService(host: String): Single<AuthenticatorSubService> {
+    private fun getAuthenticatorService(host: HttpUrl): Single<AuthenticatorSubService> {
 
         return getApiType(host)
                 .map {
