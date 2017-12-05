@@ -41,41 +41,50 @@ constructor(private val service: P7AuthenticatorNetworkService) : AuthenticatorS
 
     private fun handleLoginResult(loginResult: LoginResult,
                                   host: HttpUrl,
-                                  email: String?,
-                                  pass: String?): AuthorizedAuroraSession {
+                                  email: String,
+                                  pass: String): AuthorizedAuroraSession {
 
-        val systemAppData = loginResult.systemAppData
-                ?: throw IllegalApiDataException("SystemAppData is null.")
+        return (loginResult.systemAppData ?: throw IllegalApiDataException("SystemAppData is null."))
+                .let(this::checkAuthorized)
+                .let(this::extractAccountUserAndToken)
+                .let { (user, appToken) ->
 
-        if (!systemAppData.isAuthorized) {
-            throw IllegalApiDataException("Must be authorized authorized.")
+                    AuthorizedAuroraSession(
+                            user,
+                            appToken,
+                            loginResult.token,
+                            loginResult.accountId,
+                            email,
+                            pass,
+                            host,
+                            ApiType.P7.code
+                    )
+
+                }
+
+    }
+
+    private fun checkAuthorized(data: SystemAppDataP7): SystemAppDataP7 {
+        return data.also {
+            if (!it.isAuthorized) {
+                throw IllegalApiDataException("Must be authorized authorized.")
+            }
         }
+    }
 
-        val defaultAccountId = systemAppData.default
+    private fun extractAccountUserAndToken(data: SystemAppDataP7): Pair<String, String> {
 
-        val accounts = systemAppData.accounts
-                ?: throw IllegalApiDataException("Accounts is null.")
-
-        val defaultAccount = accounts.first { it.accountID == defaultAccountId }
-
-        return AuthorizedAuroraSession(
-                defaultAccount.email!!,
-                systemAppData.token!!,
-                loginResult.token,
-                loginResult.accountId, // TODO: Check is really need it
-                email!!,
-                pass!!,
-                host,
-                ApiType.P7.code
-        )
+        return (data.accounts ?: throw IllegalApiDataException("Accounts is null."))
+                .first { it.accountID == data.default }
+                .email!! to data.token!!
 
     }
 
     private inner class LoginResult(val token: String,
-                                    systemAppDataPair: Pair<Long, SystemAppDataP7>) {
+                                    private val systemAppDataPair: Pair<Long, SystemAppDataP7>) {
 
-        val accountId: Long = systemAppDataPair.first
-        val systemAppData: SystemAppDataP7? = systemAppDataPair.second
+        val accountId: Long get() = systemAppDataPair.first
+        val systemAppData: SystemAppDataP7? get() = systemAppDataPair.second
 
     }
 
