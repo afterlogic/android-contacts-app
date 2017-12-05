@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".presentation.foreground.main.MainActivity">
+
+    <data>
+
+        <import type="com.afterlogic.auroracontacts.presentation.foreground.login.LoginViewModel"/>
+        <import type="com.afterlogic.auroracontacts.presentation.foreground.login.LoginViewModel.FocusTarget"/>
+
+        <variable
+            name="vm"
+            type="com.afterlogic.auroracontacts.presentation.foreground.login.LoginViewModel"/>
+
+    </data>
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toTopOf="@+id/inputGuideLine"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <android.support.design.widget.TextInputLayout
+            android:id="@+id/host_input_wrapper"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:layout_marginStart="16dp"
+            app:layout_constraintBottom_toTopOf="@+id/email_input_wrapper"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.25"
+            app:layout_constraintVertical_chainStyle="packed">
+
+            <android.support.design.widget.TextInputEditText
+                error="@{vm.domainError}"
+                focusCommand="@{vm.focus}"
+                focusTag="@{FocusTarget.DOMAIN}"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:enabled="@{!vm.isInProgress}"
+                android:hint="@string/prompt_domain"
+                android:inputType="textEmailAddress"
+                android:text="@={vm.domain}" />
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.design.widget.TextInputLayout
+            android:id="@+id/email_input_wrapper"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            app:layout_constraintBottom_toTopOf="@+id/password_input_wrapper"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/host_input_wrapper">
+
+            <android.support.design.widget.TextInputEditText
+                error="@{vm.loginError}"
+                focusCommand="@{vm.focus}"
+                focusTag="@{FocusTarget.LOGIN}"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:enabled="@{!vm.isInProgress}"
+                android:hint="@string/prompt_email"
+                android:inputType="textEmailAddress"
+                android:text="@={vm.login}" />
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.design.widget.TextInputLayout
+            android:id="@+id/password_input_wrapper"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            app:layout_constraintBottom_toTopOf="@+id/login_button"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/email_input_wrapper">
+
+            <android.support.design.widget.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:enabled="@{!vm.isInProgress}"
+                android:hint="@string/prompt_password"
+                android:inputType="textPassword"
+                android:text="@={vm.password}"
+                error="@{vm.passwordError}"
+                focusCommand="@{vm.focus}"
+                focusTag="@{FocusTarget.PASSWORD}"/>
+        </android.support.design.widget.TextInputLayout>
+
+        <Button
+            android:id="@+id/login_button"
+            style="?android:textAppearanceSmall"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:clickable="@{!vm.isInProgress}"
+            android:onClick="@{() -> vm.onLogin()}"
+            android:text='@{vm.isInProgress ? "" : @string/action_sign_in}'
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/password_input_wrapper"
+            tools:text="@string/action_sign_in" />
+
+        <ProgressBar
+            android:id="@+id/login_progress"
+            android:layout_width="match_parent"
+            android:layout_height="33dp"
+            android:layout_alignBottom="@id/login_button"
+            android:layout_alignTop="@id/login_button"
+            android:layout_margin="8dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:elevation="2dp"
+            android:visibility="@{vm.isInProgress ? View.VISIBLE : View.GONE}"
+            app:layout_constraintBottom_toBottomOf="@+id/login_button"
+            app:layout_constraintEnd_toEndOf="@+id/login_button"
+            app:layout_constraintStart_toStartOf="@+id/login_button"
+            app:layout_constraintTop_toTopOf="@+id/login_button"
+            tools:ignore="UnusedAttribute" />
+
+    </android.support.constraint.ConstraintLayout>
+
+
+</layout>

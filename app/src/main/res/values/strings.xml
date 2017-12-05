@@ -1,3 +1,25 @@
 <resources>
-    <string name="app_name">Aurora.Contacts</string>
+    <string name="app_name">Aurora.Contacts&amp;Calendars</string>
+
+    <string name="value_webView_localization">en-GB</string>
+
+    <string name="shared_user_label" translatable="false" >Afterlogic.Aurora</string>
+
+    <string name="prompt_downloaded_file_description">From Aurora.Files</string>
+
+    <string name="app_name_global" translatable="false">Aurora</string>
+
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Log in</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="error_invalid_email">This email address is invalid.</string>
+    <string name="error_incorrect_password">This password is incorrect.</string>
+    <string name="error_field_required">This field is required.</string>
+    <string name="error_unrechable_host">This host is unreachable.</string>
+    <string name="prompt_domain">Server</string>
+    <string name="error_pass_or_login">Invalid login or password.</string>
+    <string name="dialog_ok">Ok</string>
+    <string name="dialog_cancel">Cancel</string>
+
 </resources>

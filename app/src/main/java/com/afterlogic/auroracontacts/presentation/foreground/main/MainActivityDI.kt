@@ -3,6 +3,8 @@ package com.afterlogic.auroracontacts.presentation.foreground.main
 import android.arch.lifecycle.ViewModel
 import com.afterlogic.auroracontacts.presentation.FragmentScope
 import com.afterlogic.auroracontacts.presentation.common.databinding.ViewModelKey
+import com.afterlogic.auroracontacts.presentation.foreground.login.LoginFragment
+import com.afterlogic.auroracontacts.presentation.foreground.login.LoginFragmentModule
 import dagger.Binds
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
@@ -24,7 +26,11 @@ internal abstract class MainActivityModule {
 
     @FragmentScope
     @ContributesAndroidInjector(modules = [MainFragmentModule::class])
-    abstract fun contributeMainFragment(): MainFragment
+    abstract fun bindMain(): MainFragment
+
+    @FragmentScope
+    @ContributesAndroidInjector(modules = [LoginFragmentModule::class])
+    abstract fun bindLogin(): LoginFragment
 
 }
 

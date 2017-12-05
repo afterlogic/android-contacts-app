@@ -9,6 +9,7 @@ import com.afterlogic.auroracontacts.presentation.common.base.MVVMActivity
 import com.afterlogic.auroracontacts.presentation.common.base.ObservableViewModel
 import com.afterlogic.auroracontacts.presentation.common.databinding.get
 import com.afterlogic.auroracontacts.presentation.common.databinding.setContentBinding
+import com.afterlogic.auroracontacts.presentation.foreground.login.LoginFragment
 import javax.inject.Inject
 
 class MainActivity : MVVMActivity<MainViewModel, MainActivityBinding>() {
@@ -21,11 +22,7 @@ class MainActivity : MVVMActivity<MainViewModel, MainActivityBinding>() {
         super.onCreate(savedInstanceState)
 
         supportFragmentManager.beginTransaction()
-                .add(binding.content.id, MainFragment())
-                .commitAllowingStateLoss()
-
-        supportFragmentManager.beginTransaction()
-                .add(binding.content.id, MainFragment())
+                .add(binding.content.id, LoginFragment.instance())
                 .commitAllowingStateLoss()
 
     }
