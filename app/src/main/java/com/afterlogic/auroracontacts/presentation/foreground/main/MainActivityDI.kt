@@ -25,21 +25,7 @@ internal abstract class MainActivityModule {
     abstract fun bindViewModelToMap(vm: MainViewModel): ViewModel
 
     @FragmentScope
-    @ContributesAndroidInjector(modules = [MainFragmentModule::class])
-    abstract fun bindMain(): MainFragment
-
-    @FragmentScope
     @ContributesAndroidInjector(modules = [LoginFragmentModule::class])
     abstract fun bindLogin(): LoginFragment
-
-}
-
-@Module
-internal abstract class MainFragmentModule {
-
-    @Binds
-    @IntoMap
-    @ViewModelKey(MainFragmentViewModel::class)
-    abstract fun bindViewModel(vm: MainFragmentViewModel): ViewModel
 
 }

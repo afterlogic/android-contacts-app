@@ -27,7 +27,7 @@ fun <V: ViewDataBinding> LayoutInflater.inflateBinding(@LayoutRes layoutId: Int,
 private val namesMap = BR::class.java.fields.associate { it.name to it.getInt(null) }
 
 class BindableDelegate<in R: ObservableViewModel, T: Any?>(
-        private var value: T,private var id: Int?
+        private var value: T,private var id: Int?, private  val onChanged: ((T) -> Unit)? = null
 ): ReadWriteProperty<R, T> {
 
     override operator fun getValue(thisRef: R, property: KProperty<*>): T = this.value
@@ -39,6 +39,7 @@ class BindableDelegate<in R: ObservableViewModel, T: Any?>(
         id = id ?: namesMap[property.name]
 
         thisRef.notifyPropertyChanged(id!!)
+        onChanged?.invoke(value)
 
     }
 
@@ -66,8 +67,9 @@ class BindableCommandDelegate<in R: ObservableViewModel, T: Any>(
 
 }
 
-fun <R: ObservableViewModel, T: Any?> bindable(initialValue: T, id: Int? = null):
-        BindableDelegate<R, T> = BindableDelegate(initialValue, id)
+fun <R: ObservableViewModel, T: Any?> bindable(
+        initialValue: T, id: Int? = null, onChanged: ((T) -> Unit)? = null
+): BindableDelegate<R, T> = BindableDelegate(initialValue, id, onChanged)
 
 fun <R: ObservableViewModel, T: Any> bindableCommand(id: Int? = null):
         BindableCommandDelegate<R, T> = BindableCommandDelegate(id)
