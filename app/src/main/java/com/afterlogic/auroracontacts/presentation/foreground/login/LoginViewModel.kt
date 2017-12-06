@@ -91,7 +91,6 @@ class LoginViewModel @Inject constructor(
                 .defaultSchedulers()
                 .doFinally { inProgress = false }
                 .subscribeIt(
-                        onComplete = { toaster.showShort("Success") },
                         onError = SuccessErrorHandler(this::handleLoginError)
                 )
 

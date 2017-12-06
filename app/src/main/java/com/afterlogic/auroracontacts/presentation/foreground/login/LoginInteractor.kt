@@ -1,5 +1,6 @@
 package com.afterlogic.auroracontacts.presentation.foreground.login
 
+import com.afterlogic.auroracontacts.data.account.AccountService
 import com.afterlogic.auroracontacts.data.api.ApiType
 import com.afterlogic.auroracontacts.data.auth.AuthenticatorService
 import com.afterlogic.auroracontacts.data.errors.NotSupportedApiError
@@ -14,7 +15,8 @@ import javax.inject.Inject
  * mail: mail@sunnydaydev.me
  */
 class LoginInteractor @Inject constructor(
-        private val authenticatorService: AuthenticatorService
+        private val authenticatorService: AuthenticatorService,
+        private val accountService: AccountService
 ) {
 
     fun checkHost(host: String): Single<HttpUrl> {
@@ -76,7 +78,7 @@ class LoginInteractor @Inject constructor(
     fun login(host: HttpUrl, email: String, password: String): Completable {
 
         return authenticatorService.login(host, email, password)
-                .toCompletable()
+                .flatMapCompletable(accountService::createOrUpdateAccount)
 
     }
 

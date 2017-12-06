@@ -50,7 +50,6 @@ class AccountService @Inject constructor(context: App) {
 
                     Timber.d("Account: $account")
 
-                    @Suppress("NullableBooleanElvis")
                     if (!account.userData.hasSessionData) {
                         return@map Optional()
                     }
@@ -92,10 +91,9 @@ class AccountService @Inject constructor(context: App) {
 
     }
 
-    private fun createOrUpdateAccount(authData: AuthorizedAuroraSession): Completable {
+    fun createOrUpdateAccount(authData: AuthorizedAuroraSession): Completable {
 
-        return Completable
-                .fromAction { createAccountIfNotExist(authData) }
+        return createAccountIfNotExist(authData)
                 .andThen(updateCurrentAccount(authData))
 
     }
@@ -156,7 +154,6 @@ class AccountService @Inject constructor(context: App) {
             throw AuroraAccountSessionParseError(message)
         }
 
-        @Suppress("NullableBooleanElvis")
         if (!userData.hasSessionData) {
             error("Session has no data")
         }
