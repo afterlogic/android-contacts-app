@@ -9,31 +9,27 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.afterlogic.auroracontacts.BR
-import com.afterlogic.auroracontacts.core.rx.Subscriber
 import com.afterlogic.auroracontacts.core.util.Tagged
 import com.afterlogic.auroracontacts.presentation.common.databinding.ViewModelFactory
-import dagger.android.support.DaggerFragment
-import javax.inject.Inject
 
 /**
  * Created by sunny on 04.12.2017.
  * mail: mail@sunnydaydev.me
  */
-abstract class MVVMFragment<VM: ObservableViewModel, VDB: ViewDataBinding> :
-        DaggerFragment(), Tagged, HasLifecycleDisposables {
+abstract class MVVMFragment
+<out VM: ObservableViewModel, VDB: ViewDataBinding, I: MVVMInjection> :
+        InjectionDaggerFragment<I>(), Tagged, HasLifecycleDisposables {
 
     protected var viewModelKey = BR.vm
 
-    @set:Inject
-    protected lateinit var viewModelFactory: ViewModelFactory
+    private val viewModelFactory by injectable { config.viewModelFactory }
 
-    @set:Inject
-    override lateinit var lifecycleDisposables: LifecycleDisposables
+    override val lifecycleDisposables by injectable { config.lifecycleDisposables }
 
-    @set:Inject
-    override lateinit var subscriber: Subscriber
+    override val subscriber by injectable { config.subscriber }
 
     protected lateinit var binding: VDB
+        private set
 
     protected val viewModel: VM by lazy {
         val provider = getViewModelProvider(viewModelFactory)

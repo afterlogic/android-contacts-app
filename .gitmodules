@@ -1,0 +1,3 @@
+[submodule "signing"]
+	path = signing
+	url = git@gitlab.com:sunnyday.development/Aurora.Sign.git

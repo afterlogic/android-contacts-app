@@ -10,6 +10,9 @@ apply plugin: 'me.sunnydaydev.autoversion'
 
 apply plugin: 'com.github.ben-manes.versions'
 
+project.ext.set("signingFolder", file("../signing").toString())
+apply from: '../signing/signings.gradle'
+
 buildscript {
 
     addRepos(repositories)
@@ -55,10 +58,22 @@ android {
     }
 
     buildTypes {
+
+        debug {
+
+            signingConfig signingConfigs.sign
+
+        }
+
         release {
+
+            signingConfig signingConfigs.sign
+
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
         }
+
     }
 
     sourceSets {

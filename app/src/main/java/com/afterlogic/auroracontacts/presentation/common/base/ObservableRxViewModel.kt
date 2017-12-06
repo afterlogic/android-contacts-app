@@ -12,9 +12,7 @@ import io.reactivex.disposables.Disposable
  * Created by sunny on 05.12.2017.
  * mail: mail@sunnydaydev.me
  */
-abstract class ObservableRxViewModel : ObservableViewModel() {
-
-    abstract protected val subscriber: Subscriber
+abstract class ObservableRxViewModel(private val subscriber: Subscriber) : ObservableViewModel() {
 
     protected val globalDisposable = DisposableBag()
 

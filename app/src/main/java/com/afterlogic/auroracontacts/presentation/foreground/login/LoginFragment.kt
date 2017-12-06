@@ -13,7 +13,7 @@ import com.afterlogic.auroracontacts.presentation.common.databinding.inflateBind
  * Created by sunny on 05.12.2017.
  * mail: mail@sunnydaydev.me
  */
-class LoginFragment: MVVMFragment<LoginViewModel, LoginFragmentBinding>() {
+class LoginFragment: MVVMFragment<LoginViewModel, LoginFragmentBinding, LoginInjection>() {
 
     companion object {
 

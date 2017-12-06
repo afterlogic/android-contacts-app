@@ -5,9 +5,9 @@ package com.afterlogic.auroracontacts.data.account
  * mail: mail@sunnydaydev.me
  */
 
-class AnotherAcountExistError(user: String): Throwable()
+class AnotherAcountExistError(val user: String): Throwable()
 
-class AccountNotExistError(): Throwable()
+class AccountNotExistError: Throwable()
 
 class AccountActionError(val action: AccountActionError.Action): Throwable() {
     enum class Action { REMOVING, ADDING }

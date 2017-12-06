@@ -2,6 +2,7 @@ package com.afterlogic.auroracontacts.presentation.foreground.main
 
 import android.arch.lifecycle.ViewModel
 import com.afterlogic.auroracontacts.presentation.FragmentScope
+import com.afterlogic.auroracontacts.presentation.common.base.MVVMInjection
 import com.afterlogic.auroracontacts.presentation.common.databinding.ViewModelKey
 import com.afterlogic.auroracontacts.presentation.foreground.login.LoginFragment
 import com.afterlogic.auroracontacts.presentation.foreground.login.LoginFragmentModule
@@ -9,6 +10,7 @@ import dagger.Binds
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
 import dagger.multibindings.IntoMap
+import javax.inject.Inject
 
 /**
  * Created by sunny on 04.12.2017.
@@ -29,3 +31,7 @@ internal abstract class MainActivityModule {
     abstract fun bindLogin(): LoginFragment
 
 }
+
+class MainActivityInjection @Inject constructor(
+        override val config: MVVMInjection.Config
+): MVVMInjection

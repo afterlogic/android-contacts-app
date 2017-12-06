@@ -1,34 +1,31 @@
 package com.afterlogic.auroracontacts.presentation.common.base
 
-import android.arch.lifecycle.*
+import android.arch.lifecycle.ViewModelProvider
+import android.arch.lifecycle.ViewModelProviders
 import android.databinding.ViewDataBinding
 import android.os.Bundle
 import android.support.annotation.CallSuper
 import com.afterlogic.auroracontacts.BR
-import com.afterlogic.auroracontacts.core.rx.Subscriber
 import com.afterlogic.auroracontacts.core.util.Tagged
 import com.afterlogic.auroracontacts.presentation.common.databinding.ViewModelFactory
-import dagger.android.support.DaggerAppCompatActivity
-import javax.inject.Inject
 
 /**
  * Created by sunny on 04.12.2017.
  * mail: mail@sunnydaydev.me
  */
 
-abstract class MVVMActivity<VM: ObservableViewModel, VDB: ViewDataBinding> :
-        DaggerAppCompatActivity(), Tagged, HasLifecycleDisposables {
+abstract class MVVMActivity
+<out VM: ObservableViewModel, out VDB: ViewDataBinding, I: MVVMInjection> :
+        InjectionDaggerActivity<I>(), Tagged, HasLifecycleDisposables {
 
     protected var viewModelKey = BR.vm
 
-    @set:Inject
-    protected lateinit var viewModelFactory: ViewModelFactory
+    private val viewModelFactory by injectable { config.viewModelFactory }
 
-    @set:Inject
-    override lateinit var lifecycleDisposables: LifecycleDisposables
+    override val lifecycleDisposables by injectable { config.lifecycleDisposables }
 
-    @set:Inject
-    override lateinit var subscriber: Subscriber
+    override val subscriber by injectable { config.subscriber }
+
 
     protected val binding: VDB by lazy { bindView() }
 

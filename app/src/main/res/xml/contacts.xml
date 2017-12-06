@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContactsAccountType xmlns:android="http://schemas.android.com/apk/res/android">
+    <EditSchema>
+
+        <DataKind
+            kind="name"
+            maxOccurs="1"
+            supportsDisplayName="true"
+            supportsPrefix="true"
+            supportsMiddleName="true"
+            supportsSuffix="true"
+            supportsPhoneticFamilyName="true"
+            supportsPhoneticMiddleName="true"
+            supportsPhoneticGivenName="true" />
+
+        <DataKind kind="nickname" maxOccurs="1" />
+
+        <DataKind kind="photo" maxOccurs="1" />
+
+        <DataKind kind="phone" maxOccurs="6">
+            <Type type="UNKNOWN_DATA_0x18" maxOccurs="1" />
+            <Type type="UNKNOWN_DATA_0x19" maxOccurs="1" />
+            <Type type="UNKNOWN_DATA_0x1a" maxOccurs="1" />
+            <Type type="UNKNOWN_DATA_0x1b" maxOccurs="1" />
+            <Type type="UNKNOWN_DATA_0x1c" maxOccurs="1" />
+            <Type type="UNKNOWN_DATA_0x1d" maxOccurs="1" />
+        </DataKind>
+
+        <DataKind kind="email" maxOccurs="3">
+            <Type type="UNKNOWN_DATA_0x19" maxOccurs="1" />
+            <Type type="UNKNOWN_DATA_0x1a" maxOccurs="1" />
+            <Type type="UNKNOWN_DATA_0x20" maxOccurs="1" />
+        </DataKind>
+
+        <DataKind kind="im" maxOccurs="2">
+            <Type type="UNKNOWN_DATA_0x23" maxOccurs="1" />
+            <Type type="UNKNOWN_DATA_0x24" maxOccurs="1" />
+        </DataKind>
+
+        <DataKind kind="postal" needsStructured="true" maxOccurs="2">
+            <Type type="UNKNOWN_DATA_0x19" maxOccurs="1" needsStructured="true" />
+            <Type type="UNKNOWN_DATA_0x1a" maxOccurs="1" needsStructured="true" />
+        </DataKind>
+
+        <DataKind kind="organization" maxOccurs="1" />
+        <DataKind kind="website" maxOccurs="2" />
+        <DataKind kind="note" maxOccurs="1" />
+
+        <DataKind
+            kind="event"
+            dateWithTime="false"
+            maxOccurs="1">
+            <Type type="UNKNOWN_DATA_0x2d" maxOccurs="1" />
+        </DataKind>
+
+    </EditSchema>
+</ContactsAccountType>

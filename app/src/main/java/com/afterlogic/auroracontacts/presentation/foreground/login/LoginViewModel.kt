@@ -18,10 +18,10 @@ import javax.inject.Inject
 @FragmentScope
 class LoginViewModel @Inject constructor(
         private val interactor: LoginInteractor,
-        override val subscriber: Subscriber,
         private val resources: Resources,
-        protected val toaster: Toaster
-) : ObservableRxViewModel() {
+        protected val toaster: Toaster,
+        subscriber: Subscriber
+) : ObservableRxViewModel(subscriber) {
 
     enum class FocusTarget { DOMAIN, LOGIN, PASSWORD }
 
