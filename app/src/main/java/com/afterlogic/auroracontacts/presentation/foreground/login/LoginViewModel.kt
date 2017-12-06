@@ -86,14 +86,12 @@ class LoginViewModel @Inject constructor(
 
         interactor.checkHost(domain)
                 .shadowError(::CheckHostError)
-                .flatMap { interactor.login(it, login, password) }
+                .flatMapCompletable { interactor.login(it, login, password) }
                 .shadowErrorIfNot(::LoginError)
                 .defaultSchedulers()
                 .doFinally { inProgress = false }
-                .subscribeBy(
-                        onSuccess = {
-                            toaster.showShort("Success")
-                        },
+                .subscribeIt(
+                        onComplete = { toaster.showShort("Success") },
                         onError = SuccessErrorHandler(this::handleLoginError)
                 )
 

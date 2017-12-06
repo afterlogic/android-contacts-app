@@ -3,6 +3,7 @@ package com.afterlogic.auroracontacts.presentation.foreground.login
 import com.afterlogic.auroracontacts.data.api.ApiType
 import com.afterlogic.auroracontacts.data.auth.AuthenticatorService
 import com.afterlogic.auroracontacts.data.errors.NotSupportedApiError
+import io.reactivex.Completable
 import io.reactivex.Maybe
 import io.reactivex.Single
 import okhttp3.HttpUrl
@@ -72,10 +73,10 @@ class LoginInteractor @Inject constructor(
 
     }
 
-    fun login(host: HttpUrl, email: String, password: String): Single<Boolean> {
+    fun login(host: HttpUrl, email: String, password: String): Completable {
 
         return authenticatorService.login(host, email, password)
-                .map { true }
+                .toCompletable()
 
     }
 

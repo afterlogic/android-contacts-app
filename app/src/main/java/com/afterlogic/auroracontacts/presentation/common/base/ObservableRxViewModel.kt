@@ -30,7 +30,7 @@ abstract class ObservableRxViewModel : ObservableViewModel() {
     protected fun <T> Observable<T>.defaultSchedulers() : Observable<T> =
             compose(subscriber::defaultSchedulers)
 
-    protected fun Completable.subscribeBy(
+    protected fun Completable.subscribeIt(
             onError: ErrorHandler? = null,
             onComplete: CompleteHandler? = null
     ) : Disposable {
@@ -41,7 +41,7 @@ abstract class ObservableRxViewModel : ObservableViewModel() {
 
     }
 
-    protected fun <T> Maybe<T>.subscribeBy(
+    protected fun <T> Maybe<T>.subscribeIt(
             onError: ErrorHandler? = null,
             onComplete: CompleteHandler? = null,
             onSuccess: ResultHandler<T>? = null
@@ -53,7 +53,7 @@ abstract class ObservableRxViewModel : ObservableViewModel() {
 
     }
 
-    protected fun <T> Single<T>.subscribeBy(
+    protected fun <T> Single<T>.subscribeIt(
             onError: ErrorHandler? = null,
             onSuccess: ResultHandler<T>? = null
     ) : Disposable {
@@ -64,7 +64,7 @@ abstract class ObservableRxViewModel : ObservableViewModel() {
 
     }
 
-    protected fun <T> Observable<T>.subscribeBy(
+    protected fun <T> Observable<T>.subscribeIt(
             onError: ErrorHandler? = null,
             onComplete: CompleteHandler? = null,
             onNext: ResultHandler<T>? = null

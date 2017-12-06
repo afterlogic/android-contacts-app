@@ -5,6 +5,11 @@ package com.afterlogic.auroracontacts.core.util
  *
  */
 
+inline fun <T: Any, R: Any> T?.toOptional(map: (T) -> R): Optional<R> =
+        this?.let { Optional(map(it)) } ?: Optional()
+
+fun <T: Any> T?.toOptional(): Optional<T> = toOptional { it }
+
 open class Optional<T> {
 
     private var value: T? = null
@@ -33,7 +38,7 @@ open class Optional<T> {
     }
 
     fun ifPresent(consumer: (T) -> Unit) {
-        value?.let(consumer)
+        value?.also(consumer)
     }
 
     fun clear() {
