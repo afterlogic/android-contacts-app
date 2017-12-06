@@ -8,7 +8,7 @@ import android.os.Looper
 import android.widget.Toast
 import com.afterlogic.auroracontacts.R
 import com.afterlogic.auroracontacts.data.account.AccountService
-import com.afterlogic.auroracontacts.presentation.foreground.main.MainActivity
+import com.afterlogic.auroracontacts.presentation.foreground.mainActivity.MainActivity
 
 /**
  * Created by sashka on 05.04.16.

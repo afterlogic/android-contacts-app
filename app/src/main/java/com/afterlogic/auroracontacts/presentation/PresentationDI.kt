@@ -1,7 +1,7 @@
 package com.afterlogic.auroracontacts.presentation
 
-import com.afterlogic.auroracontacts.presentation.foreground.main.MainActivity
-import com.afterlogic.auroracontacts.presentation.foreground.main.MainActivityModule
+import com.afterlogic.auroracontacts.presentation.foreground.mainActivity.MainActivity
+import com.afterlogic.auroracontacts.presentation.foreground.mainActivity.MainActivityModule
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
 import dagger.android.support.AndroidSupportInjectionModule

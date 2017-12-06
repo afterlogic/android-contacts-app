@@ -1,7 +1,6 @@
 package com.afterlogic.auroracontacts.application
 
 import com.afterlogic.auroracontacts.core.rx.Subscriber
-import com.afterlogic.auroracontacts.core.rx.with
 import com.afterlogic.auroracontacts.core.util.Tagged
 import com.afterlogic.auroracontacts.data.account.AccountService
 import dagger.android.AndroidInjector
@@ -33,13 +32,6 @@ class App: DaggerApplication(), Tagged {
         Timber.plant(Timber.DebugTree())
 
         super.onCreate()
-
-        accountService.currentAccountSession
-                .compose(subscriber::defaultSchedulers)
-                .with(subscriber)
-                .subscribe {
-                    Timber.d("Session: ${it.get() ?: "null"}")
-                }
 
     }
 

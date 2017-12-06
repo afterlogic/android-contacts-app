@@ -1,5 +1,7 @@
 <resources>
 
+    <string name="recycler_linear_layout_manager">android.support.v7.widget.LinearLayoutManager</string>
+
     <string name="app_name_global" translatable="false">Aurora</string>
     <string name="shared_user_label" translatable="false" >Afterlogic.Aurora</string>
 

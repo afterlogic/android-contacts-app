@@ -8,7 +8,7 @@
 
         <variable
             name="vm"
-            type="com.afterlogic.auroracontacts.presentation.foreground.main.MainViewModel"/>
+            type="com.afterlogic.auroracontacts.presentation.foreground.mainActivity.MainActivityViewModel"/>
 
     </data>
 
@@ -16,7 +16,7 @@
         android:id="@+id/content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context="com.afterlogic.auroracontacts.presentation.foreground.main.MainActivity">
+        tools:context="com.afterlogic.auroracontacts.presentation.foreground.mainActivity.MainActivity">
 
     </FrameLayout>
 
