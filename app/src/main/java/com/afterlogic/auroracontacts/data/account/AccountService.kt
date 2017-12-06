@@ -7,14 +7,12 @@ import android.os.Build
 import com.afterlogic.auroracontacts.application.App
 import com.afterlogic.auroracontacts.core.rx.toMaybe
 import com.afterlogic.auroracontacts.core.util.Optional
-import com.afterlogic.auroracontacts.core.util.toOptional
-import com.afterlogic.auroracontacts.data.api.ApiType
-import com.afterlogic.auroracontacts.data.api.p7.ApiP7
 import com.afterlogic.auroracontacts.data.auth.model.AuthorizedAuroraSession
 import com.afterlogic.auroracontacts.presentation.AppScope
 import io.reactivex.Completable
 import io.reactivex.Observable
 import okhttp3.HttpUrl
+import timber.log.Timber
 import javax.inject.Inject
 
 /**
@@ -28,7 +26,6 @@ class AccountService @Inject constructor(context: App) {
     companion object {
 
         val ACCOUNT_TYPE = "com.afterlogic.aurora"
-        val FILE_SYNC_AUTHORITY = "com.afterlogic.aurora.filesync.provider"
 
         val ACCOUNT_ID = "account_id"
         val APP_TOKEN = "app_token"
@@ -42,12 +39,28 @@ class AccountService @Inject constructor(context: App) {
 
     private val accountManager = AccountManager.get(context)
 
-    private val currentAccount = Observable.defer { CurrentAccountSource(accountManager) }.cache()
+    private val currentAccount = Observable.defer { CurrentAccountSource(accountManager) }
 
-    val currentAccountSession: Observable<Optional<AuroraSession>>
-        get() = currentAccount
-                .map { it.get().toOptional { it.toSession() } }
+    val currentAccountSession: Observable<Optional<AuroraSession>> get() {
+
+        return currentAccount
+                .map<Optional<AuroraSession>> {
+
+                    val account = it.get() ?: return@map Optional()
+
+                    Timber.d("Account: $account")
+
+                    @Suppress("NullableBooleanElvis")
+                    if (!account.userData.hasSessionData) {
+                        return@map Optional()
+                    }
+
+                    Optional(account.toSession())
+
+                }
                 .distinctUntilChanged { f, s -> f.get() == s.get() }
+
+    }
 
     fun updateCurrentAccount(authData: AuthorizedAuroraSession): Completable {
 
@@ -60,16 +73,19 @@ class AccountService @Inject constructor(context: App) {
                     if (account.name != authData.user) {
                         throw AnotherAcountExistError(account.name)
                     }
+                    
+                    val userData = account.userData
+                    
+                    userData.hasSessionData = true
 
-                    accountManager.setUserData(account, HAS_SESSION, "true")
-
-                    accountManager.setUserData(account, ACCOUNT_ID, authData.accountId.toString())
-                    accountManager.setUserData(account, DOMAIN, authData.domain.toString())
-                    accountManager.setUserData(account, APP_TOKEN, authData.appToken)
-                    accountManager.setUserData(account, ApiP7.Fields.AUTH_TOKEN, authData.authToken)
-                    accountManager.setUserData(account, API_VERSION, authData.apiVersion.toString())
-                    accountManager.setUserData(account, EMAIL, authData.email)
-                    accountManager.setPassword(account, authData.password)
+                    userData[ACCOUNT_ID] = authData.accountId.toString()
+                    userData[DOMAIN] = authData.domain.toString()
+                    userData[APP_TOKEN] = authData.appToken
+                    userData[AUTH_TOKEN] = authData.authToken
+                    userData[API_VERSION] = authData.apiVersion.toString()
+                    userData[EMAIL] = authData.email
+                    
+                    account.password = authData.password
 
                 }
                 .toCompletable()
@@ -134,21 +150,50 @@ class AccountService @Inject constructor(context: App) {
     
     private fun Account.toSession(): AuroraSession {
 
-        val am = accountManager
+        val userData = userData
+
+        fun error(message: String? = null): Nothing {
+            throw AuroraAccountSessionParseError(message)
+        }
+
+        @Suppress("NullableBooleanElvis")
+        if (!userData.hasSessionData) {
+            error("Session has no data")
+        }
 
         return AuroraSession(
                 name,
-                am.getUserData(this, AccountService.APP_TOKEN),
-                am.getUserData(this, AccountService.AUTH_TOKEN),
-                am.getUserData(this, AccountService.ACCOUNT_ID)
-                        .toLongOrNull() ?: -1,
-                am.getUserData(this, AccountService.EMAIL),
-                am.getPassword(this),
-                HttpUrl.parse(am.getUserData(this, AccountService.DOMAIN))!!,
-                am.getUserData(this, AccountService.API_VERSION)
-                        .toIntOrNull() ?: ApiType.UNKNOWN.code
+                userData[APP_TOKEN] ?: error(),
+                userData[AUTH_TOKEN] ?: error(),
+                userData[ACCOUNT_ID]?.toLongOrNull() ?: error(),
+                userData[EMAIL] ?: error(),
+                password ?: error(),
+                userData[DOMAIN]?.let { HttpUrl.parse(it) } ?: error(),
+                userData[API_VERSION]?.toIntOrNull() ?: error()
         )
 
+    }
+    
+    private var Account.password: String?
+        get() = accountManager.getPassword(this)
+        set(value) { accountManager.setPassword(this, value) }
+    
+    private val Account.userData: AccountService.AccountUserData get() = AccountUserData(this)
+
+    private var AccountUserData.hasSessionData: Boolean
+        get() = this[HAS_SESSION]?.toBoolean() == true
+        set(value) { this[HAS_SESSION] = if (value) "true" else "false" }
+    
+    private inner class AccountUserData(private val account: Account) {
+
+        operator fun get(key: String): String? {
+            return accountManager.getUserData(account, key)
+        }
+
+        operator fun set(key: String, value: String?) {
+            accountManager.setUserData(account, key, value)
+        }
+        
     }
 
 }

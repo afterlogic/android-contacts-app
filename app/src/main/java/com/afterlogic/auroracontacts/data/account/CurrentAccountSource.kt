@@ -47,16 +47,24 @@ constructor(private val accountManager: AccountManager) : ObservableSource<Optio
 
             override fun dispose() {
                 observers.remove(observer)
-                if (observers.isEmpty()) {
-                    stop()
-                }
+                checkState()
             }
 
         })
 
-        if (observers.contains(observer)) {
-            start()
-            lastResult?.let { observer.onNext(it) }
+        checkState()
+
+        lastResult?.takeIf { observers.contains(observer) } ?.let { observer.onNext(it) }
+
+    }
+
+    private fun checkState() {
+
+        synchronized(observers) {
+
+            if (observers.isNotEmpty()) start()
+            else stop()
+
         }
 
     }
