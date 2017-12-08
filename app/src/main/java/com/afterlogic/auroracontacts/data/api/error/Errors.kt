@@ -6,3 +6,5 @@ package com.afterlogic.auroracontacts.data.api.error
  */
 
 class ApiReturnedError(val code: Int, message: String?): Throwable(message)
+
+class UserNotAuthorizedException(): Throwable("User not authorized.")
