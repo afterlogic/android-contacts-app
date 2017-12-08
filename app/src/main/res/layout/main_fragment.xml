@@ -14,6 +14,8 @@
     <android.support.v7.widget.RecyclerView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:paddingBottom="8dp"
+        android:clipToPadding="false"
         app:layoutManager="@string/recycler_linear_layout_manager"
         main_contentHeader="@{vm}"
         main_cards="@{vm.cards}"

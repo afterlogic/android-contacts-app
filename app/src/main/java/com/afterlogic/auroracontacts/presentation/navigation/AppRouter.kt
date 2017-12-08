@@ -7,13 +7,11 @@ import ru.terrakok.cicerone.Router
  * mail: mail@sunnydaydev.me
  */
 
-class AppRouter : Router() {
+object Screens {
 
-    companion object {
-
-        const val LOGIN = "login"
-        const val MAIN = "main"
-
-    }
+    const val LOGIN = "login"
+    const val MAIN = "main"
 
 }
+
+class AppRouter : Router()

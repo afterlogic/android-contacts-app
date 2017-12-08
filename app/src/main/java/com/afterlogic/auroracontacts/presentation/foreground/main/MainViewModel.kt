@@ -16,4 +16,12 @@ class MainViewModel @Inject constructor(
 
     val cards: ObservableList<CardViewModel> = ObservableArrayList()
 
+    init {
+        cards.addAll(arrayOf(
+                CardViewModel("Contacts", emptyList()),
+                CardViewModel("Calendars", emptyList()),
+                CardViewModel("Any", emptyList())
+        ))
+    }
+
 }

@@ -17,4 +17,10 @@ object ViewBindings {
         }
     }
 
+    @JvmStatic
+    @BindingAdapter("performClick")
+    fun bindPerformClick(view: View, target: View) {
+        view.setOnClickListener { target.performClick() }
+    }
+
 }

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="periodic_syncs_names">
+        <item>Off</item>
+        <item>Every hour</item>
+        <item>Every 6 hours</item>
+        <item>Every 12 hours</item>
+        <item>Every day</item>
+    </array>
+    <array name="periodic_syncs_values">
+        <item>0</item>
+        <item>3600</item>
+        <item>21600</item>
+        <item>43200</item>
+        <item>86400</item>
+    </array>
+</resources>

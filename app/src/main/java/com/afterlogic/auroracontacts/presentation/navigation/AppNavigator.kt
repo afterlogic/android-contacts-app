@@ -23,8 +23,8 @@ class AppNavigator @Inject constructor(
 
     override fun createFragment(screenKey: String, data: Any?): Fragment? = when(screenKey) {
 
-        AppRouter.LOGIN -> LoginFragment.instance()
-        AppRouter.MAIN -> MainFragment.instance()
+        Screens.LOGIN -> LoginFragment.instance()
+        Screens.MAIN -> MainFragment.instance()
 
         else -> null
 

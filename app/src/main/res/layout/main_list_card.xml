@@ -30,7 +30,7 @@
                 android:layout_height="wrap_content"
                 android:padding="8dp"
                 android:background="@color/colorPrimary"
-                android:textColor="@color/white"
+                android:textColor="@color/palette_white"
                 android:textStyle="bold"
                 android:gravity="center"
                 android:text="@{vm.title}"
@@ -38,7 +38,7 @@
 
             <android.support.v7.widget.RecyclerView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="300dp"
                 app:layoutManager="@string/recycler_linear_layout_manager"
                 main_card_items="@{vm.items}"
                 tools:layout_height="300dp"

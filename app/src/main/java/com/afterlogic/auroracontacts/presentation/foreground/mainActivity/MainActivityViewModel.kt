@@ -5,6 +5,7 @@ import com.afterlogic.auroracontacts.data.account.AccountService
 import com.afterlogic.auroracontacts.presentation.ActivityScope
 import com.afterlogic.auroracontacts.presentation.common.base.ObservableRxViewModel
 import com.afterlogic.auroracontacts.presentation.navigation.AppRouter
+import com.afterlogic.auroracontacts.presentation.navigation.Screens
 import javax.inject.Inject
 
 @ActivityScope
@@ -21,10 +22,10 @@ class MainActivityViewModel @Inject constructor(
                 .distinctUntilChanged()
                 .retry()
                 .defaultSchedulers()
-                .subscribe {
+                .subscribeIt {
                     router.newRootScreen(
-                            if (it) AppRouter.MAIN
-                            else AppRouter.LOGIN
+                            if (it) Screens.MAIN
+                            else Screens.LOGIN
                     )
                 }
 

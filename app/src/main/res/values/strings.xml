@@ -9,13 +9,24 @@
 
     <string name="value_webView_localization">en-GB</string>
 
-    <string name="prompt_email">Email</string>
-    <string name="prompt_password">Password</string>
+    <string name="action_logout_with_name">Logout %s</string>
     <string name="action_sign_in">Log in</string>
     <string name="action_sign_in_short">Sign in</string>
+
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
     <string name="prompt_domain">Server</string>
-    <string name="dialog_ok">Ok</string>
-    <string name="dialog_cancel">Cancel</string>
+    <string name="prompt_automatic_sync">Automatic sync:</string>
+    <string name="prompt_button_repeat">Repeat</string>
+    <string name="prompt_connection_error">Connection to server failed.</string>
+    <string name="prompt_error_occurred">Error occurred.</string>
+    <string name="prompt_main_calendars_title">Calendars</string>
+    <string name="prompt_main_contacts_title">Contacts</string>
+    <string name="prompt_main_sync_button">Sync</string>
+    <string name="prompt_main_title">Set checked on what you want to synchronize:</string>
+    <string name="prompt_on_local_changes">On local changes</string>
+    <string name="prompt_on_timer">On timer</string>
+    <string name="prompt_toast_sync_will_restart">Sync will be restarted.</string>
 
     <string name="error_pass_or_login">Invalid login or password.</string>
     <string name="error_connection_to_domain">Connection to server failed.</string>
@@ -24,5 +35,21 @@
     <string name="error_field_required">This field is required.</string>
     <string name="error_unrechable_host">This host is unreachable.</string>
     <string name="error_add_more_than_one_account">Only one Aurora account may be signed in at a time. You must remove your current account before adding a new one.</string>
+    <string name="error_adding_aurora_account">Adding Aurora account was failed.</string>
+    <string name="error_default_api_error">Request was failed.</string>
+
+    <string name="dialog_ok">Ok</string>
+    <string name="dialog_cancel">Cancel</string>
+    <string name="dialog_button_no">No</string>
+    <string name="dialog_button_yes">Yes</string>
+    <string name="dialog_error_message">Failed calendar and contact\'s data updating. Repeat?</string>
+    <string name="dialog_error_title">Error</string>
+    <string name="dialog_progress">Updating</string>
+    <string name="dialog_prompt_processing">Processing…</string>
+
+    <string name="value_contacts_all">All</string>
+    <string name="value_contacts_personal">Personal</string>
+    <string name="value_contacts_shared">Shared to all</string>
+    <string name="value_contacts_team">Team</string>
 
 </resources>

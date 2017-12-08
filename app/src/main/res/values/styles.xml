@@ -1,14 +1,51 @@
 <resources>
 
+    <style name="App"/>
+
+    <attr name="colorTextNormal" format="color"/>
+    <attr name="colorTextControl" format="color"/>
+
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="App.Theme" parent="Theme.AppCompat.Light.DarkActionBar">
         <!-- Customize your theme here. -->
+
+        <!-- Define attributes -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
 
         <item name="colorButtonNormal">@color/colorPrimary</item>
 
+        <item name="colorTextControl">@color/colorPrimaryText</item>
+        <item name="colorTextNormal">@color/colorSecondaryText</item>
+
+        <!-- Define styles -->
+
+        <item name="buttonStyle">@style/App.Style.Button</item>
+        <item name="switchStyle">@style/App.Style.Switch</item>
+        <item name="spinnerStyle">@style/App.Style.Spinner</item>
+        <item name="android:spinnerItemStyle">@style/App.Style.SpinnerDropDownItem</item>
+        <item name="spinnerDropDownItemStyle">@style/App.Style.SpinnerDropDownItem</item>
+
+        <item name="android:textColor">?attr/colorTextNormal</item>
+
+    </style>
+
+    <style name="App.Style"/>
+
+    <style name="App.Style.Button" parent="Widget.AppCompat.Button">
+        <item name="android:textColor">@color/palette_white</item>
+    </style>
+
+    <style name="App.Style.Switch" parent="Widget.AppCompat.CompoundButton.Switch">
+        <item name="android:textColor">?attr/colorTextControl</item>
+    </style>
+
+    <style name="App.Style.Spinner" parent="Widget.AppCompat.Spinner">
+    </style>
+
+    <style name="App.Style.SpinnerDropDownItem" parent="Widget.AppCompat.Light.DropDownItem.Spinner">
+        <item name="android:textColor">?attr/colorTextControl</item>
     </style>
 
 </resources>

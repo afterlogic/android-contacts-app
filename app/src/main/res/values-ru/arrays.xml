@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="periodic_syncs_names">
+        <item>Выключена</item>
+        <item>Каждый час</item>
+        <item>Каждые 6 часов</item>
+        <item>Каждые 12 часов</item>
+        <item>Каждый день</item>
+    </array>
+</resources>

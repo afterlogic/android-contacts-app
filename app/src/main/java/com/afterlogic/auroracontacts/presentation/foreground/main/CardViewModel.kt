@@ -7,3 +7,6 @@ package com.afterlogic.auroracontacts.presentation.foreground.main
 data class CardViewModel(val title: String, val items: List<CardItemViewModel>)
 
 class CardItemViewModel
+
+
+class CardItemColorizedViewModel

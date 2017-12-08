@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Aurora Контакты и Календари</string>
+
+    <string name="action_sign_in">Войти</string>
+    <string name="action_sign_in_short">Войти</string>
+    <string name="action_logout_with_name">Выйти из %s</string>
+
+    <string name="dialog_button_no">Нет</string>
+    <string name="dialog_button_yes">Да</string>
+    <string name="dialog_cancel">Отмена</string>
+    <string name="dialog_error_message">Не удалось обновить данные календарей и контактов. Повторить?</string>
+    <string name="dialog_error_title">Ошибка</string>
+    <string name="dialog_ok">Ok</string>
+    <string name="dialog_progress">Обновление данных</string>
+    <string name="dialog_prompt_processing">Выполняется…</string>
+
+    <string name="error_add_more_than_one_account">Нельзя добавить еще один аккаунт Aurora. Сначала удалите существующий.</string>
+    <string name="error_adding_aurora_account">Не удалось добавить акканунт Aurora.</string>
+    <string name="error_connection_to_domain">Не удалось соедениться с сервером.</string>
+    <string name="error_default_api_error">Во время выполнения запроса произошла ошибка.</string>
+    <string name="error_field_required">Обязательное поле.</string>
+    <string name="error_incorrect_password">Неправильный пароль.</string>
+    <string name="error_invalid_email">Введен неправильный e-mail.</string>
+    <string name="error_pass_or_login">Неправильный логин или пароль.</string>
+    <string name="error_unrechable_host">Этот хост недоступен.</string>
+
+    <string name="prompt_automatic_sync">Автоматическая синхронизация:</string>
+    <string name="prompt_button_repeat">Повторить</string>
+    <string name="prompt_connection_error">Ошибка. Не удалось соедениться с сервером.</string>
+    <string name="prompt_domain">Сервер</string>
+    <string name="prompt_email">E-mail</string>
+    <string name="prompt_error_occurred">Произошла ошибка.</string>
+    <string name="prompt_main_calendars_title">Календари</string>
+    <string name="prompt_main_contacts_title">Контакты</string>
+    <string name="prompt_main_sync_button">Синхронизировать</string>
+    <string name="prompt_main_title">Отметьте что необходимо синхронизировать:</string>
+    <string name="prompt_on_local_changes">При локальных изменениях</string>
+    <string name="prompt_on_timer">Периодическая</string>
+    <string name="prompt_password">Пароль</string>
+    <string name="prompt_toast_sync_will_restart">Синхронизация будет перезапущена.</string>
+
+    <string name="value_contacts_all">Все</string>
+    <string name="value_contacts_personal">Личные</string>
+    <string name="value_contacts_shared">Доступные всем</string>
+    <string name="value_contacts_team">Коллеги</string>
+
+</resources>
