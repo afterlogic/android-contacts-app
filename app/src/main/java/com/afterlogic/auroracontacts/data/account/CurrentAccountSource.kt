@@ -7,6 +7,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import com.afterlogic.auroracontacts.core.util.Optional
+import com.afterlogic.auroracontacts.core.util.compareAndSet
 import com.afterlogic.auroracontacts.core.util.toOptional
 import io.reactivex.ObservableSource
 import io.reactivex.Observer
@@ -71,17 +72,19 @@ constructor(private val accountManager: AccountManager) : ObservableSource<Optio
 
     private fun start() {
 
-        if (started.getAndSet(true)) return
+        started.compareAndSet(true) {
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
-            accountManager.addOnAccountsUpdatedListener(
-                    listener, handler, true, arrayOf(AccountService.ACCOUNT_TYPE)
-            )
+                accountManager.addOnAccountsUpdatedListener(
+                        listener, handler, true, arrayOf(AccountService.ACCOUNT_TYPE)
+                )
 
-        } else {
+            } else {
 
-            accountManager.addOnAccountsUpdatedListener(listener, handler, true)
+                accountManager.addOnAccountsUpdatedListener(listener, handler, true)
+
+            }
 
         }
 
@@ -89,11 +92,13 @@ constructor(private val accountManager: AccountManager) : ObservableSource<Optio
 
     private fun stop() {
 
-        if (!started.getAndSet(false)) return
+        started.compareAndSet(false) {
 
-        accountManager.removeOnAccountsUpdatedListener(listener)
+            accountManager.removeOnAccountsUpdatedListener(listener)
 
-        lastResult = null
+            lastResult = null
+
+        }
 
     }
 

@@ -4,7 +4,7 @@ import com.afterlogic.auroracontacts.core.rx.DisposableBag
 import com.afterlogic.auroracontacts.core.rx.Subscriber
 import com.afterlogic.auroracontacts.data.account.AccountService
 import com.afterlogic.auroracontacts.data.account.AuroraSession
-import com.afterlogic.auroracontacts.data.api.error.UserNotAuthorizedException
+import com.afterlogic.auroracontacts.data.api.UserNotAuthorizedException
 import com.afterlogic.auroracontacts.presentation.common.base.Subscribable
 import retrofit2.Converter
 import retrofit2.Retrofit
@@ -40,7 +40,7 @@ class AuthConverterFactoryP7 @Inject constructor(
 
         accountService.currentAccountSession
                 .retry()
-                .defaultSchedulers()
+                //.defaultSchedulers()
                 .subscribeIt { currentSession = it.get() }
 
     }

@@ -1,16 +1,16 @@
-package com.afterlogic.auroracontacts.data.api.p7
+package com.afterlogic.auroracontacts.data.p7.api
 
-import com.afterlogic.auroracontacts.data.api.p7.ApiP7.AJAX
-import com.afterlogic.auroracontacts.data.api.p7.ApiP7.Fields.ACCOUNT_ID
-import com.afterlogic.auroracontacts.data.api.p7.ApiP7.Fields.ACTION
-import com.afterlogic.auroracontacts.data.api.p7.ApiP7.Fields.AUTH_TOKEN
-import com.afterlogic.auroracontacts.data.api.p7.ApiP7.Fields.TOKEN
 import com.afterlogic.auroracontacts.data.api.p7.model.ApiResponseP7
 import com.afterlogic.auroracontacts.data.api.p7.model.CalendarEventP7
 import com.afterlogic.auroracontacts.data.api.p7.model.CalendarP7
 import com.afterlogic.auroracontacts.data.api.p7.util.Auth
 import com.afterlogic.auroracontacts.data.api.p7.util.AuthValue
-import com.afterlogic.auroracontacts.data.api.util.BooleanInt
+import com.afterlogic.auroracontacts.data.p7.api.ApiP7.AJAX
+import com.afterlogic.auroracontacts.data.p7.api.ApiP7.Fields.ACCOUNT_ID
+import com.afterlogic.auroracontacts.data.p7.api.ApiP7.Fields.ACTION
+import com.afterlogic.auroracontacts.data.p7.api.ApiP7.Fields.AUTH_TOKEN
+import com.afterlogic.auroracontacts.data.p7.api.ApiP7.Fields.TOKEN
+import com.afterlogic.auroracontacts.data.util.BooleanInt
 import io.reactivex.Single
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded

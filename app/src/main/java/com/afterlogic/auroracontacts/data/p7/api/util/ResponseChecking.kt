@@ -1,6 +1,7 @@
 package com.afterlogic.auroracontacts.data.api.p7.util
 
-import com.afterlogic.auroracontacts.data.api.error.ApiReturnedError
+import com.afterlogic.auroracontacts.data.api.ApiReturnedError
+import com.afterlogic.auroracontacts.data.api.ApiType
 import com.afterlogic.auroracontacts.data.api.p7.model.ApiResponseP7
 import io.reactivex.Single
 
@@ -12,7 +13,7 @@ import io.reactivex.Single
 fun <T> Single<ApiResponseP7<T>>.checkResponse(): Single<ApiResponseP7<T>> {
     return flatMap {
         if (it.isSuccess) Single.just(it)
-        else Single.error(ApiReturnedError(it.errorCode ?: -1, it.errorMessage))
+        else Single.error(ApiReturnedError(it.errorCode ?: -1, ApiType.P7, it.errorMessage))
     }
 }
 

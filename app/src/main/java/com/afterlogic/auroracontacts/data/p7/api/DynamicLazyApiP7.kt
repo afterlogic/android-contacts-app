@@ -1,4 +1,4 @@
-package com.afterlogic.auroracontacts.data.api.p7
+package com.afterlogic.auroracontacts.data.p7.api
 
 import com.afterlogic.auroracontacts.data.api.P7
 import com.afterlogic.auroracontacts.presentation.AppScope

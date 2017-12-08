@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.afterlogic.auroracontacts"
     android:sharedUserId="com.afterlogic.aurora.app"
     android:sharedUserLabel="@string/shared_user_label" >
@@ -15,7 +16,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/App.Theme"
-        android:name=".application.App">
+        android:name=".application.App"
+        android:networkSecurityConfig="@xml/network_security_config"
+        tools:ignore="UnusedAttribute">
 
         <activity android:name=".presentation.foreground.mainActivity.MainActivity">
             <intent-filter>

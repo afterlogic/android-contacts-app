@@ -3,7 +3,7 @@ package com.afterlogic.auroracontacts.presentation.foreground.login
 import com.afterlogic.auroracontacts.data.account.AccountService
 import com.afterlogic.auroracontacts.data.api.ApiType
 import com.afterlogic.auroracontacts.data.auth.AuthenticatorService
-import com.afterlogic.auroracontacts.data.errors.NotSupportedApiError
+import com.afterlogic.auroracontacts.data.NotSupportedApiError
 import io.reactivex.Completable
 import io.reactivex.Maybe
 import io.reactivex.Single

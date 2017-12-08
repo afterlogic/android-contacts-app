@@ -1,7 +1,7 @@
-package com.afterlogic.auroracontacts.data.auth
+package com.afterlogic.auroracontacts.data.p7.auth
 
-import com.afterlogic.auroracontacts.data.api.p7.AuthApiP7
-import com.afterlogic.auroracontacts.data.api.p7.DynamicLazyApiP7
+import com.afterlogic.auroracontacts.data.p7.api.AuthApiP7
+import com.afterlogic.auroracontacts.data.p7.api.DynamicLazyApiP7
 import com.afterlogic.auroracontacts.data.api.p7.model.AuthTokenP7
 import com.afterlogic.auroracontacts.data.api.p7.model.SystemAppDataP7
 import com.afterlogic.auroracontacts.data.api.p7.util.checkResponseAndGetData

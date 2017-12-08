@@ -1,4 +1,4 @@
-package com.afterlogic.auroracontacts.data.api.p7
+package com.afterlogic.auroracontacts.data.p7.api
 
 /**
  * Created by sashka on 10.10.16.

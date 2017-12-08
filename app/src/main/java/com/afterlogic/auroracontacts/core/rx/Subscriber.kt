@@ -30,8 +30,8 @@ class Subscriber @Inject constructor(private val toaster: Toaster) {
             onComplete: (() -> Unit)? = null): AnyObserver<T> {
 
         val line = Thread.currentThread().stackTrace
-                .dropWhile { !it.className.startsWith(classPackage) }
-                .dropWhile { it.className.startsWith(classPackage) }
+                .dropWhile { !isSubscriberLog(it) }
+                .dropWhile(this::isSubscriberLog)
                 .first()
 
         val errorHandler: (Throwable) -> Unit = lambda@ {
@@ -160,6 +160,10 @@ class Subscriber @Inject constructor(private val toaster: Toaster) {
         }
 
     }
+
+    private fun isSubscriberLog(element: StackTraceElement): Boolean =
+            element.fileName == "Subscriber.kt" || element.fileName == "Subscribable.kt" ||
+                    element.fileName == "ObservableRxViewModel"
 
     inner class UnhandledError(
             line: StackTraceElement, cause: Throwable

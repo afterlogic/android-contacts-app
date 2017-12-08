@@ -1,0 +1,30 @@
+package com.afterlogic.auroracontacts.data.p7.calendars
+
+import com.afterlogic.auroracontacts.data.account.AccountService
+import com.afterlogic.auroracontacts.data.api.p7.model.CalendarEventP7
+import com.afterlogic.auroracontacts.data.api.p7.model.CalendarP7
+import com.afterlogic.auroracontacts.data.api.p7.util.checkResponseAndGetData
+import com.afterlogic.auroracontacts.data.p7.api.CalendarApiP7
+import com.afterlogic.auroracontacts.data.p7.api.DynamicLazyApiP7
+import com.afterlogic.auroracontacts.data.p7.common.AuthorizedService
+import com.afterlogic.auroracontacts.data.util.BooleanInt
+import io.reactivex.Single
+import javax.inject.Inject
+
+/**
+ * Created by sunny on 08.12.2017.
+ * mail: mail@sunnydaydev.me
+ */
+class CalendarsCloudServiceP7 @Inject constructor(
+        dynamicLazyApiP7: DynamicLazyApiP7<CalendarApiP7>,
+        accountService: AccountService
+) : AuthorizedService<CalendarApiP7>(dynamicLazyApiP7, accountService) {
+
+    fun getCalendars(): Single<List<CalendarP7>> = api.flatMap { it.getCalendars() }
+            .checkResponseAndGetData()
+
+    fun getCalendarEvents(calendarId: String) : Single<List<CalendarEventP7>> = api
+            .flatMap { it.getEvents(listOf(calendarId), BooleanInt(true)) }
+            .checkResponseAndGetData { it.data!![calendarId]!! }
+
+}

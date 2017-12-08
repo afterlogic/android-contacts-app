@@ -1,4 +1,4 @@
-package com.afterlogic.auroracontacts.data.api.p7
+package com.afterlogic.auroracontacts.data.p7.api
 
 import com.afterlogic.auroracontacts.BuildConfig
 import com.afterlogic.auroracontacts.core.gson.registerTypeAdapter

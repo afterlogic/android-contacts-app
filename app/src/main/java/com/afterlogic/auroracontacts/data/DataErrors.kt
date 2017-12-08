@@ -1,4 +1,4 @@
-package com.afterlogic.auroracontacts.data.errors
+package com.afterlogic.auroracontacts.data
 
 import com.afterlogic.auroracontacts.data.api.ApiType
 

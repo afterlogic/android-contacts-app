@@ -1,10 +1,11 @@
-package com.afterlogic.auroracontacts.data.auth
+package com.afterlogic.auroracontacts.data.p7.auth
 
 import com.afterlogic.auroracontacts.data.api.ApiType
-import com.afterlogic.auroracontacts.data.api.error.ApiReturnedError
+import com.afterlogic.auroracontacts.data.api.ApiReturnedError
 import com.afterlogic.auroracontacts.data.api.p7.model.SystemAppDataP7
+import com.afterlogic.auroracontacts.data.auth.AuthenticatorSubService
 import com.afterlogic.auroracontacts.data.auth.model.AuthorizedAuroraSession
-import com.afterlogic.auroracontacts.data.errors.IllegalApiDataException
+import com.afterlogic.auroracontacts.data.IllegalApiDataException
 import com.google.gson.JsonSyntaxException
 import io.reactivex.Single
 import okhttp3.HttpUrl

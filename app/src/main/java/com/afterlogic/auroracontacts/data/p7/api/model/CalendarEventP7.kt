@@ -4,11 +4,11 @@ import com.google.gson.annotations.SerializedName
 
 data class CalendarEventP7(
     @SerializedName("Data")
-    val data: String? = null,
+    val data: String?,
     @SerializedName("ETag")
-    val eTag: String? = null,
+    val eTag: String,
     @SerializedName("LastModified")
-    val lastModified: String? = null,
+    val lastModified: String,
     @SerializedName("Url")
-    val url: String? = null
+    val url: String
 )

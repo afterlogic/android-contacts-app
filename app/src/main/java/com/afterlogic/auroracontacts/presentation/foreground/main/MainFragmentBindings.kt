@@ -16,15 +16,21 @@ import com.github.nitrico.lastadapter.Type
 object MainFragmentBindings {
 
     @JvmStatic
-    @BindingAdapter("main_contentHeader", "main_cards")
-    fun bindContent(list: RecyclerView, vm: MainViewModel, cards: List<CardViewModel>) {
+    @BindingAdapter("main_contentHeader", "main_cards", "main_progress")
+    fun bindContent(list: RecyclerView, vm: MainViewModel, cards: List<CardViewModel>, progress: Boolean) {
 
-        val items =  listOf(vm) + cards
-
-        LastAdapter(items, BR.vm)
+        listOf(vm)
+                .let {
+                    if (progress) it + progress
+                    else it + cards
+                }
+                .let { LastAdapter(it, BR.vm) }
                 .type { _, i ->
-                    if (i == 0) Type<MainListHeaderBinding>(R.layout.main_list_header)
-                    else Type<MainListCardBinding>(R.layout.main_list_card)
+                    when {
+                        i == 0 -> Type<MainListHeaderBinding>(R.layout.main_list_header)
+                        progress -> Type<MainListHeaderBinding>(R.layout.main_list_progress)
+                        else -> Type<MainListCardBinding>(R.layout.main_list_card)
+                    }
                 }
                 .into(list)
 
@@ -32,10 +38,11 @@ object MainFragmentBindings {
 
     @JvmStatic
     @BindingAdapter("main_card_items")
-    fun bindCardContent(list: RecyclerView, items: List<CardItemViewModel>) {
+    fun bindCardContent(list: RecyclerView, items: List<ContactItemViewModel>) {
 
         LastAdapter(items, BR.vm)
-                .map<CardItemViewModel>(R.layout.main_list_card_item)
+                .map<ContactItemViewModel>(R.layout.main_list_card_item)
+                .map<CalendarItemViewModel>(R.layout.main_list_card_item_colorized)
                 .into(list)
 
     }

@@ -19,6 +19,7 @@
         app:layoutManager="@string/recycler_linear_layout_manager"
         main_contentHeader="@{vm}"
         main_cards="@{vm.cards}"
+        main_progress="@{vm.loadingData}"
         tools:listitem="@layout/main_list_card">
 
     </android.support.v7.widget.RecyclerView>

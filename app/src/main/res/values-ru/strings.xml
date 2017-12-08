@@ -12,8 +12,8 @@
     <string name="dialog_cancel">Отмена</string>
     <string name="dialog_error_message">Не удалось обновить данные календарей и контактов. Повторить?</string>
     <string name="dialog_error_title">Ошибка</string>
-    <string name="dialog_ok">Ok</string>
-    <string name="dialog_progress">Обновление данных</string>
+    <string name="dialog_ok">OK</string>
+    <string name="dialog_progress">Обновление данных…</string>
     <string name="dialog_prompt_processing">Выполняется…</string>
 
     <string name="error_add_more_than_one_account">Нельзя добавить еще один аккаунт Aurora. Сначала удалите существующий.</string>

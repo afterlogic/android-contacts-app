@@ -8,23 +8,23 @@ data class CalendarP7(
         @SerializedName("CTag")
     val cTag: String? = null,
         @SerializedName("Color")
-    val color: String? = null,
+    val color: String,
         @SerializedName("Description")
-    val description: String? = null,
+    val description: String?,
         @SerializedName("Etag")
-    val eTag: String? = null,
+    val eTag: String,
         @SerializedName("ExportHash")
     val exportHash: String? = null,
         @SerializedName("Id")
-    val id: String? = null,
+    val id: String,
         @SerializedName("IsDefault")
     val isDefault: Boolean = false,
         @SerializedName("IsPublic")
     val isPublic: Boolean = false,
         @SerializedName("Name")
-    val name: String? = null,
+    val name: String,
         @SerializedName("Owner")
-    val owner: String? = null,
+    val owner: String,
         @SerializedName("PrincipalId")
     val principalId: String? = null,
         @SerializedName("PrincipalUrl")

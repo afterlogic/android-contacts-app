@@ -1,4 +1,4 @@
-package com.afterlogic.auroracontacts.data.api.util
+package com.afterlogic.auroracontacts.data.util
 
 data class BooleanInt(private val booleanValue: Boolean) {
 
