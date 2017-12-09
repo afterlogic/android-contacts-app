@@ -2,10 +2,7 @@ package com.afterlogic.auroracontacts.presentation.common.base
 
 import android.support.annotation.CallSuper
 import com.afterlogic.auroracontacts.core.rx.*
-import io.reactivex.Completable
-import io.reactivex.Maybe
-import io.reactivex.Observable
-import io.reactivex.Single
+import io.reactivex.*
 import io.reactivex.disposables.Disposable
 
 interface Subscribable {
@@ -27,6 +24,9 @@ interface Subscribable {
             compose(subscriber::defaultSchedulers)
 
     fun <T> Observable<T>.defaultSchedulers() : Observable<T> =
+            compose(subscriber::defaultSchedulers)
+
+    fun <T> Flowable<T>.defaultSchedulers() : Flowable<T> =
             compose(subscriber::defaultSchedulers)
 
     fun Completable.subscribeIt(
@@ -64,6 +64,18 @@ interface Subscribable {
     }
 
     fun <T> Observable<T>.subscribeIt(
+            onError: ErrorHandler? = null,
+            onComplete: CompleteHandler? = null,
+            onNext: ResultHandler<T>? = null
+    ) : Disposable {
+
+        return disposeBy(globalDisposable)
+                .with(subscriber)
+                .subscribe(onError, onComplete, onNext)
+
+    }
+
+    fun <T> Flowable<T>.subscribeIt(
             onError: ErrorHandler? = null,
             onComplete: CompleteHandler? = null,
             onNext: ResultHandler<T>? = null

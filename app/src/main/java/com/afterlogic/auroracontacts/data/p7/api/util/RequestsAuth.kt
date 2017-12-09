@@ -38,7 +38,7 @@ class AuthConverterFactoryP7 @Inject constructor(
 
     init {
 
-        accountService.currentAccountSession
+        accountService.accountSession
                 .retry()
                 //.defaultSchedulers()
                 .subscribeIt { currentSession = it.get() }

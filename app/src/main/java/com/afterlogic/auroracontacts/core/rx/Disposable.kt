@@ -1,10 +1,11 @@
 package com.afterlogic.auroracontacts.core.rx
 
 import com.afterlogic.auroracontacts.core.util.Optional
+import com.afterlogic.auroracontacts.core.util.compareAndSet
 import io.reactivex.*
-import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
 import org.reactivestreams.Subscription
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
 /**
@@ -90,6 +91,31 @@ class DisposableBag {
                 .doFinally { disposableHolder.get()?.let { remove(it) } }
     }
 
+    fun <T> track(upstream: Flowable<T>): Flowable<T> {
+        val disposableHolder = AtomicReference<Disposable?>(null)
+        return upstream
+                .doOnSubscribe {
+
+                    val disposable = object : Disposable {
+
+                        private val disposed = AtomicBoolean(false)
+
+                        override fun isDisposed(): Boolean = disposed.get()
+
+                        override fun dispose() {
+                            disposed.compareAndSet(true) {
+                                it.cancel()
+                            }
+                        }
+
+                    }
+
+                    disposableHolder.set(disposable)
+                    add(disposable)
+                }
+                .doFinally { disposableHolder.get()?.let { remove(it) } }
+    }
+
 }
 
 fun Completable.disposeBy(bag: DisposableBag): Completable = compose { bag.track(it) }
@@ -100,7 +126,7 @@ fun <T> Single<T>.disposeBy(bag: DisposableBag): Single<T> = compose { bag.track
 
 fun <T> Observable<T>.disposeBy(bag: DisposableBag): Observable<T> = compose { bag.track(it) }
 
-
+fun <T> Flowable<T>.disposeBy(bag: DisposableBag): Flowable<T> = compose { bag.track(it) }
 
 
 class OptionalDisposable : Optional<Disposable>() {

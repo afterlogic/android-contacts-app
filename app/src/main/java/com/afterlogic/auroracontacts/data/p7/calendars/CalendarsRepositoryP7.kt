@@ -5,7 +5,7 @@ import com.afterlogic.auroracontacts.data.api.p7.model.CalendarEventP7
 import com.afterlogic.auroracontacts.data.api.p7.model.CalendarP7
 import com.afterlogic.auroracontacts.data.calendar.AuroraCalendar
 import com.afterlogic.auroracontacts.data.calendar.AuroraCalendarEvent
-import com.afterlogic.auroracontacts.data.calendar.CalendarSubRepository
+import com.afterlogic.auroracontacts.data.calendar.CalendarRemoteService
 import io.reactivex.Completable
 import io.reactivex.Single
 import javax.inject.Inject
@@ -16,7 +16,7 @@ import javax.inject.Inject
  */
 class CalendarsRepositoryP7 @Inject constructor(
         private val cloudService: CalendarsCloudServiceP7
-) : CalendarSubRepository {
+) : CalendarRemoteService {
 
     override fun getCalendars(): Single<List<AuroraCalendar>> = cloudService.getCalendars()
             .map { it.map(this::parseCalendar) }
@@ -26,11 +26,11 @@ class CalendarsRepositoryP7 @Inject constructor(
                     .map { it.map(this::parseEvent) }
 
     override fun updateEvent(event: AuroraCalendarEvent): Completable {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") //To change body of created functions use File | SyncSettings | File Templates.
     }
 
     override fun deleteEvent(event: AuroraCalendarEvent): Completable {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") //To change body of created functions use File | SyncSettings | File Templates.
     }
 
     private fun parseCalendar(dto: CalendarP7) : AuroraCalendar = AuroraCalendar(

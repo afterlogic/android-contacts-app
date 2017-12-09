@@ -39,11 +39,11 @@ class AccountService @Inject constructor(context: App) {
 
     private val accountManager = AccountManager.get(context)
 
-    private val currentAccount = Observable.defer { CurrentAccountSource(accountManager) }
+    private val account = Observable.defer { CurrentAccountSource(accountManager) }
 
-    val currentAccountSession: Observable<Optional<AuroraSession>> get() {
+    val accountSession: Observable<Optional<AuroraSession>> get() {
 
-        return currentAccount
+        return account
                 .map<Optional<AuroraSession>> {
 
                     val account = it.get() ?: return@map Optional()
@@ -63,7 +63,7 @@ class AccountService @Inject constructor(context: App) {
 
     fun updateCurrentAccount(authData: AuthorizedAuroraSession): Completable {
 
-        return currentAccount
+        return account
                 .firstOrError()
                 .doOnSuccess {
 
@@ -101,7 +101,7 @@ class AccountService @Inject constructor(context: App) {
     @TargetApi(Build.VERSION_CODES.LOLLIPOP_MR1)
     fun removeCurrentAccount(): Completable {
 
-        return currentAccount
+        return account
                 .firstOrError()
                 .flatMapMaybe { it.get().toMaybe() }
                 .doOnSuccess {
@@ -128,7 +128,7 @@ class AccountService @Inject constructor(context: App) {
 
     private fun createAccountIfNotExist(authData: AuthorizedAuroraSession): Completable {
 
-        return currentAccount
+        return account
                 .firstOrError()
                 .filter { it.get() == null }
                 .doOnSuccess { createAccount(authData) }

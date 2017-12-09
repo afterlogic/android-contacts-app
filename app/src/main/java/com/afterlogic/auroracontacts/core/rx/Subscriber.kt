@@ -105,8 +105,8 @@ class Subscriber @Inject constructor(private val toaster: Toaster) {
             private val result: ((T) -> Unit)?,
             private val complete: (() -> Unit)?,
             private val error: ((Throwable) -> Unit)?
-    ) : CompletableObserver, MaybeObserver<T>, SingleObserver<T>, Observer<T>,
-            org.reactivestreams.Subscriber<T> {
+    ) : CompletableObserver, MaybeObserver<T>, SingleObserver<T>,
+            Observer<T>, FlowableSubscriber<T> {
 
         private var completeHandled = AtomicBoolean(false)
 
@@ -120,6 +120,8 @@ class Subscriber @Inject constructor(private val toaster: Toaster) {
         }
 
         override fun onSubscribe(subscription: Subscription) {
+
+            subscription.request(Long.MAX_VALUE)
 
             subscribe?.invoke(object : Disposable {
 
@@ -341,6 +343,38 @@ inline fun <T> Observable<T>.shadowErrorIfNot(crossinline mapper: (Throwable) ->
     return onErrorResumeNext { it: Throwable ->
         if (it is ShadowedError) Observable.error(it)
         else Observable.error(mapper(it))
+    }
+}
+
+//endregion
+
+//region// Flowable
+
+fun <T> Flowable<T>.with(subscriber: Subscriber): FlowableSubscribtioning<T> =
+        FlowableSubscribtioning(this, subscriber)
+
+class FlowableSubscribtioning<out T>(private val source: Flowable<T>,
+                                       private val subscriber: Subscriber) {
+
+    fun subscribe(onError: ErrorHandler? = null, onComplete: CompleteHandler? = null,
+                  onNext: ResultHandler<T>? = null) : Disposable =
+
+            subscriber.subscribe(onNext, onError, onComplete) { source.subscribe(it) }
+
+}
+
+fun <T> Flowable<T>.subscribeWith(subs: Subscriber): Disposable = with(subs).subscribe()
+
+inline fun <T> Flowable<T>.shadowError(crossinline mapper: (Throwable) -> ShadowedError): Flowable<T> {
+    return onErrorResumeNext { it: Throwable ->
+        Flowable.error(mapper(it))
+    }
+}
+
+inline fun <T> Flowable<T>.shadowErrorIfNot(crossinline mapper: (Throwable) -> ShadowedError): Flowable<T> {
+    return onErrorResumeNext { it: Throwable ->
+        if (it is ShadowedError) Flowable.error(it)
+        else Flowable.error(mapper(it))
     }
 }
 

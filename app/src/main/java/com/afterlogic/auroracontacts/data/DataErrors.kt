@@ -11,3 +11,5 @@ class NotSupportedApiError(val api: ApiType = ApiType.UNKNOWN, message: String? 
         Throwable(message ?: "Not supported api.")
 
 class IllegalApiDataException(message: String): Exception(message)
+
+class LocalDataNotExistsError: Throwable()

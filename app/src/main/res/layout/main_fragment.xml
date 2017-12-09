@@ -11,17 +11,43 @@
 
     </data>
 
-    <android.support.v7.widget.RecyclerView
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:paddingBottom="8dp"
-        android:clipToPadding="false"
-        app:layoutManager="@string/recycler_linear_layout_manager"
-        main_contentHeader="@{vm}"
-        main_cards="@{vm.cards}"
-        main_progress="@{vm.loadingData}"
-        tools:listitem="@layout/main_list_card">
+        android:layout_height="match_parent">
 
-    </android.support.v7.widget.RecyclerView>
+
+        <android.support.v7.widget.RecyclerView
+            main_cards="@{vm.cards}"
+            main_contentHeader="@{vm}"
+            main_progress="@{vm.loadingData}"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="0dp"
+            android:layout_marginEnd="0dp"
+            android:layout_marginStart="0dp"
+            android:layout_marginTop="0dp"
+            android:clipToPadding="false"
+            android:paddingBottom="8dp"
+            app:layoutManager="@string/recycler_linear_layout_manager"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:listitem="@layout/main_list_card"/>
+
+        <android.support.design.widget.FloatingActionButton
+            android:onClick="@{() -> vm.onSyncClicked()}"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:useCompatPadding="true"
+            app:fabSize="normal"
+            app:srcCompat="@drawable/ic_sync_rotatable"
+            runDrawableAnimation="@{vm.syncing}"
+            />
+
+    </android.support.constraint.ConstraintLayout>
 
 </layout>

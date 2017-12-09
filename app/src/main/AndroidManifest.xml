@@ -9,6 +9,10 @@
     <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS"/>
     <uses-permission android:name="android.permission.MANAGE_ACCOUNTS"/>
 
+    <permission
+        android:name="com.aurora.contactscalendars.SYNC_ADAPTER"
+        android:protectionLevel="signature" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -28,12 +32,28 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".presentation.background.authenticator.AuthenticatorService">
+        <service
+            android:name=".presentation.background.authenticator.AuthenticatorService"
+            android:exported="true"
+            android:permission="com.aurora.contactscalendars.SYNC_ADAPTER">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
             </intent-filter>
             <meta-data android:name="android.accounts.AccountAuthenticator"
                 android:resource="@xml/authentificator" />
+        </service>
+
+        <service
+            android:name=".presentation.background.calendarsSync.CalendarsSyncService"
+            android:exported="true"
+            android:permission="com.aurora.contactscalendars.SYNC_ADAPTER"
+            android:process=":sync">
+            <intent-filter>
+                <action android:name="android.content.SyncAdapter" />
+            </intent-filter>
+            <meta-data
+                android:name="android.content.SyncAdapter"
+                android:resource="@xml/sync_calendars" />
         </service>
 
     </application>

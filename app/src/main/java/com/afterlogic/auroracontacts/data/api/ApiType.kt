@@ -5,4 +5,10 @@ package com.afterlogic.auroracontacts.data.api
  * mail: mail@sunnydaydev.me
  */
 
-enum class ApiType(val code: Int) { UNKNOWN(-1), P7(7000), P8(8000) }
+enum class ApiType(val code: Int) {
+    UNKNOWN(-1), P7(7000), P8(8000);
+
+    companion object {
+        fun byCode(code: Int): ApiType? = ApiType.values().firstOrNull { code == it.code }
+    }
+}

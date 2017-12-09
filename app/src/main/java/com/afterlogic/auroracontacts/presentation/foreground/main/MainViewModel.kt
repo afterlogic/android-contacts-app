@@ -1,15 +1,11 @@
 package com.afterlogic.auroracontacts.presentation.foreground.main
 
-import android.arch.lifecycle.Lifecycle
-import android.arch.lifecycle.OnLifecycleEvent
 import android.databinding.Bindable
 import android.databinding.ObservableArrayList
 import android.databinding.ObservableList
 import com.afterlogic.auroracontacts.R
 import com.afterlogic.auroracontacts.application.wrappers.Resources
-import com.afterlogic.auroracontacts.core.rx.DisposableBag
 import com.afterlogic.auroracontacts.core.rx.Subscriber
-import com.afterlogic.auroracontacts.core.rx.disposeBy
 import com.afterlogic.auroracontacts.data.calendar.AuroraCalendar
 import com.afterlogic.auroracontacts.presentation.common.base.ObservableRxViewModel
 import com.afterlogic.auroracontacts.presentation.common.databinding.bindable
@@ -40,29 +36,32 @@ class MainViewModel @Inject constructor(
 
     private val calendarsMap = mutableMapOf<AuroraCalendar, CalendarItemViewModel>()
 
-    private val startScopedDisposables = DisposableBag()
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_START)
-    fun onStart() {
+    init {
 
         interactor.getCalendars()
                 .defaultSchedulers()
-                .doOnSuccess { loadingData = false }
-                .disposeBy(startScopedDisposables)
-                .subscribeIt(onSuccess = this::handle)
+                .subscribeIt(onNext = this::handle)
+
+        interactor.listenSyncingState()
+                .defaultSchedulers()
+                .subscribeIt { syncing = it }
 
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
-    fun onStop() {
-        startScopedDisposables.dispose()
-    }
 
-    fun onStartSyncClicked() {
+    fun onSyncClicked() {
+
+        if (syncing) return
+
+        interactor.requestStartSyncImmediately()
+                .defaultSchedulers()
+                .subscribeIt()
 
     }
 
     private fun handle(calendars: List<AuroraCalendar>) {
+
+        if (loadingData) loadingData = false
 
         calendars
                 .map { it to mapCalendar(it) }

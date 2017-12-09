@@ -17,7 +17,7 @@ class MainActivityViewModel @Inject constructor(
 
     init {
 
-        accountService.currentAccountSession
+        accountService.accountSession
                 .map { it.get() != null }
                 .distinctUntilChanged()
                 .retry()

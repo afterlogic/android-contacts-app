@@ -55,6 +55,7 @@ abstract class MVVMFragment
 
         binding = bindView(inflater, container)
         binding.setVariable(viewModelKey, viewModel)
+        binding.executePendingBindings()
         return binding.root
 
     }

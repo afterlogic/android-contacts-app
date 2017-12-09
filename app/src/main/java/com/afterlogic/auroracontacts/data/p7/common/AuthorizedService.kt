@@ -15,7 +15,7 @@ open class AuthorizedService<T> @Inject constructor(
         private val accountService: AccountService
 ) {
 
-    protected val api: Single<T> get() = accountService.currentAccountSession
+    protected val api: Single<T> get() = accountService.accountSession
             .observeOn(Schedulers.io())
             .firstElement()
             .filter { it.get() != null }
