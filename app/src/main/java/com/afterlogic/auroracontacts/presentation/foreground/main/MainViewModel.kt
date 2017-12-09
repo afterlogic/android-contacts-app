@@ -6,6 +6,7 @@ import android.databinding.ObservableList
 import com.afterlogic.auroracontacts.R
 import com.afterlogic.auroracontacts.application.wrappers.Resources
 import com.afterlogic.auroracontacts.core.rx.Subscriber
+import com.afterlogic.auroracontacts.data.SyncPeriod
 import com.afterlogic.auroracontacts.data.calendar.AuroraCalendar
 import com.afterlogic.auroracontacts.presentation.common.base.ObservableRxViewModel
 import com.afterlogic.auroracontacts.presentation.common.databinding.bindable
@@ -35,6 +36,18 @@ class MainViewModel @Inject constructor(
 
     @get:Bindable var syncing by bindable(false)
 
+    @get:Bindable var syncOnLocalChanges by bindable(false) {
+        interactor.setSyncOnLocalChanges(it)
+                .defaultSchedulers()
+                .subscribeIt()
+    }
+
+    @get:Bindable var selectedSyncPeriod by bindable(0) {
+        interactor.setSyncPeriod(SyncPeriod.values()[it])
+                .defaultSchedulers()
+                .subscribeIt()
+    }
+
     private val calendarsMap = WeakHashMap<CalendarItemViewModel, AuroraCalendar>()
 
     init {
@@ -46,6 +59,16 @@ class MainViewModel @Inject constructor(
         interactor.listenSyncingState()
                 .defaultSchedulers()
                 .subscribeIt { syncing = it }
+
+        interactor.syncPeriod
+                .subscribeIt {
+                    selectedSyncPeriod = it.ordinal
+                }
+
+        interactor.syncOnLocalChanges
+                .subscribeIt {
+                    syncOnLocalChanges = it
+                }
 
     }
 

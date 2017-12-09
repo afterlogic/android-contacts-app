@@ -10,22 +10,36 @@ import kotlin.reflect.KProperty
  * Created by sunny on 09.12.2017.
  * mail: mail@sunnydaydev.me
  */
+
 class Prefs @Inject constructor(context: App) {
 
     private val prefs = AppPreferences(context)
 
-    var calendarsFetched by booleanPrefs("calendarsFetched")
+    var calendarsFetched by booleanPref("calendarsFetched")
 
-    private fun booleanPrefs(name: String, defaultValue: Boolean = false): ReadWriteProperty<Prefs, Boolean> {
+    var syncOnLocalChanges by booleanPref("syncOnLocalChanges")
 
-        return object : ReadWriteProperty<Prefs, Boolean> {
+    var syncPeriod by longPref("syncPeriod")
 
-            override fun getValue(thisRef: Prefs, property: KProperty<*>): Boolean {
-                return prefs.getBoolean(name, defaultValue)
+    private fun booleanPref(name: String, defaultValue: Boolean = false): ReadWriteProperty<Prefs, Boolean> =
+            property({ it.getBoolean(name, defaultValue) }, { p, v -> p.put(name, v) } )
+
+    private fun longPref(name: String, defaultValue: Long = -1): ReadWriteProperty<Prefs, Long> =
+            property({ it.getLong(name, defaultValue) }, { p, v -> p.put(name, v) } )
+
+    inline private fun <T> property(
+            crossinline getter: (AppPreferences) -> T,
+            crossinline setter: (AppPreferences, T) -> Unit
+    ): ReadWriteProperty<Prefs, T> {
+
+        return object : ReadWriteProperty<Prefs, T> {
+
+            override fun getValue(thisRef: Prefs, property: KProperty<*>): T {
+                return getter(prefs)
             }
 
-            override fun setValue(thisRef: Prefs, property: KProperty<*>, value: Boolean) {
-                prefs.put(name, value)
+            override fun setValue(thisRef: Prefs, property: KProperty<*>, value: T) {
+                setter(prefs, value)
             }
 
         }
