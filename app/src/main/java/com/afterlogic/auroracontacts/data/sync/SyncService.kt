@@ -9,6 +9,7 @@ import com.afterlogic.auroracontacts.data.api.UserNotAuthorizedException
 import com.afterlogic.auroracontacts.presentation.background.calendarsSync.CalendarsSyncService
 import io.reactivex.Completable
 import io.reactivex.Observable
+import timber.log.Timber
 import javax.inject.Inject
 
 /**
@@ -39,6 +40,8 @@ class SyncService @Inject constructor(
                     ContentResolver.setIsSyncable(it, calendarAuthority, 1)
 
                     ContentResolver.requestSync(it, calendarAuthority, settingsBundle)
+
+                    Timber.d("requestSyncImmediately")
 
                 }
                 .toCompletable()

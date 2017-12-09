@@ -10,6 +10,8 @@ import com.afterlogic.auroracontacts.data.SyncPeriod
 import com.afterlogic.auroracontacts.data.calendar.AuroraCalendar
 import com.afterlogic.auroracontacts.presentation.common.base.ObservableRxViewModel
 import com.afterlogic.auroracontacts.presentation.common.databinding.bindable
+import com.afterlogic.auroracontacts.presentation.common.permissions.PermissionRequest
+import com.afterlogic.auroracontacts.presentation.common.permissions.PermissionsInteractor
 import timber.log.Timber
 import java.util.*
 import javax.inject.Inject
@@ -21,6 +23,7 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
         private val interactor: MainInteractor,
         private val res: Resources,
+        private val permissionsInteractor: PermissionsInteractor,
         subscriber: Subscriber
 ): ObservableRxViewModel(subscriber)  {
 
@@ -77,6 +80,9 @@ class MainViewModel @Inject constructor(
     fun onSyncClicked() {
 
         if (syncing) return
+
+        permissionsInteractor.requirePermission(PermissionRequest.CALENDAR)
+                .subscribeIt()
 
         interactor.requestStartSyncImmediately()
                 .defaultSchedulers()

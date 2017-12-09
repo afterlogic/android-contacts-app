@@ -9,7 +9,12 @@
     <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS"/>
     <uses-permission android:name="android.permission.MANAGE_ACCOUNTS"/>
 
+    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS"/>
     <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS"/>
+    <uses-permission android:name="android.permission.READ_SYNC_STATS"/>
+
+    <uses-permission android:name="android.permission.READ_CALENDAR"/>
+    <uses-permission android:name="android.permission.WRITE_CALENDAR"/>
 
     <permission
         android:name="com.aurora.contactscalendars.SYNC_ADAPTER"
@@ -36,8 +41,7 @@
 
         <service
             android:name=".presentation.background.authenticator.AuthenticatorService"
-            android:exported="true"
-            android:permission="com.aurora.contactscalendars.SYNC_ADAPTER">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
             </intent-filter>
@@ -47,7 +51,8 @@
 
         <service
             android:name=".presentation.background.calendarsSync.CalendarsSyncService"
-            android:exported="true">
+            android:exported="true"
+            android:process=":sync">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
             </intent-filter>

@@ -22,6 +22,9 @@ class App: DaggerApplication(), Tagged {
     @set:Inject
     lateinit var subscriber: Subscriber
 
+    @set:Inject
+    lateinit var activityTracker: ActivityTracker
+
     @Inject
     fun logInjection() {
         Timber.d("Injecting $classTag")
@@ -32,6 +35,8 @@ class App: DaggerApplication(), Tagged {
         Timber.plant(Timber.DebugTree())
 
         super.onCreate()
+
+        activityTracker.register()
 
     }
 

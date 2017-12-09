@@ -22,6 +22,8 @@ abstract class MVVMActivity
 
     private val viewModelFactory by injectable { config.viewModelFactory }
 
+    private val permissionsPublisher by injectable { config.permissionsPublisher }
+
     override val lifecycleDisposables by injectable { config.lifecycleDisposables }
 
     override val subscriber by injectable { config.subscriber }
@@ -58,6 +60,11 @@ abstract class MVVMActivity
     override fun onResume() {
         super.onResume()
         lifecycleDisposables.onResume()
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        permissionsPublisher.onRequestPermissionResult(requestCode, permissions, grantResults)
     }
 
     @CallSuper
