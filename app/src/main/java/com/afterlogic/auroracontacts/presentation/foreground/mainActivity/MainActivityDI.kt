@@ -1,9 +1,9 @@
 package com.afterlogic.auroracontacts.presentation.foreground.mainActivity
 
 import android.arch.lifecycle.ViewModel
-import com.afterlogic.auroracontacts.presentation.FragmentScope
 import com.afterlogic.auroracontacts.presentation.common.base.MVVMInjection
 import com.afterlogic.auroracontacts.presentation.common.databinding.ViewModelKey
+import com.afterlogic.auroracontacts.presentation.foreground.FragmentScope
 import com.afterlogic.auroracontacts.presentation.foreground.login.LoginFragment
 import com.afterlogic.auroracontacts.presentation.foreground.login.LoginFragmentModule
 import com.afterlogic.auroracontacts.presentation.foreground.main.MainFragment

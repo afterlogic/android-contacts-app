@@ -5,10 +5,10 @@ import android.accounts.AccountManager
 import android.annotation.TargetApi
 import android.os.Build
 import com.afterlogic.auroracontacts.application.App
+import com.afterlogic.auroracontacts.application.AppScope
 import com.afterlogic.auroracontacts.core.rx.toMaybe
 import com.afterlogic.auroracontacts.core.util.Optional
 import com.afterlogic.auroracontacts.data.auth.model.AuthorizedAuroraSession
-import com.afterlogic.auroracontacts.presentation.AppScope
 import io.reactivex.Completable
 import io.reactivex.Observable
 import okhttp3.HttpUrl
@@ -39,7 +39,7 @@ class AccountService @Inject constructor(context: App) {
 
     private val accountManager = AccountManager.get(context)
 
-    private val account = Observable.defer { CurrentAccountSource(accountManager) }
+    val account = Observable.defer { CurrentAccountSource(accountManager) }
 
     val accountSession: Observable<Optional<AuroraSession>> get() {
 

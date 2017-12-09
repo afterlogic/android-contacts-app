@@ -9,10 +9,10 @@ import com.afterlogic.auroracontacts.application.wrappers.Resources
 import com.afterlogic.auroracontacts.application.wrappers.Toaster
 import com.afterlogic.auroracontacts.core.rx.*
 import com.afterlogic.auroracontacts.core.util.isAnyNetworkError
-import com.afterlogic.auroracontacts.presentation.FragmentScope
 import com.afterlogic.auroracontacts.presentation.common.base.ObservableRxViewModel
 import com.afterlogic.auroracontacts.presentation.common.databinding.bindable
 import com.afterlogic.auroracontacts.presentation.common.databinding.bindableCommand
+import com.afterlogic.auroracontacts.presentation.foreground.FragmentScope
 import javax.inject.Inject
 
 @FragmentScope

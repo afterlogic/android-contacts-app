@@ -4,12 +4,11 @@ import com.afterlogic.auroracontacts.data.SyncPeriod
 import com.afterlogic.auroracontacts.data.calendar.AuroraCalendar
 import com.afterlogic.auroracontacts.data.calendar.CalendarsRepository
 import com.afterlogic.auroracontacts.data.preferences.Prefs
+import com.afterlogic.auroracontacts.data.sync.SyncService
 import io.reactivex.Completable
 import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.Single
-import io.reactivex.subjects.BehaviorSubject
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 /**
@@ -18,11 +17,9 @@ import javax.inject.Inject
  */
 class MainInteractor @Inject constructor(
         private val calendarsRepository: CalendarsRepository,
-        private val prefs: Prefs
+        private val prefs: Prefs,
+        private val syncService: SyncService
 ) {
-
-
-    private val todoSyncPublisher = BehaviorSubject.createDefault(false)
 
     val syncOnLocalChanges: Single<Boolean> get() = Single.fromCallable { prefs.syncOnLocalChanges }
 
@@ -43,12 +40,8 @@ class MainInteractor @Inject constructor(
     fun setSyncEnabled(calendar: AuroraCalendar, enabled: Boolean): Completable =
             calendarsRepository.setSyncEnabled(calendar, enabled)
 
-    fun listenSyncingState(): Observable<Boolean> = todoSyncPublisher
+    fun listenSyncingState(): Observable<Boolean> = syncService.isAnySyncRunning
 
-    fun requestStartSyncImmediately() : Completable {
-        return Completable.timer(5, TimeUnit.SECONDS)
-                .doOnSubscribe { todoSyncPublisher.onNext(true) }
-                .doFinally { todoSyncPublisher.onNext(false) }
-    }
+    fun requestStartSyncImmediately() : Completable = syncService.requestSyncImmediately()
 
 }

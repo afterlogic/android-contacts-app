@@ -2,8 +2,8 @@ package com.afterlogic.auroracontacts.presentation.foreground.mainActivity
 
 import com.afterlogic.auroracontacts.core.rx.Subscriber
 import com.afterlogic.auroracontacts.data.account.AccountService
-import com.afterlogic.auroracontacts.presentation.ActivityScope
 import com.afterlogic.auroracontacts.presentation.common.base.ObservableRxViewModel
+import com.afterlogic.auroracontacts.presentation.foreground.ActivityScope
 import com.afterlogic.auroracontacts.presentation.navigation.AppRouter
 import com.afterlogic.auroracontacts.presentation.navigation.Screens
 import javax.inject.Inject

@@ -1,7 +1,7 @@
 package com.afterlogic.auroracontacts.data.p7.api
 
 import com.afterlogic.auroracontacts.data.api.P7
-import com.afterlogic.auroracontacts.presentation.AppScope
+import com.afterlogic.auroracontacts.application.AppScope
 import okhttp3.HttpUrl
 import retrofit2.Retrofit
 import javax.inject.Inject

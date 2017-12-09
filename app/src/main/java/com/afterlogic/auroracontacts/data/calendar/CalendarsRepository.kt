@@ -11,7 +11,7 @@ import com.afterlogic.auroracontacts.data.db.CalendarsDao
 import com.afterlogic.auroracontacts.data.db.SyncSettings
 import com.afterlogic.auroracontacts.data.p7.calendars.CalendarsRemoteServiceP7
 import com.afterlogic.auroracontacts.data.preferences.Prefs
-import com.afterlogic.auroracontacts.presentation.AppScope
+import com.afterlogic.auroracontacts.application.AppScope
 import io.reactivex.Completable
 import io.reactivex.Flowable
 import io.reactivex.Single

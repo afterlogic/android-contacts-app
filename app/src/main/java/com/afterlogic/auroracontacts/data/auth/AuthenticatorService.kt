@@ -1,10 +1,10 @@
 package com.afterlogic.auroracontacts.data.auth
 
+import com.afterlogic.auroracontacts.application.AppScope
+import com.afterlogic.auroracontacts.data.NotSupportedApiError
 import com.afterlogic.auroracontacts.data.api.ApiType
 import com.afterlogic.auroracontacts.data.auth.model.AuthorizedAuroraSession
-import com.afterlogic.auroracontacts.data.NotSupportedApiError
 import com.afterlogic.auroracontacts.data.p7.auth.P7AuthenticatorSubService
-import com.afterlogic.auroracontacts.presentation.AppScope
 import io.reactivex.Maybe
 import io.reactivex.Single
 import okhttp3.HttpUrl

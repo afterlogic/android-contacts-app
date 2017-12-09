@@ -4,7 +4,7 @@ import android.arch.persistence.room.Database
 import android.arch.persistence.room.Room
 import android.arch.persistence.room.RoomDatabase
 import com.afterlogic.auroracontacts.application.App
-import com.afterlogic.auroracontacts.presentation.AppScope
+import com.afterlogic.auroracontacts.application.AppScope
 import dagger.Module
 import dagger.Provides
 

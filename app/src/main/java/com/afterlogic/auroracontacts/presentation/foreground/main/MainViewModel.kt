@@ -57,6 +57,7 @@ class MainViewModel @Inject constructor(
                 .subscribeIt(onNext = this::handle)
 
         interactor.listenSyncingState()
+                .retry()
                 .defaultSchedulers()
                 .subscribeIt { syncing = it }
 

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="account_type">com.afterlogic.aurora</string>
+    <string name="calendar_authority">com.android.calendar</string>
+    <string name="contacts_authority">com.android.contacts</string>
+
+</resources>

@@ -5,7 +5,7 @@ import com.afterlogic.auroracontacts.core.gson.registerTypeAdapter
 import com.afterlogic.auroracontacts.data.api.P7
 import com.afterlogic.auroracontacts.data.api.p7.converters.ApiResponseP7Deserializer
 import com.afterlogic.auroracontacts.data.api.p7.util.AuthConverterFactoryP7
-import com.afterlogic.auroracontacts.presentation.AppScope
+import com.afterlogic.auroracontacts.application.AppScope
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import dagger.Module
