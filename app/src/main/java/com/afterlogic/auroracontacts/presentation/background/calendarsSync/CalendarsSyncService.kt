@@ -10,6 +10,7 @@ import android.os.IBinder
 import com.afterlogic.auroracontacts.application.App
 import com.afterlogic.auroracontacts.data.calendar.CalendarsRepository
 import com.afterlogic.auroracontacts.presentation.common.base.InjectionDaggerService
+import timber.log.Timber
 import javax.inject.Inject
 
 /**
@@ -35,7 +36,7 @@ class CalendarSyncAdapter @Inject constructor(
                                contentProviderClient: ContentProviderClient,
                                syncResult: SyncResult) {
 
-
+        Timber.d("onPerformSync")
 
     }
 

@@ -8,21 +8,25 @@ import com.afterlogic.auroracontacts.presentation.common.databinding.bindable
  * Created by sunny on 06.12.2017.
  * mail: mail@sunnydaydev.me
  */
-class CardViewModel(val type: Int, val title: String, val items: List<ContactItemViewModel>)
+class CardViewModel<out T>(val type: Int, val title: String, val items: List<T>)
 
 open class ContactItemViewModel(
         val name: String,
-        checked: Boolean,
-        onCheckedChanged: (Boolean) -> Unit
+        checkedInitialValue: Boolean,
+        onCheckedChanged: (ContactItemViewModel, Boolean) -> Unit
 ) : ObservableViewModel() {
 
-    @get:Bindable var checked by bindable(checked, onChanged = onCheckedChanged)
+    @get:Bindable var checked by bindable(checkedInitialValue) { onCheckedChanged(this, it) }
 
 }
 
 class CalendarItemViewModel(
-        name: String,
+        val name: String,
         val color: Int,
-        checked: Boolean,
-        onCheckedChanged: (Boolean) -> Unit
-) : ContactItemViewModel(name, checked, onCheckedChanged)
+        checkedInitialValue: Boolean,
+        onCheckedChanged: (CalendarItemViewModel, Boolean) -> Unit
+) : ObservableViewModel() {
+
+    @get:Bindable var checked by bindable(checkedInitialValue) { onCheckedChanged(this, it) }
+
+}

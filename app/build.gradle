@@ -143,10 +143,6 @@ dependencies {
     implementation deps.support.card
     implementation deps.support.constraint_layout
 
-    // Pictures load
-    implementation deps.network.glide
-    kapt deps.network.glide_compiler
-
     // Preferences
     implementation deps.core.prefs
 

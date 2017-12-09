@@ -17,9 +17,13 @@ class MainInteractor @Inject constructor(
         private val calendarsRepository: CalendarsRepository
 ) {
 
+
     private val todoSyncPublisher = BehaviorSubject.createDefault(false)
 
     fun getCalendars(): Flowable<List<AuroraCalendar>> = calendarsRepository.getCalendars()
+
+    fun setSyncEnabled(calendar: AuroraCalendar, enabled: Boolean): Completable =
+            calendarsRepository.setSyncEnabled(calendar, enabled)
 
     fun listenSyncingState(): Observable<Boolean> = todoSyncPublisher
 

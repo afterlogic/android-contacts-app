@@ -17,7 +17,7 @@ object MainFragmentBindings {
 
     @JvmStatic
     @BindingAdapter("main_contentHeader", "main_cards", "main_progress")
-    fun bindContent(list: RecyclerView, vm: MainViewModel, cards: List<CardViewModel>, progress: Boolean) {
+    fun bindContent(list: RecyclerView, vm: MainViewModel, cards: List<CardViewModel<Any>>, progress: Boolean) {
 
         listOf(vm)
                 .let {
@@ -38,7 +38,7 @@ object MainFragmentBindings {
 
     @JvmStatic
     @BindingAdapter("main_card_items")
-    fun bindCardContent(list: RecyclerView, items: List<ContactItemViewModel>) {
+    fun bindCardContent(list: RecyclerView, items: List<Any>) {
 
         LastAdapter(items, BR.vm)
                 .map<ContactItemViewModel>(R.layout.main_list_card_item)

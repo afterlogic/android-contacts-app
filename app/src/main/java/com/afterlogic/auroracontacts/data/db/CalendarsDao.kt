@@ -9,18 +9,37 @@ import io.reactivex.Flowable
  */
 
 @Dao
-interface CalendarsDao {
+abstract class CalendarsDao {
+
+    //region// Calendar's insertion
+
+    @get:Query("""
+        SELECT `id` FROM `calendar`
+        WHERE `sync_settings_syncEnabled` = 1
+    """)
+    abstract protected val syncEnabledIds: List<String>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    abstract protected fun insert(calendars: List<CalendarDbe>)
 
     @Transaction
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun store(calendars: List<CalendarDbe>)
+    open fun store(calendars: List<CalendarDbe>) {
 
-    @get:Transaction
-    @get:Query("SELECT * FROM `calendar`")
-    val all: Flowable<List<CalendarDbe>>
+        val syncEnabledIds = syncEnabledIds
 
-    @Delete
-    fun delete(calendar: CalendarDbe)
+        deleteAll()
+
+        insert(calendars)
+
+        setSyncEnabled(syncEnabledIds)
+
+    }
+
+    operator fun plusAssign(calendars: List<CalendarDbe>) { store(calendars) }
+
+    //endregion
+
+    //region// Calendar's updates
 
     @Transaction
     @Query("""
@@ -28,14 +47,36 @@ interface CalendarsDao {
         SET `sync_settings_syncEnabled` = :enabled
         WHERE `id` = :id
     """)
-    fun setSyncEnabled(id: String, enabled: Boolean)
+    abstract fun setSyncEnabled(id: String, enabled: Boolean)
 
-}
+    @Transaction
+    @Query("""
+        UPDATE `calendar`
+        SET `sync_settings_syncEnabled` = 1
+        WHERE `id` IN (:ids)
+    """)
+    abstract fun setSyncEnabled(ids: List<String>)
 
-operator fun CalendarsDao.plusAssign(calendars: List<CalendarDbe>) {
-    store(calendars)
-}
+    //endregion
 
-operator fun CalendarsDao.minusAssign(calendars: CalendarDbe) {
-    delete(calendars)
+    //region// Calendar's getters
+
+    @get:Transaction
+    @get:Query("SELECT * FROM `calendar`")
+    abstract val all: Flowable<List<CalendarDbe>>
+
+    //endregion
+
+    //region// Calendar's deleting
+
+    @Delete
+    abstract fun delete(calendar: CalendarDbe)
+
+    @Query("DELETE FROM `calendar`")
+    abstract fun deleteAll()
+
+    operator fun minusAssign(calendars: CalendarDbe) { delete(calendars) }
+
+    //endregion
+
 }

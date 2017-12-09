@@ -23,3 +23,7 @@ data class CalendarDbe(
 data class SyncSettings (
         val syncEnabled: Boolean
 )
+
+data class CalendarEventDbe(
+        val id: String
+)

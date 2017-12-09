@@ -10,6 +10,7 @@ import com.afterlogic.auroracontacts.data.calendar.AuroraCalendar
 import com.afterlogic.auroracontacts.presentation.common.base.ObservableRxViewModel
 import com.afterlogic.auroracontacts.presentation.common.databinding.bindable
 import timber.log.Timber
+import java.util.*
 import javax.inject.Inject
 
 /**
@@ -28,13 +29,13 @@ class MainViewModel @Inject constructor(
 
     }
 
-    val cards: ObservableList<CardViewModel> = ObservableArrayList()
+    val cards: ObservableList<CardViewModel<Any>> = ObservableArrayList()
 
     @get:Bindable var loadingData by bindable(true)
 
     @get:Bindable var syncing by bindable(false)
 
-    private val calendarsMap = mutableMapOf<AuroraCalendar, CalendarItemViewModel>()
+    private val calendarsMap = WeakHashMap<CalendarItemViewModel, AuroraCalendar>()
 
     init {
 
@@ -64,10 +65,9 @@ class MainViewModel @Inject constructor(
         if (loadingData) loadingData = false
 
         calendars
-                .map { it to mapCalendar(it) }
+                .map { mapCalendar(it) to it  }
                 .also {
 
-                    calendarsMap.clear()
                     calendarsMap.putAll(it)
 
                     cards.clear()
@@ -75,7 +75,7 @@ class MainViewModel @Inject constructor(
                     val card = CardViewModel(
                             TYPE_CALENDAR,
                             res.strings[R.string.prompt_main_calendars_title],
-                            it.map { (_ , vm) -> vm }
+                            it.map { (vm , _) -> vm }
                     )
 
                     cards.add(card)
@@ -84,13 +84,22 @@ class MainViewModel @Inject constructor(
 
     }
 
-    private fun onCheckedChanged(calendar: AuroraCalendar, checked: Boolean) {
-        Timber.d("onChanged: ${calendar.name} : $checked")
-    }
-
     private fun mapCalendar(calendar: AuroraCalendar) : CalendarItemViewModel =
-            CalendarItemViewModel(calendar.name, calendar.color, true) {
-                onCheckedChanged(calendar, it)
-            }
+            CalendarItemViewModel(
+                    calendar.name, calendar.color,
+                    calendar.settings.syncEnabled, this::onCheckedChanged
+            )
+
+    private fun onCheckedChanged(vm: CalendarItemViewModel, checked: Boolean) {
+
+        val calendar = calendarsMap[vm] ?: return
+
+        Timber.d("onChanged: ${calendar.name} : $checked")
+
+        interactor.setSyncEnabled(calendar, checked)
+                .defaultSchedulers()
+                .subscribeIt()
+
+    }
 
 }

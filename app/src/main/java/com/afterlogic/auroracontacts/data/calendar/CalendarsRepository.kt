@@ -6,10 +6,10 @@ import com.afterlogic.auroracontacts.data.account.AccountService
 import com.afterlogic.auroracontacts.data.api.ApiType
 import com.afterlogic.auroracontacts.data.api.UserNotAuthorizedException
 import com.afterlogic.auroracontacts.data.db.CalendarDbe
+import com.afterlogic.auroracontacts.data.db.CalendarEventDbe
 import com.afterlogic.auroracontacts.data.db.CalendarsDao
 import com.afterlogic.auroracontacts.data.db.SyncSettings
-import com.afterlogic.auroracontacts.data.db.plusAssign
-import com.afterlogic.auroracontacts.data.p7.calendars.CalendarsRepositoryP7
+import com.afterlogic.auroracontacts.data.p7.calendars.CalendarsRemoteServiceP7
 import com.afterlogic.auroracontacts.data.preferences.Prefs
 import com.afterlogic.auroracontacts.presentation.AppScope
 import io.reactivex.Completable
@@ -26,9 +26,10 @@ import javax.inject.Inject
 class CalendarsRepository @Inject constructor(
         private val prefs: Prefs,
         private val accountService: AccountService,
-        private val calendarsDao: CalendarsDao,
-        private val p7Repository: CalendarsRepositoryP7,
-        private val mapper: CalendarMapper
+        private val dao: CalendarsDao,
+        private val p7RemoteService: CalendarsRemoteServiceP7,
+        private val calendarMapper: CalendarMapper,
+        private val eventsMapper: EventsMapper
 ) {
 
     enum class Source { LOCAL, REMOTE, BOTH }
@@ -42,17 +43,19 @@ class CalendarsRepository @Inject constructor(
                                 throw NotSupportedApiError()
 
                         when(apiType) {
-                            ApiType.P7 -> p7Repository
+                            ApiType.P7 -> p7RemoteService
                             else -> throw NotSupportedApiError()
                         }
 
                     }
 
+    //region// Calendars
+
     fun getCalendars(source: Source = Source.BOTH): Flowable<List<AuroraCalendar>> {
 
         val local: () -> Flowable<List<AuroraCalendar>> = {
 
-            calendarsDao.all.map { it.map(mapper::toPlain) }
+            dao.all.map { it.map(calendarMapper::toPlain) }
                     .startWith(checkLocalDataExist { prefs.calendarsFetched })
 
         }
@@ -60,10 +63,10 @@ class CalendarsRepository @Inject constructor(
         val remote: () -> Flowable<List<AuroraCalendar>> = {
 
             remoteService.flatMap { it.getCalendars() }
-                    .map { it.map { mapper.toDbe(it) } }
+                    .map { it.map { calendarMapper.toDbe(it) } }
                     .doOnSuccess {
                         prefs.calendarsFetched = true
-                        calendarsDao += it
+                        dao += it
                     }
                     .toCompletable()
                     .toFlowable<List<AuroraCalendar>>()
@@ -87,16 +90,22 @@ class CalendarsRepository @Inject constructor(
 
     }
 
+    fun setSyncEnabled(calendar: AuroraCalendar, enabled: Boolean): Completable =
+            Completable.fromAction { dao.setSyncEnabled(calendar.id, enabled) }
+
+    //endregion
+
     fun getEvents(calendarId: String): Single<List<AuroraCalendarEvent>> {
         return remoteService.flatMap { it.getEvents(calendarId) }
+                .map { TODO() }
     }
 
     fun updateEvent(event: AuroraCalendarEvent): Completable {
-        return remoteService.flatMapCompletable { it.updateEvent(event) }
+        return remoteService.flatMapCompletable { it.updateEvent(eventsMapper.toRemote(event)) }
     }
 
     fun deleteEvent(event: AuroraCalendarEvent): Completable {
-        return remoteService.flatMapCompletable { it.deleteEvent(event) }
+        return remoteService.flatMapCompletable { it.deleteEvent(eventsMapper.toRemote(event)) }
     }
 
     private fun <T> checkLocalDataExist(check: () -> Boolean): Flowable<T> {
@@ -110,15 +119,15 @@ class CalendarsRepository @Inject constructor(
 }
 
 interface CalendarRemoteService {
-    fun getCalendars(): Single<List<AuroraCalendar>>
-    fun getEvents(calendarId: String): Single<List<AuroraCalendarEvent>>
-    fun updateEvent(event: AuroraCalendarEvent): Completable
-    fun deleteEvent(event: AuroraCalendarEvent): Completable
+    fun getCalendars(): Single<List<RemoteCalendar>>
+    fun getEvents(calendarId: String): Single<List<RemoteCalendarEvent>>
+    fun updateEvent(event: RemoteCalendarEvent): Completable
+    fun deleteEvent(event: RemoteCalendarEvent): Completable
 }
 
 class CalendarMapper @Inject constructor() {
 
-    fun toDbe(source: AuroraCalendar, syncEnabled: Boolean = false): CalendarDbe {
+    fun toDbe(source: RemoteCalendar, syncEnabled: Boolean = false): CalendarDbe {
 
         val settings = SyncSettings(syncEnabled)
 
@@ -133,12 +142,34 @@ class CalendarMapper @Inject constructor() {
     }
 
     fun toPlain(souce: CalendarDbe): AuroraCalendar {
+
+        val settings = AuroraCalendarSettings(
+                souce.settings.syncEnabled
+        )
+
         return AuroraCalendar(
                 souce.id,
                 souce.name,
                 souce.description,
-                souce.color
+                souce.color,
+                settings
         )
+    }
+
+}
+
+class EventsMapper @Inject constructor() {
+
+    fun toDbe(remote: RemoteCalendarEvent): CalendarEventDbe {
+        TODO()
+    }
+
+    fun toPlain(dbe: CalendarEventDbe): AuroraCalendarEvent {
+        TODO()
+    }
+
+    fun toRemote(plain: AuroraCalendarEvent): RemoteCalendarEvent {
+        TODO()
     }
 
 }
