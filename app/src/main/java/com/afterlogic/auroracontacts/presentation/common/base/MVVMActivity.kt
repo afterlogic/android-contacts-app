@@ -20,13 +20,13 @@ abstract class MVVMActivity
 
     protected var viewModelKey = BR.vm
 
-    private val viewModelFactory by injectable { config.viewModelFactory }
+    private val viewModelFactory by inject { it.config.viewModelFactory }
 
-    private val permissionsPublisher by injectable { config.permissionsPublisher }
+    private val permissionsPublisher by inject { it.config.permissionsPublisher }
 
-    override val lifecycleDisposables by injectable { config.lifecycleDisposables }
+    override val lifecycleDisposables by inject { it.config.lifecycleDisposables }
 
-    override val subscriber by injectable { config.subscriber }
+    override val subscriber by inject { it.config.subscriber }
 
 
     protected val binding: VDB by lazy { bindView() }

@@ -13,7 +13,7 @@ abstract class InjectionDaggerActivity<T: Any>: DaggerAppCompatActivity() {
     @set:Inject
     internal lateinit var injection: T
 
-    protected fun <R> injectable(provider: T.() -> R): Lazy<R> {
+    protected fun <R> inject(provider: (T) -> R): Lazy<R> {
         return lazy { provider(injection) }
     }
 

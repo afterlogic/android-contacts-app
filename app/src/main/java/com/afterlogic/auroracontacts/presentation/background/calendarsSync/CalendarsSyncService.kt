@@ -26,7 +26,7 @@ class CalendarsSyncService: InjectionDaggerService<CalendarSyncAdapter>() {
 
     }
 
-    private val syncAdapter by injectable { this }
+    private val syncAdapter by inject { it }
 
     override fun onCreate() {
         super.onCreate()
