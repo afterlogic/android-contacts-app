@@ -30,15 +30,15 @@ class CalendarsSyncService: Service() {// InjectionDaggerService<Provider<Calend
         super.onCreate()
         Timber.d("onCreate")
         synchronized(lock) {
-            syncAdapter = CalendarSyncAdapter(this, true)
+            syncAdapter = CalendarSyncAdapter(this, true, false)
         }
-        //serviceRunning.onNext(true)
+        serviceRunning.onNext(true)
     }
 
     override fun onDestroy() {
         super.onDestroy()
         Timber.d("onDestroy")
-        //serviceRunning.onNext(false)
+        serviceRunning.onNext(false)
     }
 
     override fun onBind(intent: Intent?): IBinder = syncAdapter.syncAdapterBinder
@@ -59,7 +59,7 @@ class CalendarSyncAdapter: AbstractThreadedSyncAdapter {
 
         Timber.d("onPerformSync")
 
-        Thread.sleep(5000)
+        Thread.sleep(10000)
 
         Timber.d("onPerformSyncEnd")
 
