@@ -17,6 +17,8 @@ class Prefs @Inject constructor(context: App) {
 
     var calendarsFetched by booleanPref("calendarsFetched")
 
+    var contactsFetched by booleanPref("contactsFetched")
+
     var syncOnLocalChanges by booleanPref("syncOnLocalChanges")
 
     var syncPeriod by longPref("syncPeriod")
