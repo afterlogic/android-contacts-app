@@ -1,11 +1,15 @@
 package com.afterlogic.auroracontacts.presentation.foreground.main
 
+import android.arch.lifecycle.Lifecycle
+import android.arch.lifecycle.OnLifecycleEvent
 import android.databinding.Bindable
 import android.databinding.ObservableArrayList
 import android.databinding.ObservableList
 import com.afterlogic.auroracontacts.R
 import com.afterlogic.auroracontacts.application.wrappers.Resources
+import com.afterlogic.auroracontacts.core.rx.DisposableBag
 import com.afterlogic.auroracontacts.core.rx.Subscriber
+import com.afterlogic.auroracontacts.core.rx.disposeBy
 import com.afterlogic.auroracontacts.data.SyncPeriod
 import com.afterlogic.auroracontacts.data.calendar.AuroraCalendar
 import com.afterlogic.auroracontacts.presentation.common.base.ObservableRxViewModel
@@ -53,16 +57,13 @@ class MainViewModel @Inject constructor(
 
     private val calendarsMap = WeakHashMap<CalendarItemViewModel, AuroraCalendar>()
 
+    private val startedScopeDisposables = DisposableBag()
+
     init {
 
         interactor.getCalendars()
                 .defaultSchedulers()
                 .subscribeIt(onNext = this::handle)
-
-        interactor.listenSyncingState()
-                .retry()
-                .defaultSchedulers()
-                .subscribeIt { syncing = it }
 
         interactor.syncPeriod
                 .subscribeIt {
@@ -76,6 +77,21 @@ class MainViewModel @Inject constructor(
 
     }
 
+    @OnLifecycleEvent(Lifecycle.Event.ON_START)
+    fun onViewStart() {
+
+        interactor.listenSyncingState()
+                .retry()
+                .disposeBy(startedScopeDisposables)
+                .defaultSchedulers()
+                .subscribeIt { syncing = it }
+
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+    fun onViewStop() {
+        startedScopeDisposables.dispose()
+    }
 
     fun onSyncClicked() {
 

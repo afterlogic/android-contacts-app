@@ -6,7 +6,7 @@ import com.afterlogic.auroracontacts.R
 import com.afterlogic.auroracontacts.application.wrappers.Resources
 import com.afterlogic.auroracontacts.data.account.AccountService
 import com.afterlogic.auroracontacts.data.api.UserNotAuthorizedException
-import com.afterlogic.auroracontacts.presentation.background.calendarsSync.CalendarsSyncService
+import com.afterlogic.auroracontacts.presentation.background.syncStateService.SyncStateService
 import io.reactivex.Completable
 import io.reactivex.Observable
 import timber.log.Timber
@@ -17,14 +17,15 @@ import javax.inject.Inject
  * mail: mail@sunnydaydev.me
  */
 
-class SyncService @Inject constructor(
+class SyncInteractor @Inject constructor(
         res: Resources,
-        private val accountService: AccountService
+        private val accountService: AccountService,
+        private val syncStateConnections: SyncStateService.Connections
 ) {
 
     private val calendarAuthority = res.strings[R.string.calendar_authority]
 
-    val isAnySyncRunning: Observable<Boolean> = CalendarsSyncService.serviceRunning
+    val isAnySyncRunning: Observable<Boolean> get() = syncStateConnections.anySync
 
     fun requestSyncImmediately() : Completable {
 

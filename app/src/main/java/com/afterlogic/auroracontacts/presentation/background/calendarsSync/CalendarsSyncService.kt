@@ -9,8 +9,8 @@ import android.os.Bundle
 import android.os.IBinder
 import com.afterlogic.auroracontacts.application.App
 import com.afterlogic.auroracontacts.application.AppScope
+import com.afterlogic.auroracontacts.presentation.background.syncStateService.SyncStateHolder
 import com.afterlogic.auroracontacts.presentation.common.base.InjectionDaggerService
-import io.reactivex.subjects.BehaviorSubject
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -18,31 +18,32 @@ import javax.inject.Inject
  * Created by sunny on 08.12.2017.
  * mail: mail@sunnydaydev.me
  */
-class CalendarsSyncService: InjectionDaggerService<CalendarSyncAdapter>() {
 
-    companion object {
+class CalendarsSyncService: InjectionDaggerService<CalendarsSyncInjection>() {
 
-        val serviceRunning = BehaviorSubject.createDefault(false)
-
-    }
-
-    private val syncAdapter by inject { it }
+    private val syncAdapter by inject { it.adapter }
+    private val stateHolder by inject { it.syncStateHolder }
 
     override fun onCreate() {
         super.onCreate()
         Timber.d("onCreate")
-        serviceRunning.onNext(true)
+        stateHolder.calendarsSyncing.onNext(true)
     }
 
     override fun onDestroy() {
         super.onDestroy()
         Timber.d("onDestroy")
-        serviceRunning.onNext(false)
+        stateHolder.calendarsSyncing.onNext(false)
     }
 
     override fun onBind(intent: Intent?): IBinder = syncAdapter.syncAdapterBinder
 
 }
+
+class CalendarsSyncInjection @Inject constructor(
+        val adapter: CalendarSyncAdapter,
+        val syncStateHolder: SyncStateHolder
+)
 
 @AppScope
 class CalendarSyncAdapter @Inject constructor(

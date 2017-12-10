@@ -53,7 +53,8 @@
         <service
             android:name=".presentation.background.calendarsSync.CalendarsSyncService"
             android:exported="true"
-            android:permission="com.aurora.contactscalendars.EXPORTED_SERVICE">
+            android:permission="com.aurora.contactscalendars.EXPORTED_SERVICE"
+            android:process=":sync">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
             </intent-filter>
@@ -61,6 +62,11 @@
                 android:name="android.content.SyncAdapter"
                 android:resource="@xml/sync_calendars" />
         </service>
+
+        <service
+            android:name=".presentation.background.syncStateService.SyncStateService"
+            android:exported="false"
+            android:process=":sync"/>
 
     </application>
 
