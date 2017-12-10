@@ -1,37 +1,36 @@
 package com.afterlogic.auroracontacts.presentation.background.calendarsSync
 
 import android.accounts.Account
-import android.app.Service
-import android.content.*
+import android.content.AbstractThreadedSyncAdapter
+import android.content.ContentProviderClient
+import android.content.Intent
+import android.content.SyncResult
 import android.os.Bundle
 import android.os.IBinder
+import com.afterlogic.auroracontacts.application.App
+import com.afterlogic.auroracontacts.application.AppScope
+import com.afterlogic.auroracontacts.presentation.common.base.InjectionDaggerService
 import io.reactivex.subjects.BehaviorSubject
 import timber.log.Timber
+import javax.inject.Inject
 
 /**
  * Created by sunny on 08.12.2017.
  * mail: mail@sunnydaydev.me
  */
-class CalendarsSyncService: Service() {// InjectionDaggerService<Provider<CalendarSyncAdapter>>() {
+class CalendarsSyncService: InjectionDaggerService<CalendarSyncAdapter>() {
 
     companion object {
 
         val serviceRunning = BehaviorSubject.createDefault(false)
 
-        private lateinit var syncAdapter: CalendarSyncAdapter
-
-        private object lock
-
     }
 
-    //private val adapterProvider by injectable { this }
+    private val syncAdapter by injectable { this }
 
     override fun onCreate() {
         super.onCreate()
         Timber.d("onCreate")
-        synchronized(lock) {
-            syncAdapter = CalendarSyncAdapter(this, true, false)
-        }
         serviceRunning.onNext(true)
     }
 
@@ -45,11 +44,10 @@ class CalendarsSyncService: Service() {// InjectionDaggerService<Provider<Calend
 
 }
 
-class CalendarSyncAdapter: AbstractThreadedSyncAdapter {
-
-    constructor(context: Context, autoInitialize: Boolean): super(context, autoInitialize)
-
-    constructor(context: Context, autoInitialize: Boolean, allowParallelSyncs: Boolean) : super(context, autoInitialize, allowParallelSyncs)
+@AppScope
+class CalendarSyncAdapter @Inject constructor(
+        context: App
+): AbstractThreadedSyncAdapter(context, true, false) {
 
     override fun onPerformSync(account: Account?,
                                params: Bundle?,
