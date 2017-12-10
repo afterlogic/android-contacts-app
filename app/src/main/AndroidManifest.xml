@@ -16,11 +16,9 @@
     <uses-permission android:name="android.permission.READ_CALENDAR"/>
     <uses-permission android:name="android.permission.WRITE_CALENDAR"/>
 
-    <!--
     <permission
-        android:name="com.aurora.contactscalendars.SYNC_ADAPTER"
+        android:name="com.aurora.contactscalendars.EXPORTED_SERVICE"
         android:protectionLevel="signature" />
-    -->
 
     <application
         android:allowBackup="true"
@@ -43,7 +41,8 @@
 
         <service
             android:name=".presentation.background.authenticator.AuthenticatorService"
-            android:exported="true">
+            android:exported="true"
+            android:permission="com.aurora.contactscalendars.EXPORTED_SERVICE">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
             </intent-filter>
@@ -53,7 +52,8 @@
 
         <service
             android:name=".presentation.background.calendarsSync.CalendarsSyncService"
-            android:exported="true">
+            android:exported="true"
+            android:permission="com.aurora.contactscalendars.EXPORTED_SERVICE">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
             </intent-filter>
