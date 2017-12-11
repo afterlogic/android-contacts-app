@@ -29,9 +29,9 @@ interface CalendarApiP7 {
     @POST(AJAX)
     fun getCalendars(
             @Field(ACTION) action: String = "CalendarList",
-            @Auth @Field(TOKEN) appToken: String? = AuthValue.APP_TOKEN,
-            @Auth @Field(AUTH_TOKEN) authToken: String? = AuthValue.AUTH_TOKEN,
-            @Auth @Field(ACCOUNT_ID) accountId: Long? = AuthValue.ACCOUNT_ID
+            @Auth(AuthValue.APP_TOKEN) @Field(TOKEN) appToken: String = AuthValue.STRING,
+            @Auth(AuthValue.AUTH_TOKEN) @Field(AUTH_TOKEN) authToken: String = AuthValue.STRING,
+            @Auth(AuthValue.ACCOUNT_ID) @Field(ACCOUNT_ID) accountId: Long = AuthValue.LONG
     ): Single<ApiResponseP7<List<CalendarP7>>>
 
     @FormUrlEncoded
@@ -40,9 +40,9 @@ interface CalendarApiP7 {
             @Field("CalendarIds") calendarsIds: List<String>,
             @Field("GetData") withData: BooleanInt,
             @Field(ACTION) action: String = "CalendarEventsInfo",
-            @Auth @Field(TOKEN) appToken: String? = AuthValue.APP_TOKEN,
-            @Auth @Field(AUTH_TOKEN) authToken: String? = AuthValue.AUTH_TOKEN,
-            @Auth @Field(ACCOUNT_ID) accountId: Long? = AuthValue.ACCOUNT_ID
+            @Auth(AuthValue.APP_TOKEN) @Field(TOKEN) appToken: String = AuthValue.STRING,
+            @Auth(AuthValue.AUTH_TOKEN) @Field(AUTH_TOKEN) authToken: String = AuthValue.STRING,
+            @Auth(AuthValue.ACCOUNT_ID) @Field(ACCOUNT_ID) accountId: Long = AuthValue.LONG
     ): Single<ApiResponseP7<Map<String, List<CalendarEventP7>>>>
 
     @FormUrlEncoded
@@ -52,9 +52,9 @@ interface CalendarApiP7 {
             @Field("url") url: String,
             @Field("data") rawIcsData: String,
             @Field(ACTION) action: String = "CalendarEventUpdateRaw",
-            @Auth @Field(TOKEN) appToken: String? = AuthValue.APP_TOKEN,
-            @Auth @Field(AUTH_TOKEN) authToken: String? = AuthValue.AUTH_TOKEN,
-            @Auth @Field(ACCOUNT_ID) accountId: Long? = AuthValue.ACCOUNT_ID
+            @Auth(AuthValue.APP_TOKEN) @Field(TOKEN) appToken: String = AuthValue.STRING,
+            @Auth(AuthValue.AUTH_TOKEN) @Field(AUTH_TOKEN) authToken: String = AuthValue.STRING,
+            @Auth(AuthValue.ACCOUNT_ID) @Field(ACCOUNT_ID) accountId: Long = AuthValue.LONG
     ) : Single<ApiResponseP7<Boolean>>
 
     @FormUrlEncoded
@@ -63,9 +63,9 @@ interface CalendarApiP7 {
             @Field("calendarId") calendarId: String,
             @Field("eventUrls") urls: List<String>,
             @Field(ACTION) action: String = "CalendarEventsDeleteByUrls",
-            @Auth @Field(TOKEN) appToken: String? = AuthValue.APP_TOKEN,
-            @Auth @Field(AUTH_TOKEN) authToken: String? = AuthValue.AUTH_TOKEN,
-            @Auth @Field(ACCOUNT_ID) accountId: Long? = AuthValue.ACCOUNT_ID
+            @Auth(AuthValue.APP_TOKEN) @Field(TOKEN) appToken: String = AuthValue.STRING,
+            @Auth(AuthValue.AUTH_TOKEN) @Field(AUTH_TOKEN) authToken: String = AuthValue.STRING,
+            @Auth(AuthValue.ACCOUNT_ID) @Field(ACCOUNT_ID) accountId: Long = AuthValue.LONG
     ) : Single<ApiResponseP7<Boolean>>
 
 }

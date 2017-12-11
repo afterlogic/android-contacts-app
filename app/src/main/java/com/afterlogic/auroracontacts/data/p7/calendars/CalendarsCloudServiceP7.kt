@@ -3,6 +3,7 @@ package com.afterlogic.auroracontacts.data.p7.calendars
 import com.afterlogic.auroracontacts.data.account.AccountService
 import com.afterlogic.auroracontacts.data.api.p7.model.CalendarEventP7
 import com.afterlogic.auroracontacts.data.api.p7.model.CalendarP7
+import com.afterlogic.auroracontacts.data.api.p7.util.AuthConverterFactoryP7
 import com.afterlogic.auroracontacts.data.api.p7.util.checkResponseAndGetData
 import com.afterlogic.auroracontacts.data.p7.api.CalendarApiP7
 import com.afterlogic.auroracontacts.data.p7.api.DynamicLazyApiP7
@@ -17,8 +18,9 @@ import javax.inject.Inject
  */
 class CalendarsCloudServiceP7 @Inject constructor(
         dynamicLazyApiP7: DynamicLazyApiP7<CalendarApiP7>,
-        accountService: AccountService
-) : AuthorizedService<CalendarApiP7>(dynamicLazyApiP7, accountService) {
+        accountService: AccountService,
+        authConverterFactoryP7: AuthConverterFactoryP7
+) : AuthorizedService<CalendarApiP7>(dynamicLazyApiP7, accountService, authConverterFactoryP7) {
 
     fun getCalendars(): Single<List<CalendarP7>> = api.flatMap { it.getCalendars() }
             .checkResponseAndGetData()

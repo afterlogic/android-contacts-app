@@ -1,11 +1,8 @@
 package com.afterlogic.auroracontacts.data.api.p7.util
 
-import com.afterlogic.auroracontacts.core.rx.DisposableBag
-import com.afterlogic.auroracontacts.core.rx.Subscriber
-import com.afterlogic.auroracontacts.data.account.AccountService
+import com.afterlogic.auroracontacts.application.AppScope
 import com.afterlogic.auroracontacts.data.account.AuroraSession
 import com.afterlogic.auroracontacts.data.api.UserNotAuthorizedException
-import com.afterlogic.auroracontacts.presentation.common.base.Subscribable
 import retrofit2.Converter
 import retrofit2.Retrofit
 import java.lang.reflect.Type
@@ -18,48 +15,43 @@ import javax.inject.Inject
 
 
 
-annotation class Auth
+annotation class Auth(
+        val value: String
+)
 
 object AuthValue {
 
-    val ACCOUNT_ID = Long.MIN_VALUE
+    const val ACCOUNT_ID = "AuthValue.ACCOUNT_ID"
+    const val APP_TOKEN = "AuthValue.APP_TOKEN"
+    const val AUTH_TOKEN = "AuthValue.AUTO_TOKEN"
 
-    val APP_TOKEN = "AuthValue.APP_TOKEN"
-    val AUTH_TOKEN = "AuthValue.AUTO_TOKEN"
+    const val STRING = "AuthValue.STRING"
+    const val LONG = Long.MIN_VALUE
 
 }
 
-class AuthConverterFactoryP7 @Inject constructor(
-        accountService: AccountService,
-        subscriber: Subscriber
-) : Converter.Factory(), Subscribable by Subscribable.Default(subscriber, DisposableBag()) {
+@AppScope
+class AuthConverterFactoryP7 @Inject constructor() : Converter.Factory() {
 
-    private var currentSession: AuroraSession? = null
+    var currentSession: AuroraSession? = null
 
-    init {
+    override fun stringConverter(type: Type,
+                                 annotations: Array<out Annotation>,
+                                 retrofit: Retrofit): Converter<*, String>? {
 
-        accountService.accountSession
-                .retry()
-                //.defaultSchedulers()
-                .subscribeIt { currentSession = it.get() }
+        val annotation = annotations.find { it is Auth } as Auth? ?: return null
 
-    }
-
-    override fun stringConverter(type: Type?, annotations: Array<out Annotation>, retrofit: Retrofit): Converter<*, String>? {
-
-        if (annotations.find { it is Auth } == null) return null
-
-        return Converter<Any, String> {
+        return Converter<Any, String> converter@ {
 
             val session = currentSession ?: throw UserNotAuthorizedException()
 
-            when(it) {
+            when(annotation.value) {
 
-                AuthValue.APP_TOKEN -> session.appToken
+                AuthValue.APP_TOKEN -> if (it == AuthValue.STRING) session.appToken else it.toString()
 
-                AuthValue.AUTH_TOKEN -> session.authToken
+                AuthValue.AUTH_TOKEN -> if (it == AuthValue.STRING) session.authToken else it.toString()
 
-                AuthValue.ACCOUNT_ID -> session.accountId.toString()
+                AuthValue.ACCOUNT_ID -> if (it == AuthValue.LONG) session.accountId.toString() else it.toString()
 
                 else -> it.toString()
 
