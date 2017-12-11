@@ -29,6 +29,6 @@ data class AuroraCalendarInfo(val id: String,
 data class AuroraCalendarSettings(val syncEnabled: Boolean)
 
 
-data class RemoteCalendarEvent(val id: String)
+data class RemoteCalendarEvent(val id: String, val lastModified: Long, val eTag: String, val data: String)
 
 data class AuroraCalendarEvent(val id: String)

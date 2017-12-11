@@ -1,7 +1,7 @@
 package com.afterlogic.auroracontacts.presentation.background
 
 import com.afterlogic.auroracontacts.presentation.background.authenticator.AuthenticatorService
-import com.afterlogic.auroracontacts.presentation.background.calendarsSync.CalendarsSyncService
+import com.afterlogic.auroracontacts.presentation.background.sync.calendar.CalendarsSyncService
 import com.afterlogic.auroracontacts.presentation.background.syncStateService.SyncStateService
 import dagger.Module
 import dagger.android.ContributesAndroidInjector

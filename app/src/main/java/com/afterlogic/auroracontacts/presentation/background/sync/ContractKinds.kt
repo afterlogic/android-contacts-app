@@ -1,4 +1,4 @@
-package com.afterlogic.auroracontacts.presentation.background.calendarsSync
+package com.afterlogic.auroracontacts.presentation.background.sync
 
 /**
  * Created by sunny on 11.12.2017.

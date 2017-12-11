@@ -51,7 +51,7 @@
         </service>
 
         <service
-            android:name=".presentation.background.calendarsSync.CalendarsSyncService"
+            android:name=".presentation.background.sync.calendar.CalendarsSyncService"
             android:exported="true"
             android:permission="com.aurora.contactscalendars.EXPORTED_SERVICE"
             android:process=":sync">
