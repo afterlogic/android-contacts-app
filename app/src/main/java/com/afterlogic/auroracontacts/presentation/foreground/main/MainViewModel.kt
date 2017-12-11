@@ -11,7 +11,7 @@ import com.afterlogic.auroracontacts.core.rx.DisposableBag
 import com.afterlogic.auroracontacts.core.rx.Subscriber
 import com.afterlogic.auroracontacts.core.rx.disposeBy
 import com.afterlogic.auroracontacts.data.SyncPeriod
-import com.afterlogic.auroracontacts.data.calendar.AuroraCalendar
+import com.afterlogic.auroracontacts.data.calendar.AuroraCalendarInfo
 import com.afterlogic.auroracontacts.presentation.common.base.ObservableRxViewModel
 import com.afterlogic.auroracontacts.presentation.common.databinding.bindable
 import com.afterlogic.auroracontacts.presentation.common.permissions.PermissionRequest
@@ -55,7 +55,7 @@ class MainViewModel @Inject constructor(
                 .subscribeIt()
     }
 
-    private val calendarsMap = WeakHashMap<CalendarItemViewModel, AuroraCalendar>()
+    private val calendarsMap = WeakHashMap<CalendarItemViewModel, AuroraCalendarInfo>()
 
     private val startedScopeDisposables = DisposableBag()
 
@@ -106,7 +106,7 @@ class MainViewModel @Inject constructor(
 
     }
 
-    private fun handle(calendars: List<AuroraCalendar>) {
+    private fun handle(calendars: List<AuroraCalendarInfo>) {
 
         if (loadingData) loadingData = false
 
@@ -130,7 +130,7 @@ class MainViewModel @Inject constructor(
 
     }
 
-    private fun mapCalendar(calendar: AuroraCalendar) : CalendarItemViewModel =
+    private fun mapCalendar(calendar: AuroraCalendarInfo) : CalendarItemViewModel =
             CalendarItemViewModel(
                     calendar.name, calendar.color,
                     calendar.settings.syncEnabled, this::onCheckedChanged

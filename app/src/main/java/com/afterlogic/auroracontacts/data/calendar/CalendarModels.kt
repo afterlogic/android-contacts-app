@@ -5,16 +5,26 @@ package com.afterlogic.auroracontacts.data.calendar
  * mail: mail@sunnydaydev.me
  */
 
-data class RemoteCalendar(val id: String,
-                          val name: String,
-                          val description: String?,
-                          val color: Int)
+data class RemoteCalendar(
+        val id: String,
+        val name: String,
+        val description: String?,
+        val color: Int,
+        val eTag: String?,
+        val cTag: String,
+        val owner: String,
+        val accessLevel: AccessLevel
+) {
 
-data class AuroraCalendar(val id: String,
-                          val name: String,
-                          val description: String?,
-                          val color: Int,
-                          val settings: AuroraCalendarSettings)
+    enum class AccessLevel { READ, EDITOR }
+
+}
+
+data class AuroraCalendarInfo(val id: String,
+                              val name: String,
+                              val description: String?,
+                              val color: Int,
+                              val settings: AuroraCalendarSettings)
 
 data class AuroraCalendarSettings(val syncEnabled: Boolean)
 

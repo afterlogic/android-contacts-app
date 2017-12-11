@@ -6,13 +6,13 @@ data class CalendarP7(
         @SerializedName("Access")
     val access: Int = 0,
         @SerializedName("CTag")
-    val cTag: String? = null,
+    val cTag: String,
         @SerializedName("Color")
     val color: String,
         @SerializedName("Description")
     val description: String?,
         @SerializedName("Etag")
-    val eTag: String,
+    val eTag: String?,
         @SerializedName("ExportHash")
     val exportHash: String? = null,
         @SerializedName("Id")

@@ -169,4 +169,6 @@ dependencies {
     // Logging
     implementation deps.core.timber
 
+    //implementation deps.core.ical4j
+
 }

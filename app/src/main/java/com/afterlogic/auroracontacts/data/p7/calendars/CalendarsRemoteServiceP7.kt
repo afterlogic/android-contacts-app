@@ -34,7 +34,15 @@ class CalendarsRemoteServiceP7 @Inject constructor(
     }
 
     private fun parseCalendar(dto: CalendarP7) : RemoteCalendar = RemoteCalendar(
-            dto.id, dto.name, dto.description, Color.parseColor(dto.color)
+            dto.id,
+            dto.name,
+            dto.description,
+            Color.parseColor(dto.color),
+            dto.eTag,
+            dto.cTag,
+            dto.owner,
+            if (dto.access == 1) RemoteCalendar.AccessLevel.EDITOR
+            else RemoteCalendar.AccessLevel.READ
     )
 
     private fun parseEvent(dto: CalendarEventP7) : RemoteCalendarEvent = RemoteCalendarEvent(dto.url)

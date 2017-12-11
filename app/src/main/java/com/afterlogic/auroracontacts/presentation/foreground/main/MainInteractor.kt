@@ -1,7 +1,7 @@
 package com.afterlogic.auroracontacts.presentation.foreground.main
 
 import com.afterlogic.auroracontacts.data.SyncPeriod
-import com.afterlogic.auroracontacts.data.calendar.AuroraCalendar
+import com.afterlogic.auroracontacts.data.calendar.AuroraCalendarInfo
 import com.afterlogic.auroracontacts.data.calendar.CalendarsRepository
 import com.afterlogic.auroracontacts.data.preferences.Prefs
 import com.afterlogic.auroracontacts.data.sync.SyncInteractor
@@ -35,9 +35,9 @@ class MainInteractor @Inject constructor(
         prefs.syncPeriod = period.duration
     }
 
-    fun getCalendars(): Flowable<List<AuroraCalendar>> = calendarsRepository.getCalendars()
+    fun getCalendars(): Flowable<List<AuroraCalendarInfo>> = calendarsRepository.getCalendarsInfo()
 
-    fun setSyncEnabled(calendar: AuroraCalendar, enabled: Boolean): Completable =
+    fun setSyncEnabled(calendar: AuroraCalendarInfo, enabled: Boolean): Completable =
             calendarsRepository.setSyncEnabled(calendar, enabled)
 
     fun listenSyncingState(): Observable<Boolean> = syncInteractor.isAnySyncRunning
