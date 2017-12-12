@@ -67,6 +67,7 @@ class Dependencies {
         public def timber = '4.6.0'
 
         public def ical4j = '2.1.5'
+        public def biweekly = '0.6.1'
 
         // Testing
         public def espresso = '3.0.1'
@@ -155,6 +156,7 @@ class Dependencies {
         public def gson = "com.google.code.gson:gson:$versions.gson"
         public def timber = "com.jakewharton.timber:timber:$versions.timber"
         public def ical4j = "org.mnode.ical4j:ical4j:$versions.ical4j"
+        public def biweekly = "net.sf.biweekly:biweekly:$versions.biweekly"
 
     }
 

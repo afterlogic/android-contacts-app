@@ -1,11 +1,12 @@
 package com.afterlogic.auroracontacts.data.p7.api
 
 import com.afterlogic.auroracontacts.BuildConfig
+import com.afterlogic.auroracontacts.application.AppScope
 import com.afterlogic.auroracontacts.core.gson.registerTypeAdapter
+import com.afterlogic.auroracontacts.data.api.JsonFieldFactory
 import com.afterlogic.auroracontacts.data.api.P7
 import com.afterlogic.auroracontacts.data.api.p7.converters.ApiResponseP7Deserializer
 import com.afterlogic.auroracontacts.data.api.p7.util.AuthConverterFactoryP7
-import com.afterlogic.auroracontacts.application.AppScope
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import dagger.Module
@@ -72,6 +73,7 @@ class ApiP7Module {
         return Retrofit.Builder()
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .addConverterFactory(authConverterFactory)
+                .addConverterFactory(JsonFieldFactory(gson))
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .client(client)
 

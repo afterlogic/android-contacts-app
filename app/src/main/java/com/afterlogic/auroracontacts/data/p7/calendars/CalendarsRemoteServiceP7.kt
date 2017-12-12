@@ -45,6 +45,11 @@ class CalendarsRemoteServiceP7 @Inject constructor(
             else RemoteCalendar.AccessLevel.READ
     )
 
-    private fun parseEvent(dto: CalendarEventP7) : RemoteCalendarEvent = RemoteCalendarEvent(dto.url)
+    private fun parseEvent(dto: CalendarEventP7) : RemoteCalendarEvent = RemoteCalendarEvent(
+            dto.url,
+            dto.lastModified.toLong(),
+            dto.eTag,
+            dto.data!!
+    )
 
 }

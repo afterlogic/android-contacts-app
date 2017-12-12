@@ -1,5 +1,6 @@
 package com.afterlogic.auroracontacts.data.p7.api
 
+import com.afterlogic.auroracontacts.data.api.Json
 import com.afterlogic.auroracontacts.data.api.p7.model.ApiResponseP7
 import com.afterlogic.auroracontacts.data.api.p7.model.CalendarEventP7
 import com.afterlogic.auroracontacts.data.api.p7.model.CalendarP7
@@ -37,7 +38,7 @@ interface CalendarApiP7 {
     @FormUrlEncoded
     @POST(AJAX)
     fun getEvents(
-            @Field("CalendarIds") calendarsIds: List<String>,
+            @Json @Field("CalendarIds") calendarsIds: List<String>,
             @Field("GetData") withData: BooleanInt,
             @Field(ACTION) action: String = "CalendarEventsInfo",
             @Auth(AuthValue.APP_TOKEN) @Field(TOKEN) appToken: String = AuthValue.STRING,

@@ -169,6 +169,7 @@ dependencies {
     // Logging
     implementation deps.core.timber
 
+    implementation deps.core.biweekly
     //implementation deps.core.ical4j
 
 }

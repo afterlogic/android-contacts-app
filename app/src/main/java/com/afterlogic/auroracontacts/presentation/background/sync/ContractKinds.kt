@@ -15,12 +15,11 @@ object Contract {
 
 
     object Events {
-        const val EVENT_FILE = "sync_data3"
-        const val REMOTE_ETAG = "sync_data4"
-        const val REMOTE_LAST_MODIFIED = "sync_data5"
-        const val REQURENCE_ID = "sync_data2"
+        const val REMOTE_ID = "sync_data1"
+        const val REQURENCE_ID = "sync_data3"
+        const val REMOTE_LAST_MODIFIED = "sync_data4"
+        const val REMOTE_ETAG = "sync_data5"
         //const val SYNC_NON_EXIST_FLAG = "sync_data6"
-        //const val UID = "sync_data1"
     }
 
 }

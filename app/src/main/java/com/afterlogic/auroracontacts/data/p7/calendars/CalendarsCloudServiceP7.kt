@@ -27,6 +27,6 @@ class CalendarsCloudServiceP7 @Inject constructor(
 
     fun getCalendarEvents(calendarId: String) : Single<List<CalendarEventP7>> = api
             .flatMap { it.getEvents(listOf(calendarId), BooleanInt(true)) }
-            .checkResponseAndGetData { it.data!![calendarId]!! }
+            .checkResponseAndGetData { it.data!![calendarId] ?: emptyList() }
 
 }
