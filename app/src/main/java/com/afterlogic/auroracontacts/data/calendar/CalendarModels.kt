@@ -31,4 +31,8 @@ data class AuroraCalendarSettings(val syncEnabled: Boolean)
 
 data class RemoteCalendarEvent(val id: String, val lastModified: Long, val eTag: String, val data: String)
 
+data class UpdateCalendarEventRequest(val id: String?, val calendarId: String, val icsData: String)
+
+data class DeleteCalendarEventsRequest(val calendarId: String, val ids: List<String>)
+
 data class AuroraCalendarEvent(val id: String)

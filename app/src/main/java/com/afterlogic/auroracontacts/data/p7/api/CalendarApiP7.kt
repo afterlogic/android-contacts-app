@@ -50,7 +50,7 @@ interface CalendarApiP7 {
     @POST(AJAX)
     fun updateEvent(
             @Field("calendarId") calendarId: String,
-            @Field("url") url: String,
+            @Field("url") url: String?,
             @Field("data") rawIcsData: String,
             @Field(ACTION) action: String = "CalendarEventUpdateRaw",
             @Auth(AuthValue.APP_TOKEN) @Field(TOKEN) appToken: String = AuthValue.STRING,

@@ -21,7 +21,6 @@ class CalendarsRepository @Inject constructor(
         private val prefs: Prefs,
         private val dao: CalendarsDao,
         private val calendarMapper: CalendarMapper,
-        private val eventsMapper: EventsMapper,
         private val remoteServiceProvider: CalendarRemoteServiceProvider
 ) {
 
@@ -45,19 +44,6 @@ class CalendarsRepository @Inject constructor(
 
     //endregion
 
-    fun getEvents(calendarId: String): Single<List<AuroraCalendarEvent>> {
-        return remoteService.flatMap { it.getEvents(calendarId) }
-                .map { TODO() }
-    }
-
-    fun updateEvent(event: AuroraCalendarEvent): Completable {
-        return remoteService.flatMapCompletable { it.updateEvent(eventsMapper.toRemote(event)) }
-    }
-
-    fun deleteEvent(event: AuroraCalendarEvent): Completable {
-        return remoteService.flatMapCompletable { it.deleteEvent(eventsMapper.toRemote(event)) }
-    }
-
     private fun getRemoteCalendars(): Single<List<RemoteCalendar>> {
 
         return remoteService.flatMap { it.getCalendars() }
@@ -78,8 +64,8 @@ class CalendarsRepository @Inject constructor(
 interface CalendarRemoteService {
     fun getCalendars(): Single<List<RemoteCalendar>>
     fun getEvents(calendarId: String): Single<List<RemoteCalendarEvent>>
-    fun updateEvent(event: RemoteCalendarEvent): Completable
-    fun deleteEvent(event: RemoteCalendarEvent): Completable
+    fun updateEvent(request: UpdateCalendarEventRequest): Completable
+    fun deleteEvent(request: DeleteCalendarEventsRequest): Completable
 }
 
 class CalendarMapper @Inject constructor() {

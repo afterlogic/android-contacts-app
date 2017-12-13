@@ -29,4 +29,12 @@ class CalendarsCloudServiceP7 @Inject constructor(
             .flatMap { it.getEvents(listOf(calendarId), BooleanInt(true)) }
             .checkResponseAndGetData { it.data!![calendarId] ?: emptyList() }
 
+    fun updateEvent(calendarId: String, eventUrl: String?, data: String): Single<Boolean> =
+            api.flatMap { it.updateEvent(calendarId, eventUrl, data) }
+                    .checkResponseAndGetData()
+
+    fun deleteEvent(calendarId: String, urls: List<String>): Single<Boolean> =
+            api.flatMap { it.deleteEvents(calendarId, urls) }
+                    .checkResponseAndGetData()
+
 }
