@@ -10,6 +10,7 @@ import com.afterlogic.auroracontacts.application.wrappers.Resources
 import com.afterlogic.auroracontacts.core.rx.DisposableBag
 import com.afterlogic.auroracontacts.core.rx.Subscriber
 import com.afterlogic.auroracontacts.core.rx.disposeBy
+import com.afterlogic.auroracontacts.core.util.setSequentiallyFrom
 import com.afterlogic.auroracontacts.data.SyncPeriod
 import com.afterlogic.auroracontacts.data.calendar.AuroraCalendarInfo
 import com.afterlogic.auroracontacts.presentation.common.base.ObservableRxViewModel
@@ -26,7 +27,7 @@ import javax.inject.Inject
  */
 class MainViewModel @Inject constructor(
         private val interactor: MainInteractor,
-        private val res: Resources,
+        res: Resources,
         private val permissionsInteractor: PermissionsInteractor,
         subscriber: Subscriber
 ): ObservableRxViewModel(subscriber)  {
@@ -59,9 +60,18 @@ class MainViewModel @Inject constructor(
 
     private val startedScopeDisposables = DisposableBag()
 
+    private val calendars: MutableList<CalendarItemViewModel> = ObservableArrayList()
+    private val calendarsCard = CardViewModel(
+            TYPE_CALENDAR, res.strings[R.string.prompt_main_calendars_title], calendars
+    )
+    private val calendarItemStableIds = WeakHashMap<String, Long>()
+    private var lastCaledarStableId = 0L
+
     init {
 
         interactor.getCalendars()
+                .map { it.toTypedArray() }
+                .distinctUntilChanged { f, s -> f contentEquals s }
                 .defaultSchedulers()
                 .subscribeIt(onNext = this::handle)
 
@@ -106,7 +116,7 @@ class MainViewModel @Inject constructor(
 
     }
 
-    private fun handle(calendars: List<AuroraCalendarInfo>) {
+    private fun handle(calendars: Array<AuroraCalendarInfo>) {
 
         if (loadingData) loadingData = false
 
@@ -114,17 +124,24 @@ class MainViewModel @Inject constructor(
                 .map { mapCalendar(it) to it  }
                 .also {
 
-                    calendarsMap.putAll(it)
+                    calendarsMap.clear()
 
-                    cards.clear()
+                    if (it.isEmpty()) {
 
-                    val card = CardViewModel(
-                            TYPE_CALENDAR,
-                            res.strings[R.string.prompt_main_calendars_title],
-                            it.map { (vm , _) -> vm }
-                    )
+                        cards.remove(calendarsCard)
 
-                    cards.add(card)
+                    } else {
+
+                        calendarsMap.putAll(it)
+
+                        val calendarsVMs = it.map { (vm , _) -> vm }
+                        this.calendars.setSequentiallyFrom(calendarsVMs)
+
+                        if(!cards.contains(calendarsCard)) {
+                            cards.add(calendarsCard)
+                        }
+
+                    }
 
                 }
 
@@ -132,6 +149,7 @@ class MainViewModel @Inject constructor(
 
     private fun mapCalendar(calendar: AuroraCalendarInfo) : CalendarItemViewModel =
             CalendarItemViewModel(
+                    calendarItemStableIds.getOrPut(calendar.id) { ++lastCaledarStableId },
                     calendar.name, calendar.color,
                     calendar.settings.syncEnabled, this::onCheckedChanged
             )

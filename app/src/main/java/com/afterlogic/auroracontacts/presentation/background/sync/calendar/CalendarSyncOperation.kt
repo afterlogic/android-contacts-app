@@ -198,20 +198,20 @@ class CalendarSyncOperation private constructor(
 
         while (cursor.moveToNext()) {
 
-            val remoteId = cursor.getStringOrNull(CustomContact.Events.REMOTE_ID)
+            val remoteId = cursor.getString(CustomContact.Events.REMOTE_ID)
             val localId = cursor.getLong(0)
 
             if (remoteId != null) {
 
                 localIds[remoteId] = localId
 
-                cursor.getStringOrNull(CustomContact.Events.REMOTE_ETAG)?.also {
+                cursor.getString(CustomContact.Events.REMOTE_ETAG)?.also {
                     eTags[remoteId] = it
                 }
 
             } else {
 
-                cursor.getStringOrNull(CalendarContract.Events.UID_2445)?.also {
+                cursor.getString(CalendarContract.Events.UID_2445)?.also {
                     newUids[it] = localId
                 }
 
@@ -290,13 +290,13 @@ class CalendarSyncOperation private constructor(
 
             while (cursor.moveToNext()) {
 
-                val localId = cursor.getLongOrNull(CalendarContract.Events._ID)!!
-                val remoteId = cursor.getStringOrNull(CustomContact.Events.REMOTE_ID)
+                val localId = cursor.getLong(CalendarContract.Events._ID)!!
+                val remoteId = cursor.getString(CustomContact.Events.REMOTE_ID)
 
                 val vEvent = cursor.toVEvent()
 
                 if (vEvent.uid == null) {
-                    val uid = UUID.randomUUID().toString()
+                    val uid = UUID.randomUUID().toString().toUpperCase()
                     newUuids[localId] = uid
                     vEvent.uid = Uid(uid)
                 }
@@ -308,7 +308,7 @@ class CalendarSyncOperation private constructor(
                 val data = iCal.write()
 
                 updateEvents[localId] = UpdateCalendarEventRequest(
-                    remoteId, remoteCalendar.id, data
+                    remoteId ?: "${vEvent.uid.value}.ics", remoteCalendar.id, data
                 )
 
             }
@@ -499,6 +499,7 @@ class CalendarSyncOperation private constructor(
     private fun parseRecurrence(rule: String, until: Long? = null): Recurrence {
 
         val ruleMap = rule.split(";")
+                .filterNot { it.isBlank() }
                 .map { it.split("=") }
                 .associate { it[0] to it[1] }
 
@@ -528,35 +529,42 @@ class CalendarSyncOperation private constructor(
 
         return VEvent().apply {
 
-            getStringOrNull(CalendarContract.Events.UID_2445)?.also { uid = Uid(it) }
-            getLongOrNull(CustomContact.Events.REQURENCE_ID)?.also { recurrenceId = RecurrenceId(Date(it)) }
+            getString(CalendarContract.Events.UID_2445)?.also { uid = Uid(it) }
+            getLong(CustomContact.Events.REQURENCE_ID)?.also { recurrenceId = RecurrenceId(Date(it)) }
 
             lastModified = LastModified(Date())
 
-            getStringOrNull(CalendarContract.Events.TITLE)?.also { summary = Summary(it) }
-            getStringOrNull(CalendarContract.Events.DESCRIPTION)?.also { description = Description(it) }
-            getStringOrNull(CalendarContract.Events.EVENT_LOCATION)?.also { location = Location(it) }
+            getString(CalendarContract.Events.TITLE)?.also { summary = Summary(it) }
+            getString(CalendarContract.Events.DESCRIPTION)?.also { description = Description(it) }
+            getString(CalendarContract.Events.EVENT_LOCATION)?.also { location = Location(it) }
 
             // TODO: Timezone?
             //val utcTimeZone = TimeZone.getTimeZone("UTC")
             //val start = dateStart.value.rawComponents.toDate(utcTimeZone)
             //val end = dateEnd.value.rawComponents.toDate(utcTimeZone)
-            getLongOrNull(CalendarContract.Events.DTSTART)?.also { dateStart = DateStart(Date(it)) }
-            getLongOrNull(CalendarContract.Events.DTEND)?.also { dateEnd = DateEnd(Date(it)) }
-            getStringOrNull(CalendarContract.Events.DURATION)?.also { duration = DurationProperty(Duration.parse(it)) }
 
-            getStringOrNull(CalendarContract.Events.RRULE)
-                    ?.let { parseRecurrence(it, getLongOrNull(CalendarContract.Events.LAST_DATE)) }
+            getLong(CalendarContract.Events.DTSTART)?.also { dateStart = DateStart(Date(it)) }
+
+            if (getLong(CalendarContract.Events.ALL_DAY) == 1L) {
+
+            } else {
+                getLong(CalendarContract.Events.DTEND)?.also { dateEnd = DateEnd(Date(it)) }
+                getString(CalendarContract.Events.DURATION)?.also { duration = DurationProperty(Duration.parse(it)) }
+            }
+
+            getString(CalendarContract.Events.RRULE)
+                    ?.let { parseRecurrence(it, getLong(CalendarContract.Events.LAST_DATE)) }
                     ?.let { RecurrenceRule(it) }
                     ?.also { recurrenceRule = it }
 
-            getStringOrNull(CalendarContract.Events.EXRULE)
+            getString(CalendarContract.Events.EXRULE)
                     ?.let { parseRecurrence(it) }
                     ?.let { ExceptionRule(it) }
                     ?.also { exceptionRules.add(it) }
 
-            getStringOrNull(CalendarContract.Events.EXDATE)
+            getString(CalendarContract.Events.EXDATE)
                     ?.split(",")
+                    ?.filterNot { it.isBlank() }
                     ?.map { ICalDate(Date(it.toLong())) }
                     ?.also {
                         val dates = ExceptionDates()
@@ -568,16 +576,18 @@ class CalendarSyncOperation private constructor(
 
     }
 
-    private fun Cursor.getStringOrNull(columnName: String) : String? {
+    private fun Cursor.getString(columnName: String, canBeBlank: Boolean = false) : String? {
         return getColumnIndex(columnName)
                 .takeIf { it != -1 && !isNull(it) }
                 ?.let { getString(it) }
+                ?.takeIf { canBeBlank || it.isNotBlank() }
     }
 
-    private fun Cursor.getLongOrNull(columnName: String) : Long? {
+    private fun Cursor.getLong(columnName: String, canMinusOne: Boolean = false) : Long? {
         return getColumnIndex(columnName)
                 .takeIf { it != -1 && !isNull(it) }
                 ?.let { getLong(it) }
+                ?.takeIf { canMinusOne || it != -1L }
     }
 
     private fun <T> String.toList(map: (String) -> T): List<T> {
