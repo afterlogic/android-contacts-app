@@ -34,7 +34,7 @@ class CalendarsCloudServiceP7 @Inject constructor(
                     .checkResponseAndGetData()
 
     fun deleteEvent(calendarId: String, urls: List<String>): Single<Boolean> =
-            api.flatMap { it.deleteEvents(calendarId, urls) }
+            api.flatMap { it.deleteEvents(calendarId, urls + "") }
                     .checkResponseAndGetData()
 
 }

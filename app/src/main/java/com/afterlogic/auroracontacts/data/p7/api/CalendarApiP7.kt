@@ -62,7 +62,7 @@ interface CalendarApiP7 {
     @POST(AJAX)
     fun deleteEvents(
             @Field("calendarId") calendarId: String,
-            @Field("eventUrls") urls: List<String>,
+            @Json @Field("eventUrls") urls: List<String>,
             @Field(ACTION) action: String = "CalendarEventsDeleteByUrls",
             @Auth(AuthValue.APP_TOKEN) @Field(TOKEN) appToken: String = AuthValue.STRING,
             @Auth(AuthValue.AUTH_TOKEN) @Field(AUTH_TOKEN) authToken: String = AuthValue.STRING,

@@ -20,10 +20,10 @@ import com.afterlogic.auroracontacts.presentation.background.sync.UnexpectedNull
 import io.reactivex.Completable
 import io.reactivex.Single
 import io.reactivex.rxkotlin.Singles
+import timber.log.Timber
 import java.io.IOException
 import java.text.ParseException
 import java.util.*
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class CalendarSyncOperation private constructor(
@@ -161,80 +161,55 @@ class CalendarSyncOperation private constructor(
     @SuppressLint("Recycle")
     private fun storeEvents(localCalendarId: Long, events: List<RemoteCalendarEvent>) {
 
-        val eventsUri = getSyncUri(CalendarContract.Events.CONTENT_URI)
+        val idsQuery = events.map { it.id } .toSqlIn()
 
-        val idsQuery = events.joinToString("', '", "('", "')") { it.id }
-
+        val eventsClient = contentClient.events
         // Delete unexists. Don't delete items without remote ID,
         // cause it can be first inverse local sync.
-        contentClient.delete(
-                eventsUri,
+        eventsClient.delete(
                 """
                     ${CalendarContract.Events.CALENDAR_ID} = $localCalendarId AND
-                            ${CustomContact.Calendar.REMOTE_ID} IS NOT NULL AND
-                            ${CustomContact.Calendar.REMOTE_ID} NOT IN $idsQuery
+                    ${CustomContact.Events.SYNCED} = 1 AND
+                    ${CustomContact.Events.REMOTE_ID} NOT IN $idsQuery
 
-                """.trimIndent(),
-                null
-
+                """.trimIndent()
         )
 
-        val cursor = contentClient.query(
-                eventsUri,
+        val cursor = eventsClient.query(
                 arrayOf(
                         CalendarContract.Events._ID,
                         CustomContact.Events.REMOTE_ID,
-                        CustomContact.Events.REMOTE_ETAG,
-                        CalendarContract.Events.UID_2445
+                        CustomContact.Events.REMOTE_ETAG
                 ),
                 "${CalendarContract.Events.CALENDAR_ID} = ?",
-                arrayOf(localCalendarId.toString()),
-                null
+                arrayOf(localCalendarId.toString())
         ) ?: throw UnexpectedNullCursorException()
 
-        val eTags = mutableMapOf<String, String>()
-        val localIds = mutableMapOf<String, Long>()
-        val newUids = mutableMapOf<String, Long>()
+        data class LocalInfo(val localId: Long, val eTag: String?)
 
-        while (cursor.moveToNext()) {
-
-            val remoteId = cursor.getString(CustomContact.Events.REMOTE_ID)
+        val localData = cursor.toList {
+            val remoteId = cursor.getString(CustomContact.Events.REMOTE_ID) ?: return@toList null
             val localId = cursor.getLong(0)
-
-            if (remoteId != null) {
-
-                localIds[remoteId] = localId
-
-                cursor.getString(CustomContact.Events.REMOTE_ETAG)?.also {
-                    eTags[remoteId] = it
-                }
-
-            } else {
-
-                cursor.getString(CalendarContract.Events.UID_2445)?.also {
-                    newUids[it] = localId
-                }
-
-            }
-
+            val eTag = cursor.getString(CustomContact.Events.REMOTE_ETAG)
+            remoteId to (LocalInfo(localId, eTag))
         }
+                .filterNotNull()
+                .associate { (id, local) -> id to local }
 
         cursor.close()
 
         events
-                .filterNot { it.eTag == eTags[it.id] }
+                .filterNot { it.eTag == localData[it.id]?.eTag }
                 .forEach {
 
                     val vEvent = Biweekly.parse(it.data).first().events.first()
 
-                    val localId = localIds[it.id] ?: vEvent.uid?.let { newUids[it.value] }
-
                     val eventCv = vEvent.toContentValues(it, localCalendarId)
 
+                    val localId = localData[it.id]?.localId
                     if (localId != null) {
 
-                        contentClient.update(
-                                eventsUri,
+                        eventsClient.update(
                                 eventCv,
                                 "${CalendarContract.Events._ID} = ?",
                                 arrayOf(localId.toString())
@@ -242,42 +217,46 @@ class CalendarSyncOperation private constructor(
 
                     } else {
 
-                        contentClient.insert(eventsUri, eventCv)
+                        eventsClient.insert(eventCv)
 
                     }
 
                 }
 
-        // Delete all not dirty items without remote ID, cause they not exists.
-        contentClient.delete(
-                eventsUri,
-                """
-                    ${CalendarContract.Events.CALENDAR_ID} = $localCalendarId AND
-                            ${CustomContact.Calendar.REMOTE_ID} IS NULL AND
-                            ${CalendarContract.Events.DIRTY} = 0
+    }
 
-                """.trimIndent(),
-                null
+    private fun syncLocalEventsToRemote(localCalendarId: Long, remoteCalendar: RemoteCalendar): Single<Boolean> {
 
-        )
+        return Single.concat(
+                deleteLocallyDeleted(localCalendarId, remoteCalendar),
+                uploadLocalChanges(localCalendarId, remoteCalendar)
+        ).all { it }
 
     }
 
-    @SuppressLint("Recycle")
-    private fun syncLocalEventsToRemote(localCalendarId: Long, remoteCalendar: RemoteCalendar): Single<Boolean> {
+    private fun deleteLocallyDeleted(localCalendarId: Long, remoteCalendar: RemoteCalendar): Single<Boolean> {
 
         return Single.defer {
 
-            val eventsUri = getSyncUri(CalendarContract.Events.CONTENT_URI)
+            val eventsClient = contentClient.events
 
-            val cursor = contentClient.query(
-                    eventsUri,
-                    null,
-                    """
+            // Delete all locals which was not synced to remote
+            eventsClient.delete(
+                    selection = """
                     ${CalendarContract.Events.CALENDAR_ID} = $localCalendarId AND
-                            ${CalendarContract.Events.DIRTY} = 1
-                """.trimIndent(),
-                    null, null
+                            ${CalendarContract.Events.DELETED} = 1 AND (
+                                    ${CustomContact.Events.SYNCED} != 1 OR
+                                    ${CustomContact.Events.REMOTE_ID} IS NULL
+                            )
+                    """.trimIndent()
+            )
+
+            val cursor = eventsClient.query(
+                    projection = arrayOf(CustomContact.Events.REMOTE_ID),
+                    selection = """
+                    ${CalendarContract.Events.CALENDAR_ID} = $localCalendarId AND
+                            ${CalendarContract.Events.DELETED} = 1
+                    """.trimIndent()
             ) ?: throw UnexpectedNullCursorException()
 
             if (cursor.count == 0) {
@@ -285,10 +264,51 @@ class CalendarSyncOperation private constructor(
                 return@defer Single.just(true)
             }
 
-            val updateEvents = mutableMapOf<Long, UpdateCalendarEventRequest>()
+            val deletedIds = cursor.toList { it.getString(CustomContact.Events.REMOTE_ID) }
+                    .filterNotNull()
+
+            cursor.close()
+
+            val deleteRequest = DeleteCalendarEventsRequest(remoteCalendar.id, deletedIds)
+
+            remoteService.flatMapCompletable { it.deleteEvent(deleteRequest) }
+                    .doOnComplete {
+
+                        val deleted = eventsClient.delete(
+                                selection = "${CustomContact.Events.REMOTE_ID} IN ${deletedIds.toSqlIn()}"
+                        )
+
+                        Timber.d("Deleted: $deleted")
+
+                    }
+                    .andThen(Single.just(false))
+
+        }
+
+    }
+
+    @SuppressLint("Recycle")
+    private fun uploadLocalChanges(localCalendarId: Long, remoteCalendar: RemoteCalendar): Single<Boolean> {
+
+        return Single.defer {
+
+            val eventsClient = contentClient.events
+
+            val cursor = eventsClient.query(
+                    selection = """
+                    ${CalendarContract.Events.CALENDAR_ID} = $localCalendarId AND
+                            ${CalendarContract.Events.DIRTY} = 1
+                    """.trimIndent()
+            ) ?: throw UnexpectedNullCursorException()
+
+            if (cursor.count == 0) {
+                cursor.close()
+                return@defer Single.just(true)
+            }
+
             val newUuids = mutableMapOf<Long, String>()
 
-            while (cursor.moveToNext()) {
+            val updateEvents = cursor.toList {
 
                 val localId = cursor.getLong(CalendarContract.Events._ID)!!
                 val remoteId = cursor.getString(CustomContact.Events.REMOTE_ID)
@@ -307,11 +327,11 @@ class CalendarSyncOperation private constructor(
                 iCal.version = ICalVersion.V2_0
                 val data = iCal.write()
 
-                updateEvents[localId] = UpdateCalendarEventRequest(
-                    remoteId ?: "${vEvent.uid.value}.ics", remoteCalendar.id, data
+                localId to UpdateCalendarEventRequest(
+                        remoteId ?: "${vEvent.uid.value}.ics", remoteCalendar.id, data
                 )
 
-            }
+            } .associate { it }
 
             cursor.close()
 
@@ -323,6 +343,8 @@ class CalendarSyncOperation private constructor(
                             val cv = ContentValues().apply {
 
                                 put(CalendarContract.Events.DIRTY, 0)
+                                put(CustomContact.Events.SYNCED, 1)
+                                put(CustomContact.Events.REMOTE_ID, request.id)
 
                                 newUuids[localId]?.also {
                                     put(CalendarContract.Events.UID_2445, it)
@@ -330,15 +352,13 @@ class CalendarSyncOperation private constructor(
 
                             }
 
-                            contentClient.update(
-                                    eventsUri,
+                            eventsClient.update(
                                     cv,
                                     "${CalendarContract.Events._ID} = ?",
                                     arrayOf(localId.toString())
                             )
 
                         }
-
 
             } .let {
 
@@ -415,10 +435,11 @@ class CalendarSyncOperation private constructor(
             localId?.let { put(CalendarContract.Events._ID, it) }
 
             put(CustomContact.Events.REMOTE_ID, remote.id)
+            put(CalendarContract.Events._SYNC_ID, remote.id)
             put(CalendarContract.Events.UID_2445, uid.value)
             val recurrenceId = recurrenceId?.value?.time ?: 0L
             put(CustomContact.Events.REQURENCE_ID, recurrenceId)
-            put(CustomContact.Events.REMOTE_LAST_MODIFIED, remote.lastModified)
+            put(CustomContact.Events.SYNCED, 1)
             put(CustomContact.Events.REMOTE_ETAG, remote.eTag)
             put(CalendarContract.Events._SYNC_ID, "${uid.value}-$recurrenceId")
 
@@ -430,22 +451,23 @@ class CalendarSyncOperation private constructor(
 
             val utcTimeZone = TimeZone.getTimeZone("UTC")
             val start = dateStart.value.rawComponents.toDate(utcTimeZone)
-            val end = dateEnd.value.rawComponents.toDate(utcTimeZone)
 
             put(CalendarContract.Events.DTSTART, start.time)
             put(CalendarContract.Events.EVENT_TIMEZONE, utcTimeZone.id)
 
-            put(CalendarContract.Events.DTEND, end.time)
-            put(CalendarContract.Events.EVENT_END_TIMEZONE, utcTimeZone.id)
+            dateEnd?.value?.rawComponents?.toDate(utcTimeZone)?.also {
+
+                put(CalendarContract.Events.DTEND, it.time)
+                put(CalendarContract.Events.EVENT_END_TIMEZONE, utcTimeZone.id)
+
+            }
 
             duration?.let {
                 val stringRepresentation = it.value.toString()
                 put(CalendarContract.Events.DURATION, stringRepresentation)
             }
 
-            val isAllDay = (end.time - start.time).let {
-                it % TimeUnit.DAYS.toMillis(1) == 0L && it != 0L
-            }
+            val isAllDay = !dateStart.value.hasTime()
 
             put(CalendarContract.Events.ALL_DAY, if (isAllDay) 1 else 0)
 
@@ -481,16 +503,16 @@ class CalendarSyncOperation private constructor(
                 frequency?.name?.let { "FREQ=$it" },
                 count?.let { "COUNT=$it" },
                 interval?.let { "INTERVAL=$it" },
-                bySecond?.joinToString(",")?.let { "BYSECOND=$it" },
-                byMinute?.joinToString(",")?.let { "BYMINUTE=$it" },
-                byHour?.joinToString(",")?.let { "BYHOUR=$it" },
-                byDay?.joinToString(",")?.let { "BYDAY=$it" },
-                byMonthDay?.joinToString(",")?.let { "BYMONTHDAY=$it" },
-                byYearDay?.joinToString(",")?.let { "BYYEARDAY=$it" },
-                byWeekNo?.joinToString(",")?.let { "BYWEEKNO=$it" },
-                byMonth?.joinToString(",")?.let { "BYMONTH=$it" },
-                bySetPos?.joinToString(",")?.let { "BYSETPOS=$it" },
-                workweekStarts?.name?.let { "WKST=$it" }
+                bySecond?.joinToString(",")?.takeIf { it.isNotBlank() }?.let { "BYSECOND=$it" },
+                byMinute?.joinToString(",")?.takeIf { it.isNotBlank() }?.let { "BYMINUTE=$it" },
+                byHour?.joinToString(",")?.takeIf { it.isNotBlank() }?.let { "BYHOUR=$it" },
+                byDay?.joinToString(",")?.takeIf { it.isNotBlank() }?.let { "BYDAY=$it" },
+                byMonthDay?.joinToString(",")?.takeIf { it.isNotBlank() }?.let { "BYMONTHDAY=$it" },
+                byYearDay?.joinToString(",")?.takeIf { it.isNotBlank() }?.let { "BYYEARDAY=$it" },
+                byWeekNo?.joinToString(",")?.takeIf { it.isNotBlank() }?.let { "BYWEEKNO=$it" },
+                byMonth?.joinToString(",")?.takeIf { it.isNotBlank() }?.let { "BYMONTH=$it" },
+                bySetPos?.joinToString(",")?.takeIf { it.isNotBlank() }?.let { "BYSETPOS=$it" },
+                workweekStarts?.name?.takeIf { it.isNotBlank() }?.let { "WKST=$it" }
                 // TODO: xRules?
         ).joinToString(separator = ";")
 
@@ -507,15 +529,15 @@ class CalendarSyncOperation private constructor(
 
             ruleMap["COUNT"]?.also { count(it.toInt()) }
             ruleMap["INTERVAL"]?.also { interval(it.toInt()) }
-            ruleMap["BYSECOND"]?.toIntList()?.also { bySecond(it) }
-            ruleMap["BYMINUTE"]?.toIntList()?.also { byMinute(it) }
-            ruleMap["BYHOUR"]?.toIntList()?.also { byHour(it) }
-            ruleMap["BYDAY"]?.toList { DayOfWeek.valueOfAbbr(it) } ?.also { byDay(it) }
-            ruleMap["BYMONTHDAY"]?.toIntList()?.also { byMonthDay() }
-            ruleMap["BYYEARDAY"]?.toIntList()?.also { byYearDay(it) }
-            ruleMap["BYWEEKNO"]?.toIntList()?.also { byWeekNo(it) }
-            ruleMap["BYMONTH"]?.toIntList()?.also { byMonth(it) }
-            ruleMap["BYSETPOS"]?.toIntList()?.also { bySetPos(it) }
+            ruleMap["BYSECOND"]?.toIntList()?.takeIf { it.isNotEmpty() }?.also { bySecond(it) }
+            ruleMap["BYMINUTE"]?.toIntList()?.takeIf { it.isNotEmpty() }?.also { byMinute(it) }
+            ruleMap["BYHOUR"]?.toIntList()?.takeIf { it.isNotEmpty() }?.also { byHour(it) }
+            ruleMap["BYDAY"]?.toList { DayOfWeek.valueOfAbbr(it) } ?.takeIf { it.isNotEmpty() }?.also { byDay(it) }
+            ruleMap["BYMONTHDAY"]?.toIntList()?.takeIf { it.isNotEmpty() }?.also { byMonthDay() }
+            ruleMap["BYYEARDAY"]?.toIntList()?.takeIf { it.isNotEmpty() }?.also { byYearDay(it) }
+            ruleMap["BYWEEKNO"]?.toIntList()?.takeIf { it.isNotEmpty() }?.also { byWeekNo(it) }
+            ruleMap["BYMONTH"]?.toIntList()?.takeIf { it.isNotEmpty() }?.also { byMonth(it) }
+            ruleMap["BYSETPOS"]?.toIntList()?.takeIf { it.isNotEmpty() }?.also { bySetPos(it) }
             ruleMap["WKST"]?.also { workweekStarts(DayOfWeek.valueOfAbbr(it)) }
 
             until?.also { until(Date(it)) }
@@ -538,18 +560,29 @@ class CalendarSyncOperation private constructor(
             getString(CalendarContract.Events.DESCRIPTION)?.also { description = Description(it) }
             getString(CalendarContract.Events.EVENT_LOCATION)?.also { location = Location(it) }
 
-            // TODO: Timezone?
-            //val utcTimeZone = TimeZone.getTimeZone("UTC")
-            //val start = dateStart.value.rawComponents.toDate(utcTimeZone)
-            //val end = dateEnd.value.rawComponents.toDate(utcTimeZone)
+            val isAllDay = getLong(CalendarContract.Events.ALL_DAY) == 1L
 
-            getLong(CalendarContract.Events.DTSTART)?.also { dateStart = DateStart(Date(it)) }
+            val date = { timeColumn: String, tzColumn: String, hasTime: Boolean ->
 
-            if (getLong(CalendarContract.Events.ALL_DAY) == 1L) {
+                getLong(timeColumn)?.let {
+                    val tz = getString(tzColumn)?.let { TimeZone.getTimeZone(it) } ?:
+                            TimeZone.getTimeZone("UTC")
+                    val dateComponents = DateTimeComponents(Date(it), tz)
+                    ICalDate(dateComponents, hasTime)
+                }
 
-            } else {
-                getLong(CalendarContract.Events.DTEND)?.also { dateEnd = DateEnd(Date(it)) }
-                getString(CalendarContract.Events.DURATION)?.also { duration = DurationProperty(Duration.parse(it)) }
+            }
+
+            date(CalendarContract.Events.DTSTART, CalendarContract.Events.EVENT_TIMEZONE, !isAllDay)?.also {
+                dateStart = DateStart(it)
+            }
+
+            date(CalendarContract.Events.DTEND, CalendarContract.Events.EVENT_END_TIMEZONE, !isAllDay)?.also {
+                dateEnd = DateEnd(it)
+            }
+
+            getString(CalendarContract.Events.DURATION)?.also {
+                duration = DurationProperty(Duration.parse(it))
             }
 
             getString(CalendarContract.Events.RRULE)
@@ -590,11 +623,21 @@ class CalendarSyncOperation private constructor(
                 ?.takeIf { canMinusOne || it != -1L }
     }
 
+    inline private fun <T> Cursor.toList(mapper: (Cursor) -> T): List<T> {
+        val list = mutableListOf<T>()
+        while (moveToNext()) {
+            list.add(mapper(this))
+        }
+        return list.toList()
+    }
+
     private fun <T> String.toList(map: (String) -> T): List<T> {
         return this.split(",").map { map(it.trim()) }
     }
 
     private fun String.toIntList(): List<Int> = this.toList { it.toInt() }
+
+    private fun List<String>.toSqlIn(): String = joinToString("', '", prefix = "('", postfix = "')")
 
     class Factory @Inject constructor(
             private val dao: CalendarsDao,
@@ -612,7 +655,7 @@ class CalendarSyncOperation private constructor(
         return ContentClientHelper(this, getSyncUri(CalendarContract.Calendars.CONTENT_URI))
     }
 
-    private val ContentProviderClient.eventss: ContentClientHelper get() {
+    private val ContentProviderClient.events: ContentClientHelper get() {
         return ContentClientHelper(this, getSyncUri(CalendarContract.Events.CONTENT_URI))
     }
 
@@ -630,8 +673,8 @@ class CalendarSyncOperation private constructor(
             return client.query(uri, projection, selection, selectionArgs, sortOrder)
         }
 
-        fun delete(selection: String, selectionArgs: Array<String>? = null) {
-            client.delete(uri, selection, selectionArgs)
+        fun delete(selection: String, selectionArgs: Array<String>? = null): Int {
+            return client.delete(uri, selection, selectionArgs)
         }
 
     }
