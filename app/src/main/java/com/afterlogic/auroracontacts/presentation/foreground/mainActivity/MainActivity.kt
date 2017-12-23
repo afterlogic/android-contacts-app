@@ -18,7 +18,7 @@ class MainActivity : MVVMActivity<MainActivityViewModel, MainActivityBinding, Ma
 
     }
 
-    private val navigationHolder by injectable { navigationHolder }
+    private val navigationHolder by inject { it.navigationHolder }
 
     override fun bindView(): MainActivityBinding = setContentBinding(R.layout.main_activity)
 

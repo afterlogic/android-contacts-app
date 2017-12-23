@@ -1,43 +1,106 @@
 package com.afterlogic.auroracontacts.presentation.foreground.main
 
 import android.databinding.BindingAdapter
+import android.databinding.ObservableArrayList
+import android.databinding.ObservableList
+import android.databinding.adapters.ListenerUtil
+import android.support.annotation.IdRes
 import android.support.v7.widget.RecyclerView
+import android.view.View
 import com.afterlogic.auroracontacts.BR
 import com.afterlogic.auroracontacts.R
-import com.afterlogic.auroracontacts.databinding.MainListCardBinding
-import com.afterlogic.auroracontacts.databinding.MainListHeaderBinding
+import com.afterlogic.auroracontacts.core.util.setSequentiallyFrom
+import com.github.nitrico.lastadapter.AdapterModelWrapper
 import com.github.nitrico.lastadapter.LastAdapter
-import com.github.nitrico.lastadapter.Type
+import com.github.nitrico.lastadapter.StableId
 
 /**
  * Created by sunny on 06.12.2017.
  * mail: mail@sunnydaydev.me
  */
-object MainFragmentBindings {
+object MainFragmentBindings: Bindings() {
+
+    private class HeaderWrapper(override val model: Any) : AdapterModelWrapper, StableId {
+        override val stableId = Long.MAX_VALUE - 1000
+    }
+
+    private class ProgressWrapper : AdapterModelWrapper, StableId {
+        override val model = Any()
+        override val stableId = Long.MAX_VALUE - 1001
+    }
 
     @JvmStatic
-    @BindingAdapter("main_contentHeader", "main_cards")
-    fun bindContent(list: RecyclerView, vm: MainViewModel, cards: List<CardViewModel>) {
+    @BindingAdapter("main_contentHeader", "main_cards", "main_progress")
+    fun bindContent(list: RecyclerView, vm: MainViewModel, cards: List<CardViewModel<Any>>, progress: Boolean) {
 
-        val items =  listOf(vm) + cards
+        val observableList = list.track(R.id.binding__recycler_observable_list) {
 
-        LastAdapter(items, BR.vm)
-                .type { _, i ->
-                    if (i == 0) Type<MainListHeaderBinding>(R.layout.main_list_header)
-                    else Type<MainListCardBinding>(R.layout.main_list_card)
-                }
-                .into(list)
+            ObservableArrayList<StableId>().also {
+                createMainAdapter(it).into(list)
+            }
+
+        }
+
+        val vmWrapper = HeaderWrapper(vm)
+
+        val progressWrapper = { ProgressWrapper() }
+
+        val items = listOf<StableId>(vmWrapper) + if (progress) listOf(progressWrapper()) else cards
+
+        observableList.setSequentiallyFrom(items)
+
+    }
+
+    private fun createMainAdapter(items: List<StableId>): LastAdapter {
+
+        return LastAdapter(items, BR.vm, true)
+                .map<HeaderWrapper>(R.layout.main_list_header)
+                .map<ProgressWrapper>(R.layout.main_list_progress)
+                .map<CardViewModel<*>>(R.layout.main_list_card)
 
     }
 
     @JvmStatic
     @BindingAdapter("main_card_items")
-    fun bindCardContent(list: RecyclerView, items: List<CardItemViewModel>) {
+    fun bindCardContent(list: RecyclerView, items: List<StableId>) {
 
-        LastAdapter(items, BR.vm)
-                .map<CardItemViewModel>(R.layout.main_list_card_item)
-                .into(list)
+        val observableItems: ObservableList<StableId> = items as? ObservableList<StableId> ?:
+                list.track(R.id.binding__recycler_observable_list) {
+                    ObservableArrayList<StableId>()
+                }
 
+        if (observableItems === items) {
+            ListenerUtil.trackListener(list, null, R.id.binding__recycler_observable_list)
+        }
+
+        fun setAdapter(it: ObservableList<StableId>) {
+
+            list.itemAnimator = null
+
+            LastAdapter(it, BR.vm, true)
+                    .map<ContactItemViewModel>(R.layout.main_list_card_item)
+                    .map<CalendarItemViewModel>(R.layout.main_list_card_item_colorized)
+                    .into(list)
+
+        }
+
+        val adapterItems = list.track(
+                R.id.binding__recycler_observable_adapter,
+                check = { it === observableItems },
+                creator = { observableItems.also { setAdapter(it) } }
+        )
+
+        adapterItems.setSequentiallyFrom(items)
+
+    }
+
+}
+
+open class Bindings {
+
+    fun <T> View.track(@IdRes resourceId: Int, check: (T) -> Boolean = { true }, creator: () -> T): T {
+        return ListenerUtil.getListener<T>(this, resourceId)?.takeIf(check) ?:
+                creator().also { ListenerUtil.trackListener(this, it, resourceId) }
     }
 
 }

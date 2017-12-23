@@ -22,11 +22,11 @@ abstract class MVVMFragment
 
     protected var viewModelKey = BR.vm
 
-    private val viewModelFactory by injectable { config.viewModelFactory }
+    private val viewModelFactory by inject { it.config.viewModelFactory }
 
-    override val lifecycleDisposables by injectable { config.lifecycleDisposables }
+    override val lifecycleDisposables by inject { it.config.lifecycleDisposables }
 
-    override val subscriber by injectable { config.subscriber }
+    override val subscriber by inject { it.config.subscriber }
 
     protected lateinit var binding: VDB
         private set
@@ -55,6 +55,7 @@ abstract class MVVMFragment
 
         binding = bindView(inflater, container)
         binding.setVariable(viewModelKey, viewModel)
+        binding.executePendingBindings()
         return binding.root
 
     }

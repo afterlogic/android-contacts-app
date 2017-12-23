@@ -20,11 +20,13 @@ abstract class MVVMActivity
 
     protected var viewModelKey = BR.vm
 
-    private val viewModelFactory by injectable { config.viewModelFactory }
+    private val viewModelFactory by inject { it.config.viewModelFactory }
 
-    override val lifecycleDisposables by injectable { config.lifecycleDisposables }
+    private val permissionsPublisher by inject { it.config.permissionsPublisher }
 
-    override val subscriber by injectable { config.subscriber }
+    override val lifecycleDisposables by inject { it.config.lifecycleDisposables }
+
+    override val subscriber by inject { it.config.subscriber }
 
 
     protected val binding: VDB by lazy { bindView() }
@@ -58,6 +60,11 @@ abstract class MVVMActivity
     override fun onResume() {
         super.onResume()
         lifecycleDisposables.onResume()
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        permissionsPublisher.onRequestPermissionResult(requestCode, permissions, grantResults)
     }
 
     @CallSuper

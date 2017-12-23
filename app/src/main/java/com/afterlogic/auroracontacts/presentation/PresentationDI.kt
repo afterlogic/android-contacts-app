@@ -1,11 +1,9 @@
 package com.afterlogic.auroracontacts.presentation
 
-import com.afterlogic.auroracontacts.presentation.foreground.mainActivity.MainActivity
-import com.afterlogic.auroracontacts.presentation.foreground.mainActivity.MainActivityModule
+import com.afterlogic.auroracontacts.presentation.background.BackgroundModule
+import com.afterlogic.auroracontacts.presentation.foreground.ForegroundModule
 import dagger.Module
-import dagger.android.ContributesAndroidInjector
 import dagger.android.support.AndroidSupportInjectionModule
-import javax.inject.Scope
 
 /**
  * Created by sunny on 04.12.2017.
@@ -13,21 +11,8 @@ import javax.inject.Scope
  */
 
 @Module(includes = [
-    AndroidSupportInjectionModule::class
+    AndroidSupportInjectionModule::class,
+    BackgroundModule::class,
+    ForegroundModule::class
 ])
-abstract class PresentationModule {
-
-    @ActivityScope
-    @ContributesAndroidInjector(modules = [MainActivityModule::class])
-    abstract fun contributeMainActivity(): MainActivity
-
-}
-
-@Scope
-annotation class AppScope
-
-@Scope
-annotation class ActivityScope
-
-@Scope
-annotation class FragmentScope
+abstract class PresentationModule

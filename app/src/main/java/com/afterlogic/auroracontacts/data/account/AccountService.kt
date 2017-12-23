@@ -5,10 +5,10 @@ import android.accounts.AccountManager
 import android.annotation.TargetApi
 import android.os.Build
 import com.afterlogic.auroracontacts.application.App
+import com.afterlogic.auroracontacts.application.AppScope
 import com.afterlogic.auroracontacts.core.rx.toMaybe
 import com.afterlogic.auroracontacts.core.util.Optional
 import com.afterlogic.auroracontacts.data.auth.model.AuthorizedAuroraSession
-import com.afterlogic.auroracontacts.presentation.AppScope
 import io.reactivex.Completable
 import io.reactivex.Observable
 import okhttp3.HttpUrl
@@ -39,11 +39,11 @@ class AccountService @Inject constructor(context: App) {
 
     private val accountManager = AccountManager.get(context)
 
-    private val currentAccount = Observable.defer { CurrentAccountSource(accountManager) }
+    val account = Observable.defer { CurrentAccountSource(accountManager) }
 
-    val currentAccountSession: Observable<Optional<AuroraSession>> get() {
+    val accountSession: Observable<Optional<AuroraSession>> get() {
 
-        return currentAccount
+        return account
                 .map<Optional<AuroraSession>> {
 
                     val account = it.get() ?: return@map Optional()
@@ -63,7 +63,7 @@ class AccountService @Inject constructor(context: App) {
 
     fun updateCurrentAccount(authData: AuthorizedAuroraSession): Completable {
 
-        return currentAccount
+        return account
                 .firstOrError()
                 .doOnSuccess {
 
@@ -101,7 +101,7 @@ class AccountService @Inject constructor(context: App) {
     @TargetApi(Build.VERSION_CODES.LOLLIPOP_MR1)
     fun removeCurrentAccount(): Completable {
 
-        return currentAccount
+        return account
                 .firstOrError()
                 .flatMapMaybe { it.get().toMaybe() }
                 .doOnSuccess {
@@ -128,7 +128,7 @@ class AccountService @Inject constructor(context: App) {
 
     private fun createAccountIfNotExist(authData: AuthorizedAuroraSession): Completable {
 
-        return currentAccount
+        return account
                 .firstOrError()
                 .filter { it.get() == null }
                 .doOnSuccess { createAccount(authData) }

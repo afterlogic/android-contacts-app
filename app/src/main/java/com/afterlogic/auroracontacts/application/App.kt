@@ -1,26 +1,22 @@
 package com.afterlogic.auroracontacts.application
 
-import com.afterlogic.auroracontacts.core.rx.Subscriber
 import com.afterlogic.auroracontacts.core.util.Tagged
-import com.afterlogic.auroracontacts.data.account.AccountService
+import com.afterlogic.auroracontacts.core.util.isMainProcess
+import com.afterlogic.auroracontacts.presentation.common.base.InjectionDaggerApplication
 import dagger.android.AndroidInjector
-import dagger.android.support.DaggerApplication
 import timber.log.Timber
 import javax.inject.Inject
-
 
 
 /**
  * Created by sunny on 04.12.2017.
  * mail: mail@sunnydaydev.me
  */
-class App: DaggerApplication(), Tagged {
+class App: InjectionDaggerApplication<AppInjection>(), Tagged {
 
-    @set:Inject
-    lateinit var accountService: AccountService
+    private val activityTracker by inject { it.activityTracker.get() }
 
-    @set:Inject
-    lateinit var subscriber: Subscriber
+    private val loginStateDataController by inject { it.loginStateDataController.get() }
 
     @Inject
     fun logInjection() {
@@ -32,6 +28,14 @@ class App: DaggerApplication(), Tagged {
         Timber.plant(Timber.DebugTree())
 
         super.onCreate()
+
+        if (isMainProcess()) {
+
+            activityTracker.register()
+
+            loginStateDataController.start()
+
+        }
 
     }
 

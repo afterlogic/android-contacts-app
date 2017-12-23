@@ -1,6 +1,7 @@
 package com.afterlogic.auroracontacts.data
 
-import com.afterlogic.auroracontacts.data.api.p7.ApiP7Module
+import com.afterlogic.auroracontacts.data.db.DataBaseModule
+import com.afterlogic.auroracontacts.data.p7.api.ApiP7Module
 import dagger.Module
 
 /**
@@ -9,6 +10,7 @@ import dagger.Module
  */
 
 @Module(includes = [
-    ApiP7Module::class
+    ApiP7Module::class,
+    DataBaseModule::class
 ])
 class DataModule

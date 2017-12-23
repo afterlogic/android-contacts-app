@@ -6,7 +6,7 @@
 
         <variable
             name="vm"
-            type="com.afterlogic.auroracontacts.presentation.foreground.main.CardItemViewModel"/>
+            type="com.afterlogic.auroracontacts.presentation.foreground.main.ContactItemViewModel"/>
 
 
     </data>

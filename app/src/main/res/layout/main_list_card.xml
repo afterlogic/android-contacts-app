@@ -23,7 +23,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="vertical">
 
             <TextView
                 android:layout_width="match_parent"
@@ -38,10 +38,10 @@
 
             <android.support.v7.widget.RecyclerView
                 android:layout_width="match_parent"
-                android:layout_height="300dp"
+                android:layout_height="wrap_content"
                 app:layoutManager="@string/recycler_linear_layout_manager"
                 main_card_items="@{vm.items}"
-                tools:layout_height="300dp"
+                tools:layout_height="150dp"
                 tools:listitem="@layout/main_list_card_item"/>
 
         </LinearLayout>

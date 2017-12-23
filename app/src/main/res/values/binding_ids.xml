@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="binding__recycler_observable_list" type="id"/>
+    <item name="binding__recycler_observable_adapter" type="id"/>
+</resources>

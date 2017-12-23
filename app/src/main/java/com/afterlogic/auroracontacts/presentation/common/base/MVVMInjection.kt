@@ -2,6 +2,7 @@ package com.afterlogic.auroracontacts.presentation.common.base
 
 import com.afterlogic.auroracontacts.core.rx.Subscriber
 import com.afterlogic.auroracontacts.presentation.common.databinding.ViewModelFactory
+import ru.lipka.foodkeeper.presentation.common.modules.interactor.permissions.PermissionResultPublisher
 import javax.inject.Inject
 
 /**
@@ -16,7 +17,8 @@ interface MVVMInjection {
     data class Config @Inject constructor(
             val viewModelFactory: ViewModelFactory,
             val lifecycleDisposables: LifecycleDisposables,
-            val subscriber: Subscriber
+            val subscriber: Subscriber,
+            val permissionsPublisher: PermissionResultPublisher
     )
 
 }

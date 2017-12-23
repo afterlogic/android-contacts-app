@@ -5,5 +5,5 @@
     android:contentAuthority="com.android.calendar"
     android:userVisible="true"
     android:supportsUploading="true"
-    android:allowParallelSyncs="true"
+    android:allowParallelSyncs="false"
     android:isAlwaysSyncable="true" />

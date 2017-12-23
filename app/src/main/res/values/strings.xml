@@ -38,13 +38,13 @@
     <string name="error_adding_aurora_account">Adding Aurora account was failed.</string>
     <string name="error_default_api_error">Request was failed.</string>
 
-    <string name="dialog_ok">Ok</string>
+    <string name="dialog_ok">OK</string>
     <string name="dialog_cancel">Cancel</string>
     <string name="dialog_button_no">No</string>
     <string name="dialog_button_yes">Yes</string>
     <string name="dialog_error_message">Failed calendar and contact\'s data updating. Repeat?</string>
     <string name="dialog_error_title">Error</string>
-    <string name="dialog_progress">Updating</string>
+    <string name="dialog_progress">Updating…</string>
     <string name="dialog_prompt_processing">Processing…</string>
 
     <string name="value_contacts_all">All</string>

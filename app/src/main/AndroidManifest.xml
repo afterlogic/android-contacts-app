@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.afterlogic.auroracontacts"
     android:sharedUserId="com.afterlogic.aurora.app"
     android:sharedUserLabel="@string/shared_user_label" >
@@ -8,6 +9,17 @@
     <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS"/>
     <uses-permission android:name="android.permission.MANAGE_ACCOUNTS"/>
 
+    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS"/>
+    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS"/>
+    <uses-permission android:name="android.permission.READ_SYNC_STATS"/>
+
+    <uses-permission android:name="android.permission.READ_CALENDAR"/>
+    <uses-permission android:name="android.permission.WRITE_CALENDAR"/>
+
+    <permission
+        android:name="com.aurora.contactscalendars.EXPORTED_SERVICE"
+        android:protectionLevel="signature" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -15,7 +27,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/App.Theme"
-        android:name=".application.App">
+        android:name=".application.App"
+        android:networkSecurityConfig="@xml/network_security_config"
+        tools:ignore="UnusedAttribute">
 
         <activity android:name=".presentation.foreground.mainActivity.MainActivity">
             <intent-filter>
@@ -25,13 +39,34 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".presentation.background.authenticator.AuthenticatorService">
+        <service
+            android:name=".presentation.background.authenticator.AuthenticatorService"
+            android:exported="true"
+            android:permission="com.aurora.contactscalendars.EXPORTED_SERVICE">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
             </intent-filter>
             <meta-data android:name="android.accounts.AccountAuthenticator"
                 android:resource="@xml/authentificator" />
         </service>
+
+        <service
+            android:name=".presentation.background.sync.calendar.CalendarsSyncService"
+            android:exported="true"
+            android:permission="com.aurora.contactscalendars.EXPORTED_SERVICE"
+            android:process=":sync">
+            <intent-filter>
+                <action android:name="android.content.SyncAdapter" />
+            </intent-filter>
+            <meta-data
+                android:name="android.content.SyncAdapter"
+                android:resource="@xml/sync_calendars" />
+        </service>
+
+        <service
+            android:name=".presentation.background.syncStateService.SyncStateService"
+            android:exported="false"
+            android:process=":sync"/>
 
     </application>
 
