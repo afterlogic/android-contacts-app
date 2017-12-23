@@ -15,14 +15,12 @@ object ImageViewBindings {
     @BindingAdapter("runDrawableAnimation")
     fun bindSyncAnimation(fab: ImageView, run: Boolean) {
 
-        val drawable = fab.drawable ?: return
-        drawable as? Animatable ?: return
+        val drawable = fab.drawable as? Animatable ?: return
 
         if (run) {
             drawable.start()
         } else {
             drawable.stop()
-            drawable.level = 0
         }
 
     }
