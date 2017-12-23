@@ -37,7 +37,7 @@ class Dependencies {
         public def fabric_gradle_plugin = '1.25.0'
         public def gms_gradle_plugin = '3.1.2'
         public def autoversion_gradle_plugin = '0.0.8'
-        public def kotlin = "1.2.10"
+        public def kotlin = "1.2.20-eap-11"
         public def dependencies_versions_plugin = '0.17.0'
 
         public def multidexVersion = '1.0.2'
@@ -152,7 +152,7 @@ class Dependencies {
         public def crashlytics = "com.crashlytics.sdk.android:crashlytics:$versions.crashlyticsVersion@aar"
         public def calligraphy = "uk.co.chrisjenx:calligraphy:$versions.caligraphyVersion"
         public def cicirone = "ru.terrakok.cicerone:cicerone:$versions.ciceroneVersion"
-        public def last_adapter = "com.github.nitrico.lastadapter:lastadapter:$versions.lastAdapterVersion"
+        public def last_adapter = 'com.github.SunnyDayDev:LastAdapter:wrappers-SNAPSHOT'//"com.github.nitrico.lastadapter:lastadapter:$versions.lastAdapterVersion"
         public def gson = "com.google.code.gson:gson:$versions.gson"
         public def timber = "com.jakewharton.timber:timber:$versions.timber"
         public def ical4j = "org.mnode.ical4j:ical4j:$versions.ical4j"
@@ -237,8 +237,10 @@ static def addRepos(RepositoryHandler handler) {
     handler.jcenter()
     handler.mavenCentral()
     handler.maven { url 'https://maven.fabric.io/public' }
+    handler.maven { url 'http://dl.bintray.com/kotlin/kotlin-eap' }
     handler.flatDir { dirs 'libs' }
     handler.maven { url 'http://www.idescout.com/maven/repo/' }
+    handler.maven { url 'https://jitpack.io' }
 }
 
 ext.addRepos = this.&addRepos

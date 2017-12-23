@@ -6,12 +6,11 @@
     <data>
 
         <import type="android.view.View"/>
-        <import type="com.afterlogic.auroracontacts.presentation.foreground.main.MainFragmentBindings.StableIdWrapper"/>
         <import type="com.afterlogic.auroracontacts.presentation.foreground.main.MainViewModel"/>
 
         <variable
-            name="wrapper"
-            type="StableIdWrapper&lt;MainViewModel&gt;"/>
+            name="vm"
+            type="MainViewModel"/>
 
     </data>
 
@@ -44,7 +43,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/title"
             tools:checked="true"
-            android:checked="@={wrapper.vm.syncOnLocalChanges}"/>
+            android:checked="@={vm.syncOnLocalChanges}"/>
 
         <Spinner
             android:id="@+id/spinner"
@@ -55,7 +54,7 @@
             android:entries="@array/periodic_syncs_names"
             app:layout_constraintBaseline_toBaselineOf="@+id/periodic_title"
             app:layout_constraintEnd_toEndOf="parent"
-            android:selectedItemPosition="@={wrapper.vm.selectedSyncPeriod}"/>
+            android:selectedItemPosition="@={vm.selectedSyncPeriod}"/>
 
         <TextView
             android:id="@+id/periodic_title"
@@ -93,7 +92,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/divider"
-            android:visibility="@{wrapper.vm.loadingData ? View.GONE : View.VISIBLE}"/>
+            android:visibility="@{vm.loadingData ? View.GONE : View.VISIBLE}"/>
 
     </android.support.constraint.ConstraintLayout>
 

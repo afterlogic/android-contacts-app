@@ -10,6 +10,7 @@ import android.view.View
 import com.afterlogic.auroracontacts.BR
 import com.afterlogic.auroracontacts.R
 import com.afterlogic.auroracontacts.core.util.setSequentiallyFrom
+import com.github.nitrico.lastadapter.AdapterModelWrapper
 import com.github.nitrico.lastadapter.LastAdapter
 import com.github.nitrico.lastadapter.StableId
 
@@ -19,11 +20,14 @@ import com.github.nitrico.lastadapter.StableId
  */
 object MainFragmentBindings: Bindings() {
 
-    open class StableIdItem(override val stableId: Long) : StableId
-    open class StableIdWrapper<T>(val vm: T, stableId: Long) : StableIdItem(stableId)
+    private class HeaderWrapper(override val model: Any) : AdapterModelWrapper, StableId {
+        override val stableId = Long.MAX_VALUE - 1000
+    }
 
-    private class HeaderWrapper(vm: MainViewModel): StableIdWrapper<MainViewModel>(vm, Long.MAX_VALUE - 1000)
-    private class ProgressWrapper: StableIdItem(Long.MAX_VALUE - 1001)
+    private class ProgressWrapper : AdapterModelWrapper, StableId {
+        override val model = Any()
+        override val stableId = Long.MAX_VALUE - 1001
+    }
 
     @JvmStatic
     @BindingAdapter("main_contentHeader", "main_cards", "main_progress")
