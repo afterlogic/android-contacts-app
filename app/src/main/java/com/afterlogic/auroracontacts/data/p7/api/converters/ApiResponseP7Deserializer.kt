@@ -1,6 +1,6 @@
-package com.afterlogic.auroracontacts.data.api.p7.converters
+package com.afterlogic.auroracontacts.data.p7.api.converters
 
-import com.afterlogic.auroracontacts.data.api.p7.model.ApiResponseP7
+import com.afterlogic.auroracontacts.data.p7.api.model.ApiResponseP7
 import com.google.gson.*
 import java.lang.reflect.Type
 

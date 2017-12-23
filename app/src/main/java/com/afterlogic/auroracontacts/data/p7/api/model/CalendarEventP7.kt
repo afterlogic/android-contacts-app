@@ -1,4 +1,4 @@
-package com.afterlogic.auroracontacts.data.api.p7.model
+package com.afterlogic.auroracontacts.data.p7.api.model
 
 import com.google.gson.annotations.SerializedName
 

@@ -1,8 +1,8 @@
 package com.afterlogic.auroracontacts.data.p7.calendars
 
 import android.graphics.Color
-import com.afterlogic.auroracontacts.data.api.p7.model.CalendarEventP7
-import com.afterlogic.auroracontacts.data.api.p7.model.CalendarP7
+import com.afterlogic.auroracontacts.data.p7.api.model.CalendarEventP7
+import com.afterlogic.auroracontacts.data.p7.api.model.CalendarP7
 import com.afterlogic.auroracontacts.data.auth.AuthResolver
 import com.afterlogic.auroracontacts.data.calendar.*
 import io.reactivex.Completable

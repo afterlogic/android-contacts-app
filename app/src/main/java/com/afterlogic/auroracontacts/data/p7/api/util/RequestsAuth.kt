@@ -3,6 +3,8 @@ package com.afterlogic.auroracontacts.data.api.p7.util
 import com.afterlogic.auroracontacts.application.AppScope
 import com.afterlogic.auroracontacts.data.account.AuroraSession
 import com.afterlogic.auroracontacts.data.api.UserNotAuthorizedException
+import okhttp3.MediaType
+import okhttp3.RequestBody
 import retrofit2.Converter
 import retrofit2.Retrofit
 import java.lang.reflect.Type
@@ -35,27 +37,42 @@ class AuthConverterFactoryP7 @Inject constructor() : Converter.Factory() {
 
     var currentSession: AuroraSession? = null
 
+    override fun requestBodyConverter(type: Type, parameterAnnotations: Array<out Annotation>, methodAnnotations: Array<out Annotation>, retrofit: Retrofit): Converter<*, RequestBody>? {
+
+        val annotation = parameterAnnotations.find { it is Auth } as Auth? ?: return null
+
+        return Converter<Any, RequestBody> {
+            val value = getAuthValue(annotation, it)
+            RequestBody.create(MediaType.parse("text/plain"), value)
+        }
+
+    }
+
     override fun stringConverter(type: Type,
                                  annotations: Array<out Annotation>,
                                  retrofit: Retrofit): Converter<*, String>? {
 
         val annotation = annotations.find { it is Auth } as Auth? ?: return null
 
-        return Converter<Any, String> converter@ {
+        return Converter<Any, String> {
+            getAuthValue(annotation, it)
+        }
 
-            val session = currentSession ?: throw UserNotAuthorizedException()
+    }
 
-            when(annotation.value) {
+    private fun getAuthValue(annotation: Auth, value: Any): String {
 
-                AuthValue.APP_TOKEN -> if (it == AuthValue.STRING) session.appToken else it.toString()
+        val session = currentSession ?: throw UserNotAuthorizedException()
 
-                AuthValue.AUTH_TOKEN -> if (it == AuthValue.STRING) session.authToken else it.toString()
+        return when(annotation.value) {
 
-                AuthValue.ACCOUNT_ID -> if (it == AuthValue.LONG) session.accountId.toString() else it.toString()
+            AuthValue.APP_TOKEN -> if (value == AuthValue.STRING) session.appToken else value.toString()
 
-                else -> it.toString()
+            AuthValue.AUTH_TOKEN -> if (value == AuthValue.STRING) session.authToken else value.toString()
 
-            }
+            AuthValue.ACCOUNT_ID -> if (value == AuthValue.LONG) session.accountId.toString() else value.toString()
+
+            else -> value.toString()
 
         }
 

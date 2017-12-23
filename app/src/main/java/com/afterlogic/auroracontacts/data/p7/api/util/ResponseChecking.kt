@@ -3,7 +3,7 @@ package com.afterlogic.auroracontacts.data.api.p7.util
 import com.afterlogic.auroracontacts.data.AuthFailedError
 import com.afterlogic.auroracontacts.data.api.ApiReturnedError
 import com.afterlogic.auroracontacts.data.api.ApiType
-import com.afterlogic.auroracontacts.data.api.p7.model.ApiResponseP7
+import com.afterlogic.auroracontacts.data.p7.api.model.ApiResponseP7
 import io.reactivex.Single
 
 /**

@@ -1,12 +1,13 @@
 package com.afterlogic.auroracontacts.data.p7.calendars
 
 import com.afterlogic.auroracontacts.data.account.AccountService
-import com.afterlogic.auroracontacts.data.api.p7.model.CalendarEventP7
-import com.afterlogic.auroracontacts.data.api.p7.model.CalendarP7
+import com.afterlogic.auroracontacts.data.p7.api.model.CalendarEventP7
+import com.afterlogic.auroracontacts.data.p7.api.model.CalendarP7
 import com.afterlogic.auroracontacts.data.api.p7.util.AuthConverterFactoryP7
 import com.afterlogic.auroracontacts.data.api.p7.util.checkResponseAndGetData
 import com.afterlogic.auroracontacts.data.p7.api.CalendarApiP7
 import com.afterlogic.auroracontacts.data.p7.api.DynamicLazyApiP7
+import com.afterlogic.auroracontacts.data.p7.api.model.JsonList
 import com.afterlogic.auroracontacts.data.p7.common.AuthorizedService
 import com.afterlogic.auroracontacts.data.util.BooleanInt
 import io.reactivex.Single
@@ -26,7 +27,7 @@ class CalendarsCloudServiceP7 @Inject constructor(
             .checkResponseAndGetData()
 
     fun getCalendarEvents(calendarId: String) : Single<List<CalendarEventP7>> = api
-            .flatMap { it.getEvents(listOf(calendarId), BooleanInt(true)) }
+            .flatMap { it.getEvents(JsonList(listOf(calendarId)), BooleanInt(true)) }
             .checkResponseAndGetData { it.data!![calendarId] ?: emptyList() }
 
     fun updateEvent(calendarId: String, eventUrl: String?, data: String): Single<Boolean> =
@@ -34,7 +35,7 @@ class CalendarsCloudServiceP7 @Inject constructor(
                     .checkResponseAndGetData()
 
     fun deleteEvent(calendarId: String, urls: List<String>): Single<Boolean> =
-            api.flatMap { it.deleteEvents(calendarId, urls + "") }
+            api.flatMap { it.deleteEvents(calendarId, JsonList(urls)) }
                     .checkResponseAndGetData()
 
 }

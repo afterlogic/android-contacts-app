@@ -5,8 +5,9 @@ import com.afterlogic.auroracontacts.application.AppScope
 import com.afterlogic.auroracontacts.core.gson.registerTypeAdapter
 import com.afterlogic.auroracontacts.data.api.JsonFieldFactory
 import com.afterlogic.auroracontacts.data.api.P7
-import com.afterlogic.auroracontacts.data.api.p7.converters.ApiResponseP7Deserializer
 import com.afterlogic.auroracontacts.data.api.p7.util.AuthConverterFactoryP7
+import com.afterlogic.auroracontacts.data.p7.api.converters.ApiResponseP7Deserializer
+import com.afterlogic.auroracontacts.data.p7.api.model.JsonList
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import dagger.Module
@@ -57,6 +58,7 @@ class ApiP7Module {
     internal fun provideGson(): Gson {
 
         fun builder(): GsonBuilder = GsonBuilder()
+                .registerTypeAdapter(JsonList::class.java, JsonList.Deserializer())
 
         return builder()
                 .registerTypeAdapter(ApiResponseP7Deserializer(builder().create()))
