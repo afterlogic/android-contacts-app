@@ -15,6 +15,7 @@ import biweekly.property.*
 import biweekly.util.*
 import com.afterlogic.auroracontacts.data.calendar.*
 import com.afterlogic.auroracontacts.data.db.CalendarsDao
+import com.afterlogic.auroracontacts.data.util.RemoteServiceProvider
 import com.afterlogic.auroracontacts.presentation.background.sync.CustomContact
 import com.afterlogic.auroracontacts.presentation.background.sync.UnexpectedNullCursorException
 import io.reactivex.Completable
@@ -31,7 +32,7 @@ class CalendarSyncOperation private constructor(
         private val contentClient: ContentProviderClient,
         private val dao: CalendarsDao,
         private val calendarMapper: CalendarMapper,
-        remoteServiceProvider: CalendarRemoteServiceProvider
+        remoteServiceProvider: RemoteServiceProvider<CalendarRemoteService>
 ) {
 
     private val remoteService  = remoteServiceProvider.get()
@@ -642,7 +643,7 @@ class CalendarSyncOperation private constructor(
     class Factory @Inject constructor(
             private val dao: CalendarsDao,
             private val calendarMapper: CalendarMapper,
-            private val remoteServiceProvider: CalendarRemoteServiceProvider
+            private val remoteServiceProvider: RemoteServiceProvider<CalendarRemoteService>
     ) {
 
         fun create(account: Account, client: ContentProviderClient) : CalendarSyncOperation {
