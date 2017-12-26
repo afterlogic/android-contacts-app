@@ -29,6 +29,7 @@
         android:theme="@style/App.Theme"
         android:name=".application.App"
         android:networkSecurityConfig="@xml/network_security_config"
+        android:testOnly="false"
         tools:ignore="UnusedAttribute">
 
         <activity android:name=".presentation.foreground.mainActivity.MainActivity">

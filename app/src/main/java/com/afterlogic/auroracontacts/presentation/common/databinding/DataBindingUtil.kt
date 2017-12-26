@@ -18,12 +18,12 @@ import kotlin.reflect.KProperty
  */
 
 fun <V: ViewDataBinding> Activity.setContentBinding(@LayoutRes layoutId: Int): V =
-        DataBindingUtil.setContentView(this, layoutId)
+        DataBindingUtil.setContentView(this, layoutId)!!
 
 fun <V: ViewDataBinding> LayoutInflater.inflateBinding(@LayoutRes layoutId: Int,
                                   root: ViewGroup?,
                                   attachToRoot: Boolean = false): V =
-        DataBindingUtil.inflate(this, layoutId, root, attachToRoot)
+        DataBindingUtil.inflate(this, layoutId, root, attachToRoot)!!
 
 private val namesMap = BR::class.java.fields.associate { it.name to it.getInt(null) }
 

@@ -114,7 +114,7 @@ dependencies {
     kapt deps.core.databinding_compiler
 
     // Multi dex
-    implementation deps.core.multidex
+    //implementation deps.core.multidex
 
     // Dagger - Dependency Injection
     implementation deps.core.dagger
@@ -172,4 +172,13 @@ dependencies {
     implementation deps.core.biweekly
     //implementation deps.core.ical4j
 
+}
+
+// Data binding V2 fix
+afterEvaluate {
+    android.applicationVariants.all {
+        def name = it.name.capitalize()
+        tasks["kapt${name}Kotlin"].dependsOn("transformDataBindingWithDataBindingMergeArtifactsFor${name}")
+
+    }
 }
