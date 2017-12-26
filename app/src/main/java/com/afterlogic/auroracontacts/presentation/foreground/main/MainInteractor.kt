@@ -3,6 +3,8 @@ package com.afterlogic.auroracontacts.presentation.foreground.main
 import com.afterlogic.auroracontacts.data.SyncPeriod
 import com.afterlogic.auroracontacts.data.calendar.AuroraCalendarInfo
 import com.afterlogic.auroracontacts.data.calendar.CalendarsRepository
+import com.afterlogic.auroracontacts.data.contacts.ContactGroupInfo
+import com.afterlogic.auroracontacts.data.contacts.ContactsRepository
 import com.afterlogic.auroracontacts.data.preferences.Prefs
 import com.afterlogic.auroracontacts.data.sync.SyncInteractor
 import io.reactivex.Completable
@@ -17,6 +19,7 @@ import javax.inject.Inject
  */
 class MainInteractor @Inject constructor(
         private val calendarsRepository: CalendarsRepository,
+        private val contactsRepository: ContactsRepository,
         private val prefs: Prefs,
         private val syncInteractor: SyncInteractor
 ) {
@@ -37,8 +40,13 @@ class MainInteractor @Inject constructor(
 
     fun getCalendars(): Flowable<List<AuroraCalendarInfo>> = calendarsRepository.getCalendarsInfo()
 
+    fun getContactGroups(): Flowable<List<ContactGroupInfo>> = contactsRepository.getContactsGroupsInfo()
+
     fun setSyncEnabled(calendar: AuroraCalendarInfo, enabled: Boolean): Completable =
             calendarsRepository.setSyncEnabled(calendar, enabled)
+
+    fun setSyncEnabled(contactGroupInfo: ContactGroupInfo, enabled: Boolean): Completable =
+            contactsRepository.setSyncEnabled(contactGroupInfo, enabled)
 
     fun listenSyncingState(): Observable<Boolean> = syncInteractor.isAnySyncRunning
 

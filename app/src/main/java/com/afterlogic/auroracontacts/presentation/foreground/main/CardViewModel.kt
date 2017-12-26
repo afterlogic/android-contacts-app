@@ -15,10 +15,11 @@ class CardViewModel<out T>(val type: Int, val title: String, val items: List<T>)
 }
 
 open class ContactItemViewModel(
+        override val stableId: Long,
         val name: String,
         checkedInitialValue: Boolean,
         onCheckedChanged: (ContactItemViewModel, Boolean) -> Unit
-) : ObservableViewModel() {
+) : ObservableViewModel(), StableId {
 
     @get:Bindable var checked by bindable(checkedInitialValue) { onCheckedChanged(this, it) }
 

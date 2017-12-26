@@ -31,10 +31,7 @@ class CalendarsRepository @Inject constructor(
     fun getCalendarsInfo(): Flowable<List<AuroraCalendarInfo>> {
 
         return getLocalCalendarsInfo()
-                .flatMap {
-                    if (prefs.calendarsFetched) Flowable.just(it)
-                    else Flowable.empty()
-                }
+                .filter { prefs.calendarsFetched }
                 .mergeWith(getRemoteCalendars().toCompletable().toFlowable())
 
     }
@@ -55,17 +52,9 @@ class CalendarsRepository @Inject constructor(
     }
 
     private fun getLocalCalendarsInfo(): Flowable<List<AuroraCalendarInfo>> {
-        return dao.all
-                .map { it.map(calendarMapper::toPlain) }
+        return dao.all.map { it.map(calendarMapper::toPlain) }
     }
 
-}
-
-interface CalendarRemoteService {
-    fun getCalendars(): Single<List<RemoteCalendar>>
-    fun getEvents(calendarId: String): Single<List<RemoteCalendarEvent>>
-    fun updateEvent(request: UpdateCalendarEventRequest): Completable
-    fun deleteEvent(request: DeleteCalendarEventsRequest): Completable
 }
 
 class CalendarMapper @Inject constructor() {
