@@ -1,14 +1,18 @@
 package com.afterlogic.auroracontacts.data.contacts
 
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import com.afterlogic.auroracontacts.BuildConfig
 import com.afterlogic.auroracontacts.R
+import com.afterlogic.auroracontacts.application.App
 import com.afterlogic.auroracontacts.application.AppScope
 import com.afterlogic.auroracontacts.application.wrappers.Resources
 import com.afterlogic.auroracontacts.data.db.ContactsDao
 import com.afterlogic.auroracontacts.data.preferences.Prefs
 import com.afterlogic.auroracontacts.data.util.RemoteServiceProvider
-import io.reactivex.BackpressureStrategy
-import io.reactivex.Completable
-import io.reactivex.Flowable
+import io.reactivex.*
 import io.reactivex.rxkotlin.combineLatest
 import io.reactivex.subjects.BehaviorSubject
 import java.security.InvalidParameterException
@@ -25,7 +29,8 @@ class ContactsRepository @Inject constructor(
         private val dao: ContactsDao,
         private val remoteServiceProvider: RemoteServiceProvider<ContactsRemoteService>,
         private val mapper: ContactsMapper,
-        private val res: Resources
+        private val res: Resources,
+        private val crossProcessChangedPublisher: CrossProcessContactsDBChangedPublisher
 ) {
 
     companion object {
@@ -65,14 +70,17 @@ class ContactsRepository @Inject constructor(
 
     fun getContactsGroupsInfo(): Flowable<List<ContactGroupInfo>> {
 
-        return dao.all.map { it.map(mapper::toPlain) }
+        return crossProcessChangedPublisher.listen()
+                .startWith(CrossProcessContactsDBChangedPublisher.ContactsChangedEvent)
+                .flatMap { dao.all }
+                .map { it.map(mapper::toPlain) }
                 .filter { prefs.contactsFetched }
                 .combineLatest(innerContactsGroups)
                 .combineLatest(inTransactionSubject.toFlowable(BackpressureStrategy.LATEST))
                 .filter { (_, inTransaction) -> !inTransaction }
                 .map { (data, _) -> data }
                 .map { (fromDao, inner) -> inner + fromDao }
-                .mergeWith(loadRemote().toFlowable())
+                .mergeWith(loadRemote().toCompletable().toFlowable())
 
     }
 
@@ -117,15 +125,74 @@ class ContactsRepository @Inject constructor(
         }
     }
 
-    private fun loadRemote(): Completable {
+    fun loadRemote(): Single<List<RemoteContactGroup>> {
 
         return remoteService.flatMap { it.getContactsGroups() }
-                .map { it.map { mapper.toDbe(it, prefs.syncAllContacts) } }
                 .doOnSuccess {
-                    dao += it
+
+                    val dbeItems = it.map { mapper.toDbe(it, prefs.syncAllContacts) }
+                    dao += dbeItems
                     prefs.contactsFetched = true
+
+                    crossProcessChangedPublisher.onChange()
+
                 }
-                .toCompletable()
+
+    }
+
+    class CrossProcessContactsDBChangedPublisher @Inject constructor(
+            private val context: App
+    ) {
+
+        companion object {
+            private const val ACTION = "CrossProcessContactsDBChangedPublisher.CHANGED"
+            private const val PID = "CrossProcessContactsDBChangedPublisher.PID"
+        }
+
+        object ContactsChangedEvent
+
+        val pid = android.os.Process.myPid()
+
+        fun onChange() {
+            val intent = Intent(ACTION)
+                    .putExtra(PID, pid)
+                    .setPackage(BuildConfig.APPLICATION_ID)
+            context.sendBroadcast(intent)
+        }
+
+        fun listen(): Flowable<ContactsChangedEvent> {
+
+            val finalizers = arrayListOf<() -> Unit>()
+
+            val source = { emitter: FlowableEmitter<ContactsChangedEvent> ->
+
+                val receiver = object : BroadcastReceiver() {
+
+                    override fun onReceive(ctx: Context, intent: Intent) {
+
+                        if (intent.action != ACTION) return
+
+                        if (intent.getIntExtra(PID, -1) != pid) {
+                            emitter.onNext(ContactsChangedEvent)
+                        }
+
+                    }
+
+                }
+
+                context.registerReceiver(
+                        receiver,
+                        IntentFilter(ACTION)
+                )
+
+                finalizers.add { context.unregisterReceiver(receiver) }.let { Unit }
+
+            }
+
+            return Flowable.create<ContactsChangedEvent>(source, BackpressureStrategy.LATEST)
+                    .doFinally { finalizers.forEach { it() } }
+
+        }
 
     }
 
