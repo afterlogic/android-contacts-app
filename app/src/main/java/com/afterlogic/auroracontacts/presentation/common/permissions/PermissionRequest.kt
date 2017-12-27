@@ -27,6 +27,13 @@ enum class PermissionRequest constructor(val requestCode: Int, val permissions: 
     CALENDAR(1, arrayOf(
             Manifest.permission.WRITE_CALENDAR,
             Manifest.permission.READ_CALENDAR
-    ))
+    )),
+
+    CONTACTS(2, arrayOf(
+            Manifest.permission.READ_CONTACTS,
+            Manifest.permission.WRITE_CONTACTS
+    )),
+
+    CALENDAR_AND_CONTACTS(3, CALENDAR.permissions + CONTACTS.permissions)
 
 }

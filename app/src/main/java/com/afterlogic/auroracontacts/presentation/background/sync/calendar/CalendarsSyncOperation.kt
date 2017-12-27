@@ -27,7 +27,7 @@ import java.text.ParseException
 import java.util.*
 import javax.inject.Inject
 
-class CalendarSyncOperation private constructor(
+class CalendarsSyncOperation private constructor(
         private val account: Account,
         private val contentClient: ContentProviderClient,
         private val dao: CalendarsDao,
@@ -646,8 +646,8 @@ class CalendarSyncOperation private constructor(
             private val remoteServiceProvider: RemoteServiceProvider<CalendarRemoteService>
     ) {
 
-        fun create(account: Account, client: ContentProviderClient) : CalendarSyncOperation {
-            return CalendarSyncOperation(account, client, dao, calendarMapper, remoteServiceProvider)
+        fun create(account: Account, client: ContentProviderClient) : CalendarsSyncOperation {
+            return CalendarsSyncOperation(account, client, dao, calendarMapper, remoteServiceProvider)
         }
 
     }

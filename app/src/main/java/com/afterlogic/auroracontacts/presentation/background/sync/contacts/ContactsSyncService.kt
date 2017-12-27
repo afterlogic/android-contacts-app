@@ -1,4 +1,4 @@
-package com.afterlogic.auroracontacts.presentation.background.sync.calendar
+package com.afterlogic.auroracontacts.presentation.background.sync.contacts
 
 import android.accounts.Account
 import android.content.AbstractThreadedSyncAdapter
@@ -19,7 +19,12 @@ import javax.inject.Inject
  * mail: mail@sunnydaydev.me
  */
 
-class CalendarsSyncService: InjectionDaggerService<CalendarsSyncInjection>() {
+class ContactsSyncService: InjectionDaggerService<ContactsSyncService.Injection>() {
+
+    class Injection @Inject constructor(
+            val adapter: ContactsSyncAdapter,
+            val syncStateHolder: SyncStateHolder
+    )
 
     private val syncAdapter by inject { it.adapter }
     private val stateHolder by inject { it.syncStateHolder }
@@ -27,28 +32,23 @@ class CalendarsSyncService: InjectionDaggerService<CalendarsSyncInjection>() {
     override fun onCreate() {
         super.onCreate()
         Timber.d("onCreate")
-        stateHolder.calendarsSyncing.onNext(true)
+        stateHolder.contactsSyncing.onNext(true)
     }
 
     override fun onDestroy() {
         super.onDestroy()
         Timber.d("onDestroy")
-        stateHolder.calendarsSyncing.onNext(false)
+        stateHolder.contactsSyncing.onNext(false)
     }
 
     override fun onBind(intent: Intent?): IBinder = syncAdapter.syncAdapterBinder
 
 }
 
-class CalendarsSyncInjection @Inject constructor(
-        val adapter: CalendarSyncAdapter,
-        val syncStateHolder: SyncStateHolder
-)
-
 @AppScope
-class CalendarSyncAdapter @Inject constructor(
+class ContactsSyncAdapter @Inject constructor(
         context: App,
-        private val calendarsSyncOperation: CalendarsSyncOperation.Factory
+        private val contactsSyncOperationFactory: ContactsSyncOperation.Factory
 ): AbstractThreadedSyncAdapter(context, true, false) {
 
     override fun onPerformSync(account: Account,
@@ -59,7 +59,7 @@ class CalendarSyncAdapter @Inject constructor(
 
         Timber.d("onPerformSync")
 
-        calendarsSyncOperation.create(account, contentProviderClient)
+        contactsSyncOperationFactory.create(account, contentProviderClient)
                 .sync()
                 .blockingGet()
                 ?.let(Timber::e)
@@ -67,8 +67,6 @@ class CalendarSyncAdapter @Inject constructor(
         Timber.d("onPerformSyncEnd")
 
     }
-
-
 
 }
 

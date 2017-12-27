@@ -120,6 +120,9 @@ class MainViewModel @Inject constructor(
                 .defaultSchedulers()
                 .subscribeIt { syncing = it }
 
+        permissionsInteractor.requirePermission(PermissionRequest.CALENDAR_AND_CONTACTS)
+                .subscribeIt()
+
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
@@ -130,9 +133,6 @@ class MainViewModel @Inject constructor(
     fun onSyncClicked() {
 
         if (syncing) return
-
-        permissionsInteractor.requirePermission(PermissionRequest.CALENDAR)
-                .subscribeIt()
 
         interactor.requestStartSyncImmediately()
                 .defaultSchedulers()

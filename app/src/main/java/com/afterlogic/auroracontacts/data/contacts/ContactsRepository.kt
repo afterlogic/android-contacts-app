@@ -15,6 +15,7 @@ import com.afterlogic.auroracontacts.data.util.RemoteServiceProvider
 import io.reactivex.*
 import io.reactivex.rxkotlin.combineLatest
 import io.reactivex.subjects.BehaviorSubject
+import timber.log.Timber
 import java.security.InvalidParameterException
 import javax.inject.Inject
 
@@ -173,6 +174,7 @@ class ContactsRepository @Inject constructor(
                         if (intent.action != ACTION) return
 
                         if (intent.getIntExtra(PID, -1) != pid) {
+                            Timber.d("Receive cross process contacts db changed event.")
                             emitter.onNext(ContactsChangedEvent)
                         }
 
