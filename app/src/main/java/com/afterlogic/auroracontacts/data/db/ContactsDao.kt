@@ -57,6 +57,20 @@ abstract class ContactsDao {
     """)
     protected abstract fun setSyncEnabled(ids: List<Long>)
 
+    @Transaction
+    @Query("""
+        UPDATE `contact_groups`
+        SET `syncEnabled` = :enabled
+    """)
+    abstract fun setAllSyncEnabled(enabled: Boolean)
+
+    @get:Transaction
+    @get:Query("""
+        SELECT COUNT(*) FROM `contact_groups`
+        WHERE `syncEnabled` = 0
+    """)
+    abstract val syncDisabledCount: Int
+
     //endregion
 
     //region// Contact's getters

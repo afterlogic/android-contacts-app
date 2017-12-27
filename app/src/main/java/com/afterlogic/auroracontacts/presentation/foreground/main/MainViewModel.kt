@@ -10,6 +10,7 @@ import com.afterlogic.auroracontacts.application.wrappers.Resources
 import com.afterlogic.auroracontacts.core.rx.DisposableBag
 import com.afterlogic.auroracontacts.core.rx.Subscriber
 import com.afterlogic.auroracontacts.core.rx.disposeBy
+import com.afterlogic.auroracontacts.core.util.StringIdProvider
 import com.afterlogic.auroracontacts.core.util.setSequentiallyFrom
 import com.afterlogic.auroracontacts.data.SyncPeriod
 import com.afterlogic.auroracontacts.data.calendar.AuroraCalendarInfo
@@ -68,8 +69,7 @@ class MainViewModel @Inject constructor(
     private val calendarsCard = CardViewModel(
             TYPE_CALENDAR, res.strings[R.string.prompt_main_calendars_title], calendars
     )
-    private val calendarItemStableIds = WeakHashMap<String, Long>()
-    private var lastCaledarStableId = 0L
+    private val calendarItemIdProvider = StringIdProvider()
 
     private val contacts: MutableList<ContactItemViewModel> = ObservableArrayList()
     private val contactsCard = CardViewModel(
@@ -175,6 +175,30 @@ class MainViewModel @Inject constructor(
 
         contactsLoading = false
 
+        // Check exists
+        val sameContent by lazy {
+            val currents = contactsMap.values
+            if (currents.size != contacts.size) return@lazy false
+            val currentIds = currents.map { it.id }.toTypedArray()
+            val fetchedIds = contacts.map { it.id }.toTypedArray()
+            currentIds contentEquals fetchedIds
+        }
+
+        if (sameContent) {
+
+            contactsMap.forEach { (key, value) ->
+
+                val contact = contacts.find { it.id == value.id } ?: throw error("Contact not exists.")
+
+                key.name = contact.name
+                key.checked = contact.syncing
+
+            }
+
+            return
+
+        }
+
         contacts
                 .map { mapContactsGroup(it) to it  }
                 .also {
@@ -204,7 +228,7 @@ class MainViewModel @Inject constructor(
 
     private fun mapCalendar(calendar: AuroraCalendarInfo) : CalendarItemViewModel =
             CalendarItemViewModel(
-                    calendarItemStableIds.getOrPut(calendar.id) { ++lastCaledarStableId },
+                    calendarItemIdProvider[calendar.id],
                     calendar.name, calendar.color,
                     calendar.settings.syncEnabled, this::onCalendarCheckedChanged
             )
