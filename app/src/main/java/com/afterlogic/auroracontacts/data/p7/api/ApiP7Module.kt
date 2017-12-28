@@ -88,6 +88,6 @@ class ApiP7Module {
     internal fun provideCalendarApiClass(): Class<CalendarApiP7> = CalendarApiP7::class.java
 
     @Provides
-    internal fun provideContactsApiClass(): Class<ContactsApiP7> = ContactsApiP7::class.java
+    internal fun provideContactsApiClass(): Class<P7ContactsApi> = P7ContactsApi::class.java
 
 }

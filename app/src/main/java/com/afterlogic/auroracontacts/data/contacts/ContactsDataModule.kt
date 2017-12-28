@@ -2,7 +2,7 @@ package com.afterlogic.auroracontacts.data.contacts
 
 import com.afterlogic.auroracontacts.data.api.ApiType
 import com.afterlogic.auroracontacts.data.api.ApiTypeKey
-import com.afterlogic.auroracontacts.data.p7.contacts.ContactsRemoteServiceP7
+import com.afterlogic.auroracontacts.data.p7.contacts.P7ContactsRemoteService
 import dagger.Binds
 import dagger.Module
 import dagger.multibindings.IntoMap
@@ -17,6 +17,6 @@ abstract class ContactsDataModule {
     @Binds
     @IntoMap
     @ApiTypeKey(ApiType.P7)
-    abstract fun bindP7RemoteService(p7: ContactsRemoteServiceP7): ContactsRemoteService
+    abstract fun bindP7RemoteService(p7: P7ContactsRemoteService): ContactsRemoteService
 
 }

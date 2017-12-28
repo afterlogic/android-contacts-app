@@ -35,10 +35,10 @@ class ContactsRepository @Inject constructor(
 ) {
 
     companion object {
-        private const val INNER_GROUP_ALL = -4L
-        private const val INNER_GROUP_PERSONAL = -3L
-        private const val INNER_GROUP_SHARED = -2L
-        private const val INNER_GROUP_TEAM = -1L
+        const val GROUP_ALL = -1L
+        const val GROUP_PERSONAL = -2L
+        const val GROUP_SHARED = -3L
+        const val GROUP_TEAM = -4L
     }
 
     private object ChangedEvent
@@ -55,10 +55,10 @@ class ContactsRepository @Inject constructor(
             val strings = res.strings
 
             listOf(
-                    ContactGroupInfo(strings[R.string.value_contacts_all], INNER_GROUP_ALL, prefs.syncAllContacts),
-                    ContactGroupInfo(strings[R.string.value_contacts_personal], INNER_GROUP_PERSONAL, prefs.syncPersonalContacts),
-                    ContactGroupInfo(strings[R.string.value_contacts_shared], INNER_GROUP_SHARED, prefs.syncSharedContacts),
-                    ContactGroupInfo(strings[R.string.value_contacts_team], INNER_GROUP_TEAM, prefs.syncTeamContacts)
+                    ContactGroupInfo(strings[R.string.value_contacts_all], GROUP_ALL, prefs.syncAllContacts),
+                    ContactGroupInfo(strings[R.string.value_contacts_personal], GROUP_PERSONAL, prefs.syncPersonalContacts),
+                    ContactGroupInfo(strings[R.string.value_contacts_shared], GROUP_SHARED, prefs.syncSharedContacts),
+                    ContactGroupInfo(strings[R.string.value_contacts_team], GROUP_TEAM, prefs.syncTeamContacts)
             )
 
         }.toFlowable(BackpressureStrategy.LATEST)
@@ -69,7 +69,7 @@ class ContactsRepository @Inject constructor(
                 dao.syncDisabledCount == 0
     }
 
-    fun getContactsGroupsInfo(): Flowable<List<ContactGroupInfo>> {
+    fun getContactsGroupsInfo(update: Boolean = true): Flowable<List<ContactGroupInfo>> {
 
         return crossProcessChangedPublisher.listen()
                 .startWith(CrossProcessContactsDBChangedPublisher.ContactsChangedEvent)
@@ -81,7 +81,10 @@ class ContactsRepository @Inject constructor(
                 .filter { (_, inTransaction) -> !inTransaction }
                 .map { (data, _) -> data }
                 .map { (fromDao, inner) -> inner + fromDao }
-                .mergeWith(loadRemote().toCompletable().toFlowable())
+                .let {
+                    if (update) it.mergeWith(loadRemote().toCompletable().toFlowable())
+                    else it
+                }
 
     }
 
@@ -93,15 +96,15 @@ class ContactsRepository @Inject constructor(
             if (contactsGroup.id < 0) {
 
                 when(contactsGroup.id) {
-                    INNER_GROUP_ALL -> {
+                    GROUP_ALL -> {
                         prefs.syncPersonalContacts = enabled
                         prefs.syncSharedContacts = enabled
                         prefs.syncTeamContacts = enabled
                         dao.setAllSyncEnabled(enabled)
                     }
-                    INNER_GROUP_PERSONAL -> prefs.syncPersonalContacts = enabled
-                    INNER_GROUP_SHARED -> prefs.syncSharedContacts = enabled
-                    INNER_GROUP_TEAM -> prefs.syncTeamContacts = enabled
+                    GROUP_PERSONAL -> prefs.syncPersonalContacts = enabled
+                    GROUP_SHARED -> prefs.syncSharedContacts = enabled
+                    GROUP_TEAM -> prefs.syncTeamContacts = enabled
                     else -> throw InvalidParameterException("Unknown inner group.")
                 }
 
@@ -140,6 +143,9 @@ class ContactsRepository @Inject constructor(
                 }
 
     }
+
+    fun getRemoteContacts(groupId: Long): Single<List<RemoteContact>> =
+            remoteService.flatMap { it.getContacts(groupId) }
 
     class CrossProcessContactsDBChangedPublisher @Inject constructor(
             private val context: App

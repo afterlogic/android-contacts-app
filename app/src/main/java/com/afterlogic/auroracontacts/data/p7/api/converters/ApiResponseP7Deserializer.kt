@@ -1,6 +1,6 @@
 package com.afterlogic.auroracontacts.data.p7.api.converters
 
-import com.afterlogic.auroracontacts.data.p7.api.model.ApiResponseP7
+import com.afterlogic.auroracontacts.data.p7.api.model.P7ApiResponse
 import com.google.gson.*
 import java.lang.reflect.Type
 
@@ -10,10 +10,10 @@ import java.lang.reflect.Type
  *
  * mail: sunnyday.development@gmail.com
  */
-class ApiResponseP7Deserializer(private val gson: Gson) : JsonDeserializer<ApiResponseP7<*>> {
+class ApiResponseP7Deserializer(private val gson: Gson) : JsonDeserializer<P7ApiResponse<*>> {
 
     @Throws(JsonParseException::class)
-    override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): ApiResponseP7<*> {
+    override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): P7ApiResponse<*> {
 
         val response = json.asJsonObject
 
@@ -21,8 +21,8 @@ class ApiResponseP7Deserializer(private val gson: Gson) : JsonDeserializer<ApiRe
 
         checkAndHandleFalseResult(response)
 
-        if (response.has(ApiResponseP7.NAME_ERROR_CODE)) {
-            response.remove(ApiResponseP7.NAME_RESULT)
+        if (response.has(P7ApiResponse.NAME_ERROR_CODE)) {
+            response.remove(P7ApiResponse.NAME_RESULT)
         }
 
         return gson.fromJson(response, typeOfT)
@@ -33,12 +33,12 @@ class ApiResponseP7Deserializer(private val gson: Gson) : JsonDeserializer<ApiRe
         if (response.has("Error")) {
             val error = response.get("Error")
             if (error.isJsonPrimitive && error.asJsonPrimitive.isString) {
-                response.addProperty(ApiResponseP7.NAME_ERROR_CODE, 999)
-                response.addProperty(ApiResponseP7.NAME_ERROR_MESSAGE, "Error: " + error.asString)
+                response.addProperty(P7ApiResponse.NAME_ERROR_CODE, 999)
+                response.addProperty(P7ApiResponse.NAME_ERROR_MESSAGE, "Error: " + error.asString)
             } else if (error.isJsonPrimitive && error.asJsonPrimitive.isNumber) {
-                response.addProperty(ApiResponseP7.NAME_ERROR_CODE, error.asInt)
+                response.addProperty(P7ApiResponse.NAME_ERROR_CODE, error.asInt)
             } else {
-                response.addProperty(ApiResponseP7.NAME_ERROR_CODE, 999)
+                response.addProperty(P7ApiResponse.NAME_ERROR_CODE, 999)
             }
 
             response.remove("Error")
@@ -48,8 +48,8 @@ class ApiResponseP7Deserializer(private val gson: Gson) : JsonDeserializer<ApiRe
     private fun checkAndHandleFalseResult(response: JsonObject) {
         if (response.has("Result")) {
             val result = response.get("Result")
-            if (isBoolean(result) && !result.asBoolean && !response.has(ApiResponseP7.NAME_ERROR_CODE)) {
-                response.addProperty(ApiResponseP7.NAME_ERROR_CODE, 999)
+            if (isBoolean(result) && !result.asBoolean && !response.has(P7ApiResponse.NAME_ERROR_CODE)) {
+                response.addProperty(P7ApiResponse.NAME_ERROR_CODE, 999)
             }
         }
     }

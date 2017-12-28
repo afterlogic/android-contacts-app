@@ -8,5 +8,9 @@ import io.reactivex.Single
  */
 
 interface ContactsRemoteService {
+
     fun getContactsGroups(): Single<List<RemoteContactGroup>>
+
+    fun getContacts(groupId: Long): Single<List<RemoteContact>>
+
 }

@@ -3,7 +3,7 @@ package com.afterlogic.auroracontacts.data.api.p7.util
 import com.afterlogic.auroracontacts.data.AuthFailedError
 import com.afterlogic.auroracontacts.data.api.ApiReturnedError
 import com.afterlogic.auroracontacts.data.api.ApiType
-import com.afterlogic.auroracontacts.data.p7.api.model.ApiResponseP7
+import com.afterlogic.auroracontacts.data.p7.api.model.P7ApiResponse
 import io.reactivex.Single
 
 /**
@@ -11,7 +11,7 @@ import io.reactivex.Single
  * mail: mail@sunnydaydev.me
  */
 
-fun <T> Single<ApiResponseP7<T>>.checkResponse(): Single<ApiResponseP7<T>> {
+fun <T> Single<P7ApiResponse<T>>.checkResponse(): Single<P7ApiResponse<T>> {
 
     return flatMap {
 
@@ -32,9 +32,9 @@ fun <T> Single<ApiResponseP7<T>>.checkResponse(): Single<ApiResponseP7<T>> {
 
 }
 
-fun <T, R> Single<ApiResponseP7<T>>.checkResponseAndGetData(
-        mapper: (ApiResponseP7<T>) -> R
+fun <T, R> Single<P7ApiResponse<T>>.checkResponseAndGetData(
+        mapper: (P7ApiResponse<T>) -> R
 ): Single<R> = checkResponse().map(mapper)
 
-fun <T> Single<ApiResponseP7<T>>.checkResponseAndGetData(): Single<T> =
+fun <T> Single<P7ApiResponse<T>>.checkResponseAndGetData(): Single<T> =
         checkResponseAndGetData { it.data!! }

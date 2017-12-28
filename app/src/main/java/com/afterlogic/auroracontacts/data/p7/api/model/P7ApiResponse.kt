@@ -6,7 +6,7 @@ import com.google.gson.annotations.SerializedName
  * Created by sunny on 04.12.2017.
  * mail: mail@sunnydaydev.me
  */
-class ApiResponseP7<T>{
+class P7ApiResponse<T>{
 
     companion object {
         const val NAME_ERROR_CODE = "ErrorCode"
