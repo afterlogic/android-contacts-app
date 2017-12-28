@@ -2,9 +2,12 @@ package com.afterlogic.auroracontacts.presentation.background.sync.contacts
 
 import android.accounts.Account
 import android.content.ContentProviderClient
+import android.provider.ContactsContract
 import com.afterlogic.auroracontacts.data.contacts.ContactGroupInfo
 import com.afterlogic.auroracontacts.data.contacts.ContactsRepository
 import com.afterlogic.auroracontacts.data.contacts.RemoteContact
+import com.afterlogic.auroracontacts.presentation.background.sync.BaseSyncOperation
+import com.afterlogic.auroracontacts.presentation.background.sync.CustomContact
 import io.reactivex.Completable
 import io.reactivex.Single
 import timber.log.Timber
@@ -12,10 +15,10 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class ContactsSyncOperation private constructor(
-        private val account: Account,
-        private val contentClient: ContentProviderClient,
+        account: Account,
+        contentClient: ContentProviderClient,
         private val repository: ContactsRepository
-) {
+) : BaseSyncOperation(account, contentClient) {
 
     class Factory @Inject constructor(private val repository: ContactsRepository) {
 
@@ -24,6 +27,8 @@ class ContactsSyncOperation private constructor(
         }
 
     }
+
+    private val contacts = getContentClientHelper(ContactsContract.Contacts.CONTENT_URI)
 
     fun sync() : Completable = repository.loadRemote()
             .flatMap { getFirstLocal() }
@@ -53,14 +58,32 @@ class ContactsSyncOperation private constructor(
                 }
                 .let { Completable.concat(it) }
                 .doFinally {
+
                     // Remote not exists in remote contacts
+                    val idsSqlIn = remoteContactIds.map { it.toString() } .toSqlIn()
+
+                    contacts.delete("""
+                        ${CustomContact.Contacts.SYNCED} = 1 AND
+                        ${CustomContact.Contacts.REMOTE_ID} NOT IN $idsSqlIn
+                    """.trimIndent())
+
                 }
 
     }
 
     private fun syncContacts(contacts: List<RemoteContact>) : Completable {
-        return Completable.complete()
+
+        return contacts
+                .filter {
+                    // TODO: Check not changed
+                    true
+                }
+                .map { sycContractFromRemote(it) }
+                .let { Completable.concat(it) }
+
     }
+
+    private fun sycContractFromRemote(contact: RemoteContact) : Completable = TODO()
 
     private fun getFirstLocal(): Single<List<ContactGroupInfo>> =
             repository.getContactsGroupsInfo(false)

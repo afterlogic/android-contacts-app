@@ -1,5 +1,7 @@
 package com.afterlogic.auroracontacts.presentation.background.sync
 
+import android.provider.ContactsContract
+
 /**
  * Created by sunny on 11.12.2017.
  * mail: mail@sunnydaydev.me
@@ -19,6 +21,12 @@ object CustomContact {
         const val REMOTE_ETAG = "sync_data3"
         const val SYNCED = "sync_data4"
 
+    }
+
+    object Contacts {
+        const val REMOTE_ID = ContactsContract.Contacts.Data.SYNC1
+        const val SYNCED = ContactsContract.Contacts.Data.SYNC2
+        const val ETAG = ContactsContract.Contacts.Data.SYNC3
     }
 
 }

@@ -5,7 +5,6 @@ import android.annotation.SuppressLint
 import android.content.ContentProviderClient
 import android.content.ContentValues
 import android.database.Cursor
-import android.net.Uri
 import android.provider.CalendarContract
 import biweekly.Biweekly
 import biweekly.ICalVersion
@@ -13,9 +12,11 @@ import biweekly.ICalendar
 import biweekly.component.VEvent
 import biweekly.property.*
 import biweekly.util.*
+import com.afterlogic.auroracontacts.core.util.ContentClientHelper
 import com.afterlogic.auroracontacts.data.calendar.*
 import com.afterlogic.auroracontacts.data.db.CalendarsDao
 import com.afterlogic.auroracontacts.data.util.RemoteServiceProvider
+import com.afterlogic.auroracontacts.presentation.background.sync.BaseSyncOperation
 import com.afterlogic.auroracontacts.presentation.background.sync.CustomContact
 import com.afterlogic.auroracontacts.presentation.background.sync.UnexpectedNullCursorException
 import io.reactivex.Completable
@@ -33,7 +34,7 @@ class CalendarsSyncOperation private constructor(
         private val dao: CalendarsDao,
         private val calendarMapper: CalendarMapper,
         remoteServiceProvider: RemoteServiceProvider<CalendarRemoteService>
-) {
+) : BaseSyncOperation(account, contentClient) {
 
     private val remoteService  = remoteServiceProvider.get()
 
@@ -371,16 +372,6 @@ class CalendarsSyncOperation private constructor(
 
     }
 
-    private fun getSyncUri(uri: Uri): Uri {
-
-        return uri.buildUpon()
-                .appendQueryParameter("caller_is_syncadapter", "true")
-                .appendQueryParameter("account_name", account.name)
-                .appendQueryParameter("account_type", account.type)
-                .build()
-
-    }
-
     // TODO: Timezone
     private fun RemoteCalendar.toContentValues(
             localId: Long? = null,
@@ -638,8 +629,6 @@ class CalendarsSyncOperation private constructor(
 
     private fun String.toIntList(): List<Int> = this.toList { it.toInt() }
 
-    private fun List<String>.toSqlIn(): String = joinToString("', '", prefix = "('", postfix = "')")
-
     class Factory @Inject constructor(
             private val dao: CalendarsDao,
             private val calendarMapper: CalendarMapper,
@@ -652,32 +641,14 @@ class CalendarsSyncOperation private constructor(
 
     }
 
-    private val ContentProviderClient.calendars: ContentClientHelper get() {
+    private val ContentProviderClient.calendars: ContentClientHelper
+        get() {
         return ContentClientHelper(this, getSyncUri(CalendarContract.Calendars.CONTENT_URI))
     }
 
-    private val ContentProviderClient.events: ContentClientHelper get() {
+    private val ContentProviderClient.events: ContentClientHelper
+        get() {
         return ContentClientHelper(this, getSyncUri(CalendarContract.Events.CONTENT_URI))
-    }
-
-    private class ContentClientHelper(private val client: ContentProviderClient, private val uri: Uri) {
-
-        fun update(values: ContentValues, selection: String, selectionArgs: Array<String>? = null) {
-            client.update(uri, values, selection, selectionArgs)
-        }
-
-        fun insert(values: ContentValues): Uri {
-            return client.insert(uri, values)
-        }
-
-        fun query(projection: Array<String>? = null, selection: String = "1", selectionArgs: Array<String>? = null, sortOrder: String? = null): Cursor? {
-            return client.query(uri, projection, selection, selectionArgs, sortOrder)
-        }
-
-        fun delete(selection: String, selectionArgs: Array<String>? = null): Int {
-            return client.delete(uri, selection, selectionArgs)
-        }
-
     }
 
 }
