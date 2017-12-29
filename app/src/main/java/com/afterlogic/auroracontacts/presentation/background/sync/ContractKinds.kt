@@ -1,5 +1,6 @@
 package com.afterlogic.auroracontacts.presentation.background.sync
 
+import android.provider.CalendarContract
 import android.provider.ContactsContract
 
 /**
@@ -7,26 +8,31 @@ import android.provider.ContactsContract
  * mail: mail@sunnydaydev.me
  */
 
+private typealias _Calendar = CalendarContract.Calendars
+private typealias _Events = CalendarContract.Events
+private typealias _RawContacts = ContactsContract.RawContacts
+
 object CustomContact {
 
     object Calendar {
-        const val REMOTE_ID = "cal_sync1"
-        const val REMOTE_CTAG = "cal_sync2"
+        const val REMOTE_ID = _Calendar.CAL_SYNC1
+        const val REMOTE_CTAG = _Calendar.CAL_SYNC2
     }
 
 
     object Events {
-        const val REMOTE_ID = "sync_data1"
-        const val REQURENCE_ID = "sync_data2"
-        const val REMOTE_ETAG = "sync_data3"
-        const val SYNCED = "sync_data4"
+        const val REMOTE_ID = _Events.SYNC_DATA1
+        const val REQURENCE_ID = _Events.SYNC_DATA2
+        const val REMOTE_ETAG = _Events.SYNC_DATA3
+        const val SYNCED = _Events.SYNC_DATA4
 
     }
 
-    object Contacts {
-        const val REMOTE_ID = ContactsContract.Contacts.Data.SYNC1
-        const val SYNCED = ContactsContract.Contacts.Data.SYNC2
-        const val ETAG = ContactsContract.Contacts.Data.SYNC3
+    object RawContacts {
+        const val REMOTE_ID = _RawContacts.SYNC1
+        const val SYNCED = _RawContacts.SYNC2
+        const val ETAG = _RawContacts.SYNC3
+        const val SYNC_CYCLE_ID = _RawContacts.SYNC4
     }
 
 }

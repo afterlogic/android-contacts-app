@@ -38,4 +38,8 @@ class P7ContactsCloudService @Inject constructor(
 
     }
 
+    fun getFullContact(contactId: Long) : Single<P7RemoteFullContact> =
+            api.flatMap { it.getFullContact(contactId) }
+                    .checkResponseAndGetData()
+
 }

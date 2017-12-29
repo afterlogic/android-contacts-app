@@ -154,6 +154,6 @@ data class P7RemoteFullContact(
         override val isUseFriendlyName:Boolean
 ) : RemoteFullContact {
 
-    override val auroraContactId:Long = idContact?.toLongOrNull() ?: -1
+    override val id:Long = idContact?.toLongOrNull() ?: -1
 
 }

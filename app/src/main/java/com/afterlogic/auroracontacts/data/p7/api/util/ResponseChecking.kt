@@ -3,6 +3,7 @@ package com.afterlogic.auroracontacts.data.api.p7.util
 import com.afterlogic.auroracontacts.data.AuthFailedError
 import com.afterlogic.auroracontacts.data.api.ApiReturnedError
 import com.afterlogic.auroracontacts.data.api.ApiType
+import com.afterlogic.auroracontacts.data.api.NullApiResultError
 import com.afterlogic.auroracontacts.data.p7.api.model.P7ApiResponse
 import io.reactivex.Single
 
@@ -18,6 +19,10 @@ fun <T> Single<P7ApiResponse<T>>.checkResponse(): Single<P7ApiResponse<T>> {
         if (it.isSuccess) Single.just(it)
         else {
 
+            if (it.data == null && it.errorCode == null && it.errorMessage == null) {
+                return@flatMap Single.error<P7ApiResponse<T>>(NullApiResultError())
+            }
+
             val error = ApiReturnedError(it.errorCode ?: -1, ApiType.P7, it.errorMessage)
 
             val resultError = when(error.code) {
@@ -26,6 +31,7 @@ fun <T> Single<P7ApiResponse<T>>.checkResponse(): Single<P7ApiResponse<T>> {
             }
 
             Single.error(resultError)
+
         }
 
     }

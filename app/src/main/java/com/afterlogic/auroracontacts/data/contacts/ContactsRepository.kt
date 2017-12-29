@@ -147,6 +147,9 @@ class ContactsRepository @Inject constructor(
     fun getRemoteContacts(groupId: Long): Single<List<RemoteContact>> =
             remoteService.flatMap { it.getContacts(groupId) }
 
+    fun getFullContact(contactId: Long) : Single<RemoteFullContact> =
+            remoteService.flatMap { it.getFullContact(contactId) }
+
     class CrossProcessContactsDBChangedPublisher @Inject constructor(
             private val context: App
     ) {

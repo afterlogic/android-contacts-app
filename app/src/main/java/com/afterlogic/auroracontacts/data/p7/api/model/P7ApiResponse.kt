@@ -27,6 +27,6 @@ class P7ApiResponse<T>{
     val errorMessage: String? = null
 
     val isSuccess: Boolean
-        get() = errorCode == null && data != null
+        get() = errorCode == null && errorMessage == null && data != null
 
 }

@@ -601,20 +601,6 @@ class CalendarsSyncOperation private constructor(
 
     }
 
-    private fun Cursor.getString(columnName: String, canBeBlank: Boolean = false) : String? {
-        return getColumnIndex(columnName)
-                .takeIf { it != -1 && !isNull(it) }
-                ?.let { getString(it) }
-                ?.takeIf { canBeBlank || it.isNotBlank() }
-    }
-
-    private fun Cursor.getLong(columnName: String, canMinusOne: Boolean = false) : Long? {
-        return getColumnIndex(columnName)
-                .takeIf { it != -1 && !isNull(it) }
-                ?.let { getLong(it) }
-                ?.takeIf { canMinusOne || it != -1L }
-    }
-
     inline private fun <T> Cursor.toList(mapper: (Cursor) -> T): List<T> {
         val list = mutableListOf<T>()
         while (moveToNext()) {

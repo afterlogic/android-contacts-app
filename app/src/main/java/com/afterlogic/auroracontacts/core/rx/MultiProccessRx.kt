@@ -235,9 +235,13 @@ private class ObservableServiceConnection(
 
         if (!disposed.compareAndSet(true)) return
 
-        serviceMessenger?.send {
-            what = OBSERVABLE_MESSAGE_DISPOSE
-            arg1 = id
+        try {
+            serviceMessenger?.send {
+                what = OBSERVABLE_MESSAGE_DISPOSE
+                arg1 = id
+            }
+        } catch (e: DeadObjectException) {
+            // no-op
         }
 
     }

@@ -5,6 +5,7 @@ import com.afterlogic.auroracontacts.data.api.p7.util.AuthValue
 import com.afterlogic.auroracontacts.data.p7.api.model.P7ApiResponse
 import com.afterlogic.auroracontacts.data.p7.contacts.P7ContactsData
 import com.afterlogic.auroracontacts.data.p7.contacts.P7RemoteContact
+import com.afterlogic.auroracontacts.data.p7.contacts.P7RemoteFullContact
 import io.reactivex.Single
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
@@ -44,5 +45,16 @@ interface P7ContactsApi {
             @Auth(AuthValue.AUTH_TOKEN) @Field(ApiP7.Fields.AUTH_TOKEN) authToken: String = AuthValue.STRING,
             @Auth(AuthValue.ACCOUNT_ID) @Field(ApiP7.Fields.ACCOUNT_ID) accountId: Long = AuthValue.LONG
     ) : Single<P7ApiResponse<P7ContactsData>>
+
+
+    @FormUrlEncoded
+    @POST(ApiP7.AJAX)
+    fun getFullContact(
+            @Field("ContactId") id: Long,
+            @Field(ApiP7.Fields.ACTION) action: String = "ContactGet",
+            @Auth(AuthValue.APP_TOKEN) @Field(ApiP7.Fields.TOKEN) appToken: String = AuthValue.STRING,
+            @Auth(AuthValue.AUTH_TOKEN) @Field(ApiP7.Fields.AUTH_TOKEN) authToken: String = AuthValue.STRING,
+            @Auth(AuthValue.ACCOUNT_ID) @Field(ApiP7.Fields.ACCOUNT_ID) accountId: Long = AuthValue.LONG
+    ) : Single<P7ApiResponse<P7RemoteFullContact>>
 
 }

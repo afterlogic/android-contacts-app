@@ -35,15 +35,20 @@ class AuthResolver @Inject constructor(
 
             it.flatMap { e: Throwable ->
 
-                if (firstCheck.getAndSet(false) && e is AuthFailedError) {
+                val firstTime = firstCheck.getAndSet(false)
+                val needRelogin = firstTime && e is AuthFailedError && !e.checked
 
+                val handleError = if (needRelogin) {
                     relogin()
-
                 } else {
-
                     Flowable.error(e)
-
                 }
+
+                handleError
+                        .onErrorResumeNext { e: Throwable ->
+                            (e as? AuthFailedError)?.markChecked()
+                            Flowable.error(e)
+                        }
 
             }
 

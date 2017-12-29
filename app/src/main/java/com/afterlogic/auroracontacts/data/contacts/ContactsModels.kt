@@ -68,6 +68,7 @@ interface RemoteFullContact {
     val homeStreet: String?
     val homeWeb: String?
     val homeZip: String?
+    val id: Long
     val idUser: Long
     val isItsMe: Boolean
     val lastName: String?
@@ -80,7 +81,6 @@ interface RemoteFullContact {
     val skype: String?
     val title: String?
     val isUseFriendlyName: Boolean
-    val auroraContactId: Long
 
     companion object {
         private val BUSINES_ADDRESS = "businesAddress"

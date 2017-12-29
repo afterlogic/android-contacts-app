@@ -7,6 +7,8 @@ package com.afterlogic.auroracontacts.data.api
 
 open class ApiError(message: String? = null): Throwable(message)
 
-class ApiReturnedError(val code: Int, val apiType: ApiType, message: String?): ApiError(message)
+open class ApiReturnedError(val code: Int? = null, val apiType: ApiType = ApiType.UNKNOWN, message: String? = null): ApiError(message)
+
+class NullApiResultError(): ApiReturnedError(message = "Api returned null result.")
 
 class UserNotAuthorizedException: ApiError("User not authorized.")

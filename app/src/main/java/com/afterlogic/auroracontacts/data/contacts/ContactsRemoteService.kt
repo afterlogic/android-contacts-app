@@ -13,4 +13,6 @@ interface ContactsRemoteService {
 
     fun getContacts(groupId: Long): Single<List<RemoteContact>>
 
+    fun getFullContact(contactId: Long) : Single<RemoteFullContact>
+
 }

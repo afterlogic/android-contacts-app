@@ -1,9 +1,11 @@
 package com.afterlogic.auroracontacts.data.p7.contacts
 
+import com.afterlogic.auroracontacts.core.rx.cast
 import com.afterlogic.auroracontacts.data.auth.AuthResolver
 import com.afterlogic.auroracontacts.data.contacts.ContactsRemoteService
 import com.afterlogic.auroracontacts.data.contacts.RemoteContact
 import com.afterlogic.auroracontacts.data.contacts.RemoteContactGroup
+import com.afterlogic.auroracontacts.data.contacts.RemoteFullContact
 import io.reactivex.Single
 import javax.inject.Inject
 
@@ -45,7 +47,14 @@ class P7ContactsRemoteService @Inject constructor(
                 .repeatUntil { summary.size == data.contactCount }
                 .ignoreElements()
                 .andThen(Single.just(summary.toList()))
+                .retryWhen(authResolver.checkAndResolveAuth)
 
+    }
+
+    override fun getFullContact(contactId: Long): Single<RemoteFullContact> {
+        return cloudService.getFullContact(contactId)
+                .retryWhen(authResolver.checkAndResolveAuth)
+                .cast()
     }
 
 }
