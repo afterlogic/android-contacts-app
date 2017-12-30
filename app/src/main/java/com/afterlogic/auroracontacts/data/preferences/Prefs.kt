@@ -31,8 +31,6 @@ class Prefs @Inject constructor(context: App) {
 
     var syncPersonalContacts by booleanPref("syncPersonalContacts")
 
-    var lastContactSyncCycleId by intPref("lastContactSyncCycleId")
-
     private fun booleanPref(name: String, defaultValue: Boolean = false): ReadWriteProperty<Prefs, Boolean> =
             property({ it.getBoolean(name, defaultValue) }, { p, v -> p.put(name, v) } )
 

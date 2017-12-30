@@ -56,9 +56,9 @@ data class P7RemoteContact(
         @SerializedName("AgeScore")
         override val ageScore: Int = 0,
         @SerializedName("Emails")
-        override val emails: List<Any> = emptyList(),
+        override val emails: List<String> = emptyList(),
         @SerializedName("Phones")
-        override val phones: List<Any> = emptyList()
+        override val phones: List<String> = emptyList()
 ) : RemoteContact
 
 data class P7RemoteFullContact(

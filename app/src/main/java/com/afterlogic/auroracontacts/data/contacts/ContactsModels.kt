@@ -31,8 +31,8 @@ interface RemoteContact {
     val isSharedToAll: Boolean
     val frequency: Int
     val ageScore: Int
-    val emails: List<Any>
-    val phones: List<Any>
+    val emails: List<String>
+    val phones: List<String>
 }
 
 interface RemoteFullContact {

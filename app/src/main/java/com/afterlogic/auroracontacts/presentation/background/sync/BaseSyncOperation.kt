@@ -31,7 +31,7 @@ abstract class BaseSyncOperation(
 
     protected fun List<String>.toSqlIn(): String = joinToString("', '", prefix = "('", postfix = "')")
 
-
+    protected inline fun <T> Cursor.letAndClose(action: (Cursor) -> T) : T = action(this).also { close() }
 
     protected fun Cursor.getString(columnName: String, canBeBlank: Boolean = false) : String? {
         return getColumnIndex(columnName)

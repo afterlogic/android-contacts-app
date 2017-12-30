@@ -32,7 +32,6 @@ object CustomContact {
         const val REMOTE_ID = _RawContacts.SYNC1
         const val SYNCED = _RawContacts.SYNC2
         const val ETAG = _RawContacts.SYNC3
-        const val SYNC_CYCLE_ID = _RawContacts.SYNC4
     }
 
 }
