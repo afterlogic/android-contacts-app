@@ -129,7 +129,7 @@ data class P7RemoteFullContact(
         @SerializedName("IdContact")
         private val idContact: String?,
         @SerializedName("IdUser")
-        override val idUser: Long = 0,
+        override val userId: Long = 0,
         @SerializedName("ItsMe")
         override val isItsMe: Boolean,
         @SerializedName("LastName")

@@ -2,6 +2,7 @@ package com.afterlogic.auroracontacts.presentation.background.sync.contacts
 
 import android.accounts.Account
 import android.content.ContentProviderClient
+import android.content.ContentUris
 import android.content.ContentValues
 import android.provider.ContactsContract
 import com.afterlogic.auroracontacts.data.api.ApiNullResultError
@@ -10,7 +11,7 @@ import com.afterlogic.auroracontacts.data.contacts.ContactsRepository
 import com.afterlogic.auroracontacts.data.contacts.RemoteContact
 import com.afterlogic.auroracontacts.data.contacts.RemoteFullContact
 import com.afterlogic.auroracontacts.presentation.background.sync.BaseSyncOperation
-import com.afterlogic.auroracontacts.presentation.background.sync.CustomContact
+import com.afterlogic.auroracontacts.presentation.background.sync.CustomContract
 import com.afterlogic.auroracontacts.presentation.background.sync.UnexpectedNullCursorException
 import io.reactivex.Completable
 import io.reactivex.Single
@@ -72,15 +73,23 @@ class ContactsSyncOperation private constructor(
         return syncGroupsRecursively(groupIds)
                 .doOnSuccess {
 
-                    if (it.isEmpty()) return@doOnSuccess
+                    if (it.isEmpty()) {
 
-                    // Remote not exists in remote rawContactsClient
-                    val idsSqlIn = it.map { it.toString() } .toSqlIn()
+                        rawContactsClient.delete(
+                                "${CustomContract.RawContacts.SYNCED} = 1"
+                        )
 
-                    rawContactsClient.delete("""
-                        ${CustomContact.RawContacts.SYNCED} = 1 AND
-                        ${CustomContact.RawContacts.REMOTE_ID} NOT IN $idsSqlIn
-                    """.trimIndent())
+                    } else {
+
+                        // Remote not exists in remote rawContactsClient
+                        val idsSqlIn = it.map { it.toString() } .toSqlIn()
+
+                        rawContactsClient.delete("""
+                            ${CustomContract.RawContacts.SYNCED} = 1 AND
+                            ${CustomContract.RawContacts.REMOTE_ID} NOT IN $idsSqlIn
+                        """.trimIndent())
+
+                    }
 
                 }
                 .toCompletable()
@@ -141,16 +150,15 @@ class ContactsSyncOperation private constructor(
 
     private fun storeRemoteContact(fullContact: RemoteFullContact?, contact: RemoteContact) {
 
-        val localId = getLocalContactId(contact.id) ?: insertNewRawContact(contact.id)
+        val (rawId, isNew) = getRawContactId(contact.id)?.let { it to false }
+                ?: insertNewRawContact(contact.id) to true
 
-        ContentValues().apply {
-            put(ContactsContract.RawContacts.RAW_CONTACT_IS_READ_ONLY, contact.isReadOnly)
-        } .also { rawContactsClient.update(it, "${ContactsContract.RawContacts.CONTACT_ID} = $localId") }
+        if (!isNew) {
+            // Delete all current data
+            dataClient.delete("${CustomContract.RawContacts.REMOTE_ID} = ${contact.id}")
+        }
 
-        // Delete all current data
-        dataClient.delete("${CustomContact.RawContacts.REMOTE_ID} = ${contact.id}")
-
-        insertData(localId, ContactsContract.CommonDataKinds.StructuredName.MIMETYPE) {
+        insertData(rawId, ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE) {
 
             put(ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME, contact.name)
 
@@ -165,40 +173,107 @@ class ContactsSyncOperation private constructor(
 
             fullContact.nickName?.also {
 
-                insertData(localId, ContactsContract.CommonDataKinds.Nickname.MIMETYPE) {
+                insertData(rawId, ContactsContract.CommonDataKinds.Nickname.CONTENT_ITEM_TYPE) {
                     put(ContactsContract.CommonDataKinds.Nickname.NAME, it)
                     put(ContactsContract.CommonDataKinds.Nickname.TYPE, ContactsContract.CommonDataKinds.Nickname.TYPE_DEFAULT)
                 }
 
             }
 
-            insetPhone(localId, ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE, fullContact.homeMobile)
-            insetPhone(localId, ContactsContract.CommonDataKinds.Phone.TYPE_HOME, fullContact.homePhone)
-            insetPhone(localId, ContactsContract.CommonDataKinds.Phone.TYPE_WORK, fullContact.businessPhone)
-            insetPhone(localId, ContactsContract.CommonDataKinds.Phone.TYPE_WORK_MOBILE, fullContact.businessMobile)
+            insetPhone(rawId, ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE, fullContact.homeMobile)
+            insetPhone(rawId, ContactsContract.CommonDataKinds.Phone.TYPE_HOME, fullContact.homePhone)
+            insetPhone(rawId, ContactsContract.CommonDataKinds.Phone.TYPE_FAX_HOME, fullContact.homeFax)
+            insetPhone(rawId, ContactsContract.CommonDataKinds.Phone.TYPE_WORK, fullContact.businessPhone)
+            insetPhone(rawId, ContactsContract.CommonDataKinds.Phone.TYPE_WORK_MOBILE, fullContact.businessMobile)
+            insetPhone(rawId, ContactsContract.CommonDataKinds.Phone.TYPE_FAX_WORK, fullContact.businessFax)
 
-            insertEmail(localId, ContactsContract.CommonDataKinds.Email.TYPE_HOME, fullContact.homeEmail)
-            insertEmail(localId, ContactsContract.CommonDataKinds.Email.TYPE_WORK, fullContact.businessEmail)
-            insertEmail(localId, ContactsContract.CommonDataKinds.Email.TYPE_OTHER, fullContact.otherEmail)
+            insertEmail(rawId, ContactsContract.CommonDataKinds.Email.TYPE_HOME, fullContact.homeEmail)
+            insertEmail(rawId, ContactsContract.CommonDataKinds.Email.TYPE_WORK, fullContact.businessEmail)
+            insertEmail(rawId, ContactsContract.CommonDataKinds.Email.TYPE_OTHER, fullContact.otherEmail)
+
+            Address.instantiateOrNull(
+                    fullContact.homeCountry, fullContact.homeState, fullContact.homeCity,
+                    fullContact.homeStreet, fullContact.homeZip
+            ).also { insertAddress(rawId, ContactsContract.CommonDataKinds.StructuredPostal.TYPE_HOME, it) }
+
+            Address.instantiateOrNull(
+                    fullContact.businessCountry, fullContact.businessState, fullContact.businessCity,
+                    fullContact.businessStreet, fullContact.businessZip
+            ).also { insertAddress(rawId, ContactsContract.CommonDataKinds.StructuredPostal.TYPE_WORK, it) }
+
+            insertWebsite(rawId, ContactsContract.CommonDataKinds.Website.TYPE_HOME, fullContact.homeWeb)
+            insertWebsite(rawId, ContactsContract.CommonDataKinds.Website.TYPE_WORK, fullContact.businessWeb)
+
+            if (fullContact.skype != null) {
+                insertData(rawId, ContactsContract.CommonDataKinds.Im.CONTENT_ITEM_TYPE) {
+                    put(ContactsContract.CommonDataKinds.Im.DATA, fullContact.skype)
+                    put(ContactsContract.CommonDataKinds.Im.PROTOCOL, ContactsContract.CommonDataKinds.Im.PROTOCOL_SKYPE)
+                }
+            }
+
+            if (fullContact.skype != null) {
+                insertData(rawId, ContactsContract.CommonDataKinds.Im.CONTENT_ITEM_TYPE) {
+                    put(ContactsContract.CommonDataKinds.Im.DATA, fullContact.facebook)
+                    put(ContactsContract.CommonDataKinds.Im.PROTOCOL, ContactsContract.CommonDataKinds.Im.PROTOCOL_CUSTOM)
+                    put(ContactsContract.CommonDataKinds.Im.CUSTOM_PROTOCOL, "Facebook")
+                }
+            }
+
+            if (arrayOf(fullContact.businessJobTitle, fullContact.businessDepartment, fullContact.businessOffice).any { it != null }) {
+
+                insertData(rawId, ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE) {
+
+                    put(ContactsContract.CommonDataKinds.Organization.TITLE, fullContact.businessJobTitle)
+                    put(ContactsContract.CommonDataKinds.Organization.DEPARTMENT, fullContact.businessDepartment)
+                    put(ContactsContract.CommonDataKinds.Organization.OFFICE_LOCATION, fullContact.businessOffice)
+
+                }
+
+            }
+
+            if (fullContact.notes != null) {
+
+                insertData(rawId, ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE) {
+                    put(ContactsContract.CommonDataKinds.Note.NOTE, fullContact.notes)
+                }
+
+            }
 
         } else {
 
-            // TODO: Store by short info
+            val phones = contact.phones.reversed()
+
+            insetPhone(rawId, ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE, phones.getOrNull(0))
+            insetPhone(rawId, ContactsContract.CommonDataKinds.Phone.TYPE_HOME, phones.getOrNull(1))
+            insetPhone(rawId, ContactsContract.CommonDataKinds.Phone.TYPE_WORK, phones.getOrNull(2))
+
+            val homeEmail = contact.email ?: contact.emails.getOrNull(0)
+            insertEmail(rawId, ContactsContract.CommonDataKinds.Email.TYPE_HOME, homeEmail)
+
+            val otherEmails = contact.emails.filter { it == contact.email }
+            insertEmail(rawId, ContactsContract.CommonDataKinds.Email.TYPE_WORK, otherEmails.getOrNull(0))
+            insertEmail(rawId, ContactsContract.CommonDataKinds.Email.TYPE_OTHER, otherEmails.getOrNull(1))
 
         }
+
+        ContentValues().apply {
+            put(ContactsContract.RawContacts.RAW_CONTACT_IS_READ_ONLY, fullContact == null || contact.isReadOnly)
+            put(CustomContract.RawContacts.SYNCED, 1)
+            put(CustomContract.RawContacts.ETAG, contact.eTag)
+        } .also { rawContactsClient.update(it, "${ContactsContract.RawContacts._ID} = $rawId") }
 
     }
 
     private fun insertNewRawContact(id: Long): Long {
 
         val cv = ContentValues().apply {
-            put(ContactsContract.RawContacts.AGGREGATION_MODE, ContactsContract.RawContacts.AGGREGATION_MODE_DEFAULT)
             put(ContactsContract.RawContacts.ACCOUNT_NAME, account.name)
             put(ContactsContract.RawContacts.ACCOUNT_TYPE, account.type)
-            put(CustomContact.RawContacts.REMOTE_ID, id)
+            put(ContactsContract.RawContacts.AGGREGATION_MODE, ContactsContract.RawContacts.AGGREGATION_MODE_DEFAULT)
+            put(CustomContract.RawContacts.REMOTE_ID, id)
         }
 
-        return rawContactsClient.insert(cv).lastPathSegment.toLong()
+        return ContentUris.parseId(rawContactsClient.insert(cv))
 
     }
 
@@ -218,7 +293,7 @@ class ContactsSyncOperation private constructor(
     private fun insetPhone(rawContactId: Long, type: Int, number: String?) {
         number ?: return
 
-        insertData(rawContactId, ContactsContract.CommonDataKinds.Phone.MIMETYPE) {
+        insertData(rawContactId, ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE) {
             put(ContactsContract.CommonDataKinds.Phone.NUMBER, number)
             put(ContactsContract.CommonDataKinds.Phone.TYPE, type)
         }
@@ -228,9 +303,37 @@ class ContactsSyncOperation private constructor(
     private fun insertEmail(rawContactId: Long, type: Int, email: String?) {
         email ?: return
 
-        insertData(rawContactId, ContactsContract.CommonDataKinds.Email.MIMETYPE) {
+        insertData(rawContactId, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE) {
             put(ContactsContract.CommonDataKinds.Email.ADDRESS, email)
             put(ContactsContract.CommonDataKinds.Email.TYPE, type)
+        }
+
+    }
+
+    private fun insertAddress(rawContactId: Long, type: Int, address: Address?) {
+        address ?: return
+
+        insertData(rawContactId, ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE) {
+
+            put(ContactsContract.CommonDataKinds.StructuredPostal.TYPE, type)
+            put(ContactsContract.CommonDataKinds.StructuredPostal.COUNTRY, address.country)
+            put(ContactsContract.CommonDataKinds.StructuredPostal.REGION, address.region)
+            put(ContactsContract.CommonDataKinds.StructuredPostal.CITY, address.city)
+            put(ContactsContract.CommonDataKinds.StructuredPostal.STREET, address.street)
+            put(ContactsContract.CommonDataKinds.StructuredPostal.POSTCODE, address.zip)
+
+        }
+
+    }
+
+    private fun insertWebsite(rawContactId: Long, type: Int, address: String?) {
+        address ?: return
+
+        insertData(rawContactId, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE) {
+
+            put(ContactsContract.CommonDataKinds.Website.URL, address)
+            put(ContactsContract.CommonDataKinds.Website.TYPE, type)
+
         }
 
     }
@@ -248,22 +351,38 @@ class ContactsSyncOperation private constructor(
         return rawContactsClient.query(
                 arrayOf(ContactsContract.RawContacts._ID),
                 """
-                    ${CustomContact.RawContacts.REMOTE_ID} = ${contact.id} AND
-                    ${CustomContact.RawContacts.ETAG} LIKE '${contact.eTag}'
+                    ${CustomContract.RawContacts.REMOTE_ID} = ${contact.id} AND
+                    ${CustomContract.RawContacts.ETAG} LIKE '${contact.eTag}'
                 """.trimIndent()
                 )
                 ?.letAndClose { it.count == 1 } ?: throw UnexpectedNullCursorException()
 
     }
 
-    private fun getLocalContactId(remoteId: Long) : Long? {
+    private fun getRawContactId(remoteId: Long) : Long? {
 
         val cursor = rawContactsClient.query(
                 arrayOf(ContactsContract.RawContacts._ID),
-                "${CustomContact.RawContacts.REMOTE_ID} = $remoteId"
+                "${CustomContract.RawContacts.REMOTE_ID} = $remoteId"
         ) ?: throw UnexpectedNullCursorException()
 
         return cursor.letAndClose { if (it.moveToFirst()) it.getLong(0) else null }
+
+    }
+
+    data class Address(val country: String?, val region: String?, val city: String?, val street: String?, val zip: String?) {
+
+        companion object {
+
+            fun instantiateOrNull(country: String?, region: String?, city: String?, street: String?, zip: String?) : Address? {
+
+                if (arrayOf(country, region, city, street, zip).all { it == null }) return null
+
+                return Address(country, region, city, street, zip)
+
+            }
+
+        }
 
     }
 

@@ -46,7 +46,7 @@ class P7ContactsRemoteService @Inject constructor(
                 .doOnSuccess { summary.addAll(it.list) }
                 .repeatUntil { summary.size == data.contactCount }
                 .ignoreElements()
-                .andThen(Single.just(summary.toList()))
+                .andThen(Single.fromCallable { summary.toList() })
                 .retryWhen(authResolver.checkAndResolveAuth)
 
     }

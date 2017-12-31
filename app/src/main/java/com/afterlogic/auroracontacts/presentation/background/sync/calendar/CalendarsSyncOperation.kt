@@ -17,7 +17,7 @@ import com.afterlogic.auroracontacts.data.calendar.*
 import com.afterlogic.auroracontacts.data.db.CalendarsDao
 import com.afterlogic.auroracontacts.data.util.RemoteServiceProvider
 import com.afterlogic.auroracontacts.presentation.background.sync.BaseSyncOperation
-import com.afterlogic.auroracontacts.presentation.background.sync.CustomContact
+import com.afterlogic.auroracontacts.presentation.background.sync.CustomContract
 import com.afterlogic.auroracontacts.presentation.background.sync.UnexpectedNullCursorException
 import io.reactivex.Completable
 import io.reactivex.Single
@@ -67,13 +67,13 @@ class CalendarsSyncOperation private constructor(
 
         val calendarClient = contentClient.calendars
 
-        calendarClient.delete("${CustomContact.Calendar.REMOTE_ID} NOT IN $queryIds")
+        calendarClient.delete("${CustomContract.Calendar.REMOTE_ID} NOT IN $queryIds")
 
         val cursor = calendarClient.query(
                 arrayOf(
                         CalendarContract.Calendars._ID,
-                        CustomContact.Calendar.REMOTE_ID,
-                        CustomContact.Calendar.REMOTE_CTAG
+                        CustomContract.Calendar.REMOTE_ID,
+                        CustomContract.Calendar.REMOTE_CTAG
                 )
         ) ?: throw UnexpectedNullCursorException()
 
@@ -127,11 +127,11 @@ class CalendarsSyncOperation private constructor(
                         .doOnComplete {
 
                             val cTag = ContentValues()
-                            cTag.put(CustomContact.Calendar.REMOTE_CTAG, cal.cTag)
+                            cTag.put(CustomContract.Calendar.REMOTE_CTAG, cal.cTag)
 
                             calendarClient.update(
                                     cTag,
-                                    "${CustomContact.Calendar.REMOTE_ID} = ?",
+                                    "${CustomContract.Calendar.REMOTE_ID} = ?",
                                     arrayOf(cal.id)
                             )
 
@@ -171,8 +171,8 @@ class CalendarsSyncOperation private constructor(
         eventsClient.delete(
                 """
                     ${CalendarContract.Events.CALENDAR_ID} = $localCalendarId AND
-                    ${CustomContact.Events.SYNCED} = 1 AND
-                    ${CustomContact.Events.REMOTE_ID} NOT IN $idsQuery
+                    ${CustomContract.Events.SYNCED} = 1 AND
+                    ${CustomContract.Events.REMOTE_ID} NOT IN $idsQuery
 
                 """.trimIndent()
         )
@@ -180,8 +180,8 @@ class CalendarsSyncOperation private constructor(
         val cursor = eventsClient.query(
                 arrayOf(
                         CalendarContract.Events._ID,
-                        CustomContact.Events.REMOTE_ID,
-                        CustomContact.Events.REMOTE_ETAG
+                        CustomContract.Events.REMOTE_ID,
+                        CustomContract.Events.REMOTE_ETAG
                 ),
                 "${CalendarContract.Events.CALENDAR_ID} = ?",
                 arrayOf(localCalendarId.toString())
@@ -190,9 +190,9 @@ class CalendarsSyncOperation private constructor(
         data class LocalInfo(val localId: Long, val eTag: String?)
 
         val localData = cursor.toList {
-            val remoteId = cursor.getString(CustomContact.Events.REMOTE_ID) ?: return@toList null
+            val remoteId = cursor.getString(CustomContract.Events.REMOTE_ID) ?: return@toList null
             val localId = cursor.getLong(0)
-            val eTag = cursor.getString(CustomContact.Events.REMOTE_ETAG)
+            val eTag = cursor.getString(CustomContract.Events.REMOTE_ETAG)
             remoteId to (LocalInfo(localId, eTag))
         }
                 .filterNotNull()
@@ -247,14 +247,14 @@ class CalendarsSyncOperation private constructor(
                     selection = """
                     ${CalendarContract.Events.CALENDAR_ID} = $localCalendarId AND
                             ${CalendarContract.Events.DELETED} = 1 AND (
-                                    ${CustomContact.Events.SYNCED} != 1 OR
-                                    ${CustomContact.Events.REMOTE_ID} IS NULL
+                                    ${CustomContract.Events.SYNCED} != 1 OR
+                                    ${CustomContract.Events.REMOTE_ID} IS NULL
                             )
                     """.trimIndent()
             )
 
             val cursor = eventsClient.query(
-                    projection = arrayOf(CustomContact.Events.REMOTE_ID),
+                    projection = arrayOf(CustomContract.Events.REMOTE_ID),
                     selection = """
                     ${CalendarContract.Events.CALENDAR_ID} = $localCalendarId AND
                             ${CalendarContract.Events.DELETED} = 1
@@ -266,7 +266,7 @@ class CalendarsSyncOperation private constructor(
                 return@defer Single.just(true)
             }
 
-            val deletedIds = cursor.toList { it.getString(CustomContact.Events.REMOTE_ID) }
+            val deletedIds = cursor.toList { it.getString(CustomContract.Events.REMOTE_ID) }
                     .filterNotNull()
 
             cursor.close()
@@ -277,7 +277,7 @@ class CalendarsSyncOperation private constructor(
                     .doOnComplete {
 
                         val deleted = eventsClient.delete(
-                                selection = "${CustomContact.Events.REMOTE_ID} IN ${deletedIds.toSqlIn()}"
+                                selection = "${CustomContract.Events.REMOTE_ID} IN ${deletedIds.toSqlIn()}"
                         )
 
                         Timber.d("Deleted: $deleted")
@@ -313,7 +313,7 @@ class CalendarsSyncOperation private constructor(
             val updateEvents = cursor.toList {
 
                 val localId = cursor.getLong(CalendarContract.Events._ID)!!
-                val remoteId = cursor.getString(CustomContact.Events.REMOTE_ID)
+                val remoteId = cursor.getString(CustomContract.Events.REMOTE_ID)
 
                 val vEvent = cursor.toVEvent()
 
@@ -345,8 +345,8 @@ class CalendarsSyncOperation private constructor(
                             val cv = ContentValues().apply {
 
                                 put(CalendarContract.Events.DIRTY, 0)
-                                put(CustomContact.Events.SYNCED, 1)
-                                put(CustomContact.Events.REMOTE_ID, request.id)
+                                put(CustomContract.Events.SYNCED, 1)
+                                put(CustomContract.Events.REMOTE_ID, request.id)
 
                                 newUuids[localId]?.also {
                                     put(CalendarContract.Events.UID_2445, it)
@@ -394,11 +394,11 @@ class CalendarsSyncOperation private constructor(
         cv.put(CalendarContract.Calendars.CALENDAR_TIME_ZONE, timeZone.id)
         cv.put(CalendarContract.Calendars.SYNC_EVENTS, 1)
         cv.put(CalendarContract.Calendars.OWNER_ACCOUNT, this.owner)
-        cv.put(CustomContact.Calendar.REMOTE_ID, this.id)
+        cv.put(CustomContract.Calendar.REMOTE_ID, this.id)
         cv.put(CalendarContract.Calendars.DIRTY, 0)
 
         if (addCTag) {
-            cv.put(CustomContact.Calendar.REMOTE_CTAG, this.cTag)
+            cv.put(CustomContract.Calendar.REMOTE_CTAG, this.cTag)
         }
 
         cv.put(
@@ -426,13 +426,13 @@ class CalendarsSyncOperation private constructor(
             put(CalendarContract.Events.CALENDAR_ID, localCalendarId)
             localId?.let { put(CalendarContract.Events._ID, it) }
 
-            put(CustomContact.Events.REMOTE_ID, remote.id)
+            put(CustomContract.Events.REMOTE_ID, remote.id)
             put(CalendarContract.Events._SYNC_ID, remote.id)
             put(CalendarContract.Events.UID_2445, uid.value)
             val recurrenceId = recurrenceId?.value?.time ?: 0L
-            put(CustomContact.Events.REQURENCE_ID, recurrenceId)
-            put(CustomContact.Events.SYNCED, 1)
-            put(CustomContact.Events.REMOTE_ETAG, remote.eTag)
+            put(CustomContract.Events.REQURENCE_ID, recurrenceId)
+            put(CustomContract.Events.SYNCED, 1)
+            put(CustomContract.Events.REMOTE_ETAG, remote.eTag)
             put(CalendarContract.Events._SYNC_ID, "${uid.value}-$recurrenceId")
 
             put(CalendarContract.Events.DIRTY, 0)
@@ -544,7 +544,7 @@ class CalendarsSyncOperation private constructor(
         return VEvent().apply {
 
             getString(CalendarContract.Events.UID_2445)?.also { uid = Uid(it) }
-            getLong(CustomContact.Events.REQURENCE_ID)?.also { recurrenceId = RecurrenceId(Date(it)) }
+            getLong(CustomContract.Events.REQURENCE_ID)?.also { recurrenceId = RecurrenceId(Date(it)) }
 
             lastModified = LastModified(Date())
 

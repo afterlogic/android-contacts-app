@@ -12,7 +12,7 @@ private typealias _Calendar = CalendarContract.Calendars
 private typealias _Events = CalendarContract.Events
 private typealias _RawContacts = ContactsContract.RawContacts
 
-object CustomContact {
+object CustomContract {
 
     object Calendar {
         const val REMOTE_ID = _Calendar.CAL_SYNC1

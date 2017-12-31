@@ -69,7 +69,7 @@ interface RemoteFullContact {
     val homeWeb: String?
     val homeZip: String?
     val id: Long
-    val idUser: Long
+    val userId: Long
     val isItsMe: Boolean
     val lastName: String?
     val nickName: String?

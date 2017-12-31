@@ -7,24 +7,23 @@
             kind="name"
             maxOccurs="1"
             supportsDisplayName="true"
-            supportsPrefix="true"
-            supportsMiddleName="true"
-            supportsSuffix="true"
-            supportsPhoneticFamilyName="true"
-            supportsPhoneticMiddleName="true"
-            supportsPhoneticGivenName="true" />
+            supportsPrefix="false"
+            supportsMiddleName="false"
+            supportsSuffix="false"
+            supportsPhoneticFamilyName="false"
+            supportsPhoneticMiddleName="false"
+            supportsPhoneticGivenName="false" />
 
         <DataKind kind="nickname" maxOccurs="1" />
 
-        <DataKind kind="photo" maxOccurs="1" />
+        <!--DataKind kind="photo" maxOccurs="1" /-->
 
-        <DataKind kind="phone" maxOccurs="6">
+        <DataKind kind="phone" maxOccurs="5">
             <Type type="mobile" maxOccurs="1" />
             <Type type="work" maxOccurs="1" />
             <Type type="home" maxOccurs="1" />
             <Type type="fax_work" maxOccurs="1" />
             <Type type="fax_home" maxOccurs="1" />
-            <Type type="other" maxOccurs="1" />
         </DataKind>
 
         <DataKind kind="email" maxOccurs="3">
@@ -35,16 +34,18 @@
 
         <DataKind kind="im" maxOccurs="2">
             <Type type="skype" maxOccurs="1" />
-            <Type type="aim" maxOccurs="1" />
+            <Type type="custom" maxOccurs="1" />
         </DataKind>
 
         <DataKind kind="postal" needsStructured="true" maxOccurs="2">
-            <Type type="home" maxOccurs="1" needsStructured="true" />
-            <Type type="work" maxOccurs="1" needsStructured="true" />
+            <Type type="home" maxOccurs="1" needsStructured="false" />
+            <Type type="work" maxOccurs="1" needsStructured="false" />
         </DataKind>
 
+        <DataKind kind="website" maxOccurs="2"/>
+
         <DataKind kind="organization" maxOccurs="1" />
-        <DataKind kind="website" maxOccurs="2" />
+
         <DataKind kind="note" maxOccurs="1" />
 
         <DataKind
