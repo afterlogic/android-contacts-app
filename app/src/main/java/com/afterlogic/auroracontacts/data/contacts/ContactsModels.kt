@@ -35,57 +35,50 @@ interface RemoteContact {
     val phones: List<String>
 }
 
-interface RemoteFullContact {
-    val birthdayDay: Int
-    val birthdayMonth: Int
-    val birthdayYear: Int
-    val businessCity: String?
-    val businessCompany: String?
-    val businessCountry: String?
-    val businessDepartment: String?
-    val businessEmail: String?
-    val businessFax: String?
-    val businessJobTitle: String?
-    val businessMobile: String?
-    val businessOffice: String?
-    val businessPhone: String?
-    val businessState: String?
-    val businessStreet: String?
-    val businessWeb: String?
-    val businessZip: String?
-    val facebook: String?
-    val firstName: String?
-    val fullName: String?
-    val isGlobal: Boolean
-    val groupsIds: List<String>?
-    val homeCity: String?
-    val homeCountry: String?
-    val homeEmail: String?
-    val homeFax: String?
-    val homeMobile: String?
-    val homePhone: String?
-    val homeState: String?
-    val homeStreet: String?
-    val homeWeb: String?
-    val homeZip: String?
-    val id: Long
-    val userId: Long
-    val isItsMe: Boolean
-    val lastName: String?
-    val nickName: String?
-    val notes: String?
-    val otherEmail: String?
-    val primaryEmail: Int
-    val isReadOnly: Boolean
-    val isSharedToAll: Boolean
-    val skype: String?
-    val title: String?
+data class RemoteFullContact (
+    val birthdayDay: Int,
+    val birthdayMonth: Int,
+    val birthdayYear: Int,
+    val businessCity: String?,
+    val businessCompany: String?,
+    val businessCountry: String?,
+    val businessDepartment: String?,
+    val businessEmail: String?,
+    val businessFax: String?,
+    val businessJobTitle: String?,
+    val businessMobile: String?,
+    val businessOffice: String?,
+    val businessPhone: String?,
+    val businessState: String?,
+    val businessStreet: String?,
+    val businessWeb: String?,
+    val businessZip: String?,
+    val facebook: String?,
+    val firstName: String?,
+    val fullName: String?,
+    val isGlobal: Boolean,
+    val groupsIds: List<String>?,
+    val homeCity: String?,
+    val homeCountry: String?,
+    val homeEmail: String?,
+    val homeFax: String?,
+    val homeMobile: String?,
+    val homePhone: String?,
+    val homeState: String?,
+    val homeStreet: String?,
+    val homeWeb: String?,
+    val homeZip: String?,
+    val id: Long,
+    val userId: Long,
+    val isItsMe: Boolean,
+    val lastName: String?,
+    val nickName: String?,
+    val notes: String?,
+    val otherEmail: String?,
+    val primaryEmail: Int,
+    val isReadOnly: Boolean,
+    val isSharedToAll: Boolean,
+    val skype: String?,
+    val title: String?,
     val isUseFriendlyName: Boolean
-
-    companion object {
-        private val BUSINES_ADDRESS = "businesAddress"
-        private val HOME_ADDRESS = "home_address"
-        private val ORGANIZATION = "organization"
-    }
-
-}
+)

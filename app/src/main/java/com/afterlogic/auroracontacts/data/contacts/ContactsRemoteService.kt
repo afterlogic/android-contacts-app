@@ -1,5 +1,6 @@
 package com.afterlogic.auroracontacts.data.contacts
 
+import io.reactivex.Completable
 import io.reactivex.Single
 
 /**
@@ -14,5 +15,9 @@ interface ContactsRemoteService {
     fun getContacts(groupId: Long): Single<List<RemoteContact>>
 
     fun getFullContact(contactId: Long) : Single<RemoteFullContact>
+
+    fun createContact(contact: RemoteFullContact) : Completable
+
+    fun updateContact(contact: RemoteFullContact) : Completable
 
 }

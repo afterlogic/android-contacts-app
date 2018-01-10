@@ -1,11 +1,11 @@
 package com.afterlogic.auroracontacts.data.p7.contacts
 
-import com.afterlogic.auroracontacts.core.rx.cast
 import com.afterlogic.auroracontacts.data.auth.AuthResolver
 import com.afterlogic.auroracontacts.data.contacts.ContactsRemoteService
 import com.afterlogic.auroracontacts.data.contacts.RemoteContact
 import com.afterlogic.auroracontacts.data.contacts.RemoteContactGroup
 import com.afterlogic.auroracontacts.data.contacts.RemoteFullContact
+import io.reactivex.Completable
 import io.reactivex.Single
 import javax.inject.Inject
 
@@ -15,7 +15,8 @@ import javax.inject.Inject
  */
 class P7ContactsRemoteService @Inject constructor(
         private val authResolver: AuthResolver,
-        private val cloudService: P7ContactsCloudService
+        private val cloudService: P7ContactsCloudService,
+        private val mapper: P7ContactsMapper
 ) : ContactsRemoteService {
 
     override fun getContactsGroups(): Single<List<RemoteContactGroup>> {
@@ -34,6 +35,22 @@ class P7ContactsRemoteService @Inject constructor(
 
     }
 
+    override fun getFullContact(contactId: Long): Single<RemoteFullContact> {
+
+        return cloudService.getFullContact(contactId)
+                .retryWhen(authResolver.checkAndResolveAuth)
+                .map(mapper::toPlain)
+
+    }
+
+    override fun createContact(contact: RemoteFullContact): Completable = Completable.defer {
+        cloudService.createContact(mapper.toDto(contact))
+    }
+
+    override fun updateContact(contact: RemoteFullContact): Completable = Completable.defer {
+        cloudService.updateContact(mapper.toDto(contact))
+    }
+
     private fun collectAll(groupId: Long, data: P7ContactsData): Single<List<RemoteContact>> {
 
         if (data.contactCount == data.list.size) return Single.just(data.list)
@@ -49,12 +66,6 @@ class P7ContactsRemoteService @Inject constructor(
                 .andThen(Single.fromCallable { summary.toList() })
                 .retryWhen(authResolver.checkAndResolveAuth)
 
-    }
-
-    override fun getFullContact(contactId: Long): Single<RemoteFullContact> {
-        return cloudService.getFullContact(contactId)
-                .retryWhen(authResolver.checkAndResolveAuth)
-                .cast()
     }
 
 }

@@ -150,6 +150,15 @@ class ContactsRepository @Inject constructor(
     fun getFullContact(contactId: Long) : Single<RemoteFullContact> =
             remoteService.flatMap { it.getFullContact(contactId) }
 
+    fun createContact(contact: RemoteFullContact) : Completable {
+        return remoteService.flatMapCompletable { it.createContact(contact) }
+    }
+
+    fun updateContact(contact: RemoteFullContact) : Completable {
+        if (contact.id < 0) return Completable.error(IllegalStateException("Can't update contact with negative id."))
+        return remoteService.flatMapCompletable { it.updateContact(contact) }
+    }
+
     class CrossProcessContactsDBChangedPublisher @Inject constructor(
             private val context: App
     ) {

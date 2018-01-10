@@ -7,6 +7,7 @@ import com.afterlogic.auroracontacts.data.contacts.ContactsRepository
 import com.afterlogic.auroracontacts.data.p7.api.DynamicLazyApiP7
 import com.afterlogic.auroracontacts.data.p7.api.P7ContactsApi
 import com.afterlogic.auroracontacts.data.p7.common.AuthorizedService
+import io.reactivex.Completable
 import io.reactivex.Single
 import javax.inject.Inject
 
@@ -41,5 +42,9 @@ class P7ContactsCloudService @Inject constructor(
     fun getFullContact(contactId: Long) : Single<P7RemoteFullContact> =
             api.flatMap { it.getFullContact(contactId) }
                     .checkResponseAndGetData()
+
+    fun createContact(contact: P7RemoteFullContact) : Completable = TODO()
+
+    fun updateContact(contact: P7RemoteFullContact) : Completable = TODO()
 
 }

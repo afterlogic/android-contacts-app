@@ -1,7 +1,6 @@
 package com.afterlogic.auroracontacts.data.p7.contacts
 
 import com.afterlogic.auroracontacts.data.contacts.RemoteContact
-import com.afterlogic.auroracontacts.data.contacts.RemoteFullContact
 import com.google.gson.annotations.SerializedName
 
 /**
@@ -63,97 +62,94 @@ data class P7RemoteContact(
 
 data class P7RemoteFullContact(
         @SerializedName("BirthdayDay")
-        override val birthdayDay: Int,
+        val birthdayDay: Int,
         @SerializedName("BirthdayMonth")
-        override val birthdayMonth: Int,
+        val birthdayMonth: Int,
         @SerializedName("BirthdayYear")
-        override val birthdayYear: Int,
+        val birthdayYear: Int,
         @SerializedName("BusinessCity")
-        override val businessCity: String?,
+        val businessCity: String?,
         @SerializedName("BusinessCompany")
-        override val businessCompany: String?,
+        val businessCompany: String?,
         @SerializedName("BusinessCountry")
-        override val businessCountry: String?,
+        val businessCountry: String?,
         @SerializedName("BusinessDepartment")
-        override val businessDepartment: String?,
+        val businessDepartment: String?,
         @SerializedName("BusinessEmail")
-        override val businessEmail:String?,
+        val businessEmail:String?,
         @SerializedName("BusinessFax")
-        override val businessFax: String?,
+        val businessFax: String?,
         @SerializedName("BusinessJobTitle")
-        override val businessJobTitle: String?,
+        val businessJobTitle: String?,
         @SerializedName("BusinessMobile")
-        override val businessMobile: String?,
+        val businessMobile: String?,
         @SerializedName("BusinessOffice")
-        override val businessOffice: String?,
+        val businessOffice: String?,
         @SerializedName("BusinessPhone")
-        override val businessPhone: String?,
+        val businessPhone: String?,
         @SerializedName("BusinessState")
-        override val businessState: String?,
+        val businessState: String?,
         @SerializedName("BusinessStreet")
-        override val businessStreet: String?,
+        val businessStreet: String?,
         @SerializedName("BusinessWeb")
-        override val businessWeb: String?,
+        val businessWeb: String?,
         @SerializedName("BusinessZip")
-        override val businessZip: String?,
+        val businessZip: String?,
         @SerializedName("Facebook")
-        override val facebook: String?,
+        val facebook: String?,
         @SerializedName("FirstName")
-        override val firstName: String?,
+        val firstName: String?,
         @SerializedName("FullName")
-        override val fullName: String?,
+        val fullName: String?,
         @SerializedName("Global")
-        override val isGlobal: Boolean,
+        val isGlobal: Boolean,
         @SerializedName("GroupsIds")
-        override val groupsIds: List<String>?,
+        val groupsIds: List<String>?,
         @SerializedName("HomeCity")
-        override val homeCity: String?,
+        val homeCity: String?,
         @SerializedName("HomeCountry")
-        override val homeCountry: String?,
+        val homeCountry: String?,
         @SerializedName("HomeEmail")
-        override val homeEmail: String?,
+        val homeEmail: String?,
         @SerializedName("HomeFax")
-        override val homeFax: String?,
+        val homeFax: String?,
         @SerializedName("HomeMobile")
-        override val homeMobile: String?,
+        val homeMobile: String?,
         @SerializedName("HomePhone")
-        override val homePhone: String?,
+        val homePhone: String?,
         @SerializedName("HomeState")
-        override val homeState: String?,
+        val homeState: String?,
         @SerializedName("HomeStreet")
-        override val homeStreet: String?,
+        val homeStreet: String?,
         @SerializedName("HomeWeb")
-        override val homeWeb: String?,
+        val homeWeb: String?,
         @SerializedName("HomeZip")
-        override val homeZip: String?,
+        val homeZip: String?,
         @SerializedName("IdContact")
-        private val idContact: String?,
+        val idContact: String?,
         @SerializedName("IdUser")
-        override val userId: Long = 0,
+        val userId: Long = 0,
         @SerializedName("ItsMe")
-        override val isItsMe: Boolean,
+        val isItsMe: Boolean,
         @SerializedName("LastName")
-        override val lastName:String?,
+        val lastName:String?,
         @SerializedName("NickName")
-        override val nickName:String?,
+        val nickName:String?,
         @SerializedName("Notes")
-        override val notes:String?,
+        val notes:String?,
         @SerializedName("OtherEmail")
-        override val otherEmail:String?,
+        val otherEmail:String?,
         @SerializedName("PrimaryEmail")
-        override val primaryEmail:Int,
+        val primaryEmail:Int,
         @SerializedName("ReadOnly")
-        override val isReadOnly:Boolean,
+        val isReadOnly:Boolean,
         @SerializedName("SharedToAll")
-        override val isSharedToAll:Boolean,
+        val isSharedToAll:Boolean,
         @SerializedName("Skype")
-        override val skype:String?,
+        val skype:String?,
         @SerializedName("Title")
-        override val title:String?,
+        val title:String?,
         @SerializedName("UseFriendlyName")
-        override val isUseFriendlyName:Boolean
-) : RemoteFullContact {
+        val isUseFriendlyName:Boolean
+)
 
-    override val id:Long = idContact?.toLongOrNull() ?: -1
-
-}
