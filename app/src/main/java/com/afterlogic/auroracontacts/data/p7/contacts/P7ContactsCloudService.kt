@@ -7,7 +7,7 @@ import com.afterlogic.auroracontacts.data.contacts.ContactsRepository
 import com.afterlogic.auroracontacts.data.p7.api.DynamicLazyApiP7
 import com.afterlogic.auroracontacts.data.p7.api.P7ContactsApi
 import com.afterlogic.auroracontacts.data.p7.common.AuthorizedService
-import io.reactivex.Completable
+import com.google.gson.annotations.SerializedName
 import io.reactivex.Single
 import javax.inject.Inject
 
@@ -43,8 +43,51 @@ class P7ContactsCloudService @Inject constructor(
             api.flatMap { it.getFullContact(contactId) }
                     .checkResponseAndGetData()
 
-    fun createContact(contact: P7RemoteFullContact) : Completable = TODO()
+    fun createContact(contact: P7RemoteFullContact) : Single<Boolean> = Single.defer {
 
-    fun updateContact(contact: P7RemoteFullContact) : Completable = TODO()
+        val fieldsMap = contact.toFieldsMap()
+        api.flatMap { it.createContact(fieldsMap) }
+                .checkResponseAndGetData()
+
+    }
+
+    fun updateContact(contact: P7RemoteFullContact) : Single<Boolean> = Single.defer {
+
+        val fieldsMap = contact.toFieldsMap()
+        api.flatMap { it.updateContact(contact.idContact!!.toLong(), fieldsMap) }
+                .checkResponseAndGetData()
+
+    }
+
+    private fun P7RemoteFullContact.toFieldsMap() : Map<String, Any?> {
+
+        val skipFields = arrayOf(
+                "Global",
+                "GroupsIds",
+                "IdContact",
+                "IdUser",
+                "ItsMe",
+                "PrimaryEmail",
+                "ReadOnly",
+                "SharedToAll",
+                "UseFriendlyName"
+        )
+
+        val fields = P7RemoteFullContact::class.java.declaredFields
+
+        //TODO: remove reflection
+
+        return fields
+                .filter { it.annotations.find { it is SerializedName } != null }
+                .map { it to it.annotations.first { it is SerializedName } as SerializedName }
+                .filterNot { (_, sn) -> skipFields.contains(sn.value) }
+                .associate { (f, sn) ->
+                    val accessible = f.isAccessible
+                    f.isAccessible = true
+                    (sn.value to f.get(this)).also { f.isAccessible = accessible }
+                }
+                .filterValues { it == null }
+
+    }
 
 }

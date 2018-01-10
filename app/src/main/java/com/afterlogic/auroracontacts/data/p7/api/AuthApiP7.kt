@@ -2,13 +2,13 @@ package com.afterlogic.auroracontacts.data.p7.api
 
 import com.afterlogic.auroracontacts.data.api.p7.model.AuthTokenP7
 import com.afterlogic.auroracontacts.data.api.p7.model.SystemAppDataP7
-import com.afterlogic.auroracontacts.data.p7.api.ApiP7.AJAX
-import com.afterlogic.auroracontacts.data.p7.api.ApiP7.Actions.SYSTEM_GET_APP_DATA
-import com.afterlogic.auroracontacts.data.p7.api.ApiP7.Actions.SYSTEM_LOGIN
-import com.afterlogic.auroracontacts.data.p7.api.ApiP7.Fields.ACTION
-import com.afterlogic.auroracontacts.data.p7.api.ApiP7.Fields.AUTH_TOKEN
-import com.afterlogic.auroracontacts.data.p7.api.ApiP7.Fields.EMAIL
-import com.afterlogic.auroracontacts.data.p7.api.ApiP7.Fields.INC_PASSWORD
+import com.afterlogic.auroracontacts.data.p7.api.P7Api.AJAX
+import com.afterlogic.auroracontacts.data.p7.api.P7Api.Actions.SYSTEM_GET_APP_DATA
+import com.afterlogic.auroracontacts.data.p7.api.P7Api.Actions.SYSTEM_LOGIN
+import com.afterlogic.auroracontacts.data.p7.api.P7Api.Fields.ACTION
+import com.afterlogic.auroracontacts.data.p7.api.P7Api.Fields.AUTH_TOKEN
+import com.afterlogic.auroracontacts.data.p7.api.P7Api.Fields.EMAIL
+import com.afterlogic.auroracontacts.data.p7.api.P7Api.Fields.INC_PASSWORD
 import com.afterlogic.auroracontacts.data.p7.api.model.P7ApiResponse
 import io.reactivex.Single
 import retrofit2.http.Field

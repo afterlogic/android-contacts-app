@@ -3,11 +3,11 @@ package com.afterlogic.auroracontacts.data.p7.api
 import com.afterlogic.auroracontacts.data.api.Json
 import com.afterlogic.auroracontacts.data.api.p7.util.Auth
 import com.afterlogic.auroracontacts.data.api.p7.util.AuthValue
-import com.afterlogic.auroracontacts.data.p7.api.ApiP7.AJAX
-import com.afterlogic.auroracontacts.data.p7.api.ApiP7.Fields.ACCOUNT_ID
-import com.afterlogic.auroracontacts.data.p7.api.ApiP7.Fields.ACTION
-import com.afterlogic.auroracontacts.data.p7.api.ApiP7.Fields.AUTH_TOKEN
-import com.afterlogic.auroracontacts.data.p7.api.ApiP7.Fields.TOKEN
+import com.afterlogic.auroracontacts.data.p7.api.P7Api.AJAX
+import com.afterlogic.auroracontacts.data.p7.api.P7Api.Fields.ACCOUNT_ID
+import com.afterlogic.auroracontacts.data.p7.api.P7Api.Fields.ACTION
+import com.afterlogic.auroracontacts.data.p7.api.P7Api.Fields.AUTH_TOKEN
+import com.afterlogic.auroracontacts.data.p7.api.P7Api.Fields.TOKEN
 import com.afterlogic.auroracontacts.data.p7.api.model.CalendarEventP7
 import com.afterlogic.auroracontacts.data.p7.api.model.CalendarP7
 import com.afterlogic.auroracontacts.data.p7.api.model.JsonList
