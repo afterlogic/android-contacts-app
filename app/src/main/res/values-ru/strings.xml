@@ -45,5 +45,6 @@
     <string name="value_contacts_personal">Личные</string>
     <string name="value_contacts_shared">Доступные всем</string>
     <string name="value_contacts_team">Коллеги</string>
+    <string name="value_note_read_only">Этот контакт только для чтения, все изменения будут проигнорированны при следующей синхронизации.</string>
 
 </resources>

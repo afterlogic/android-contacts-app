@@ -5,6 +5,8 @@ import android.content.ContentProviderClient
 import android.content.ContentUris
 import android.content.ContentValues
 import android.provider.ContactsContract
+import com.afterlogic.auroracontacts.R
+import com.afterlogic.auroracontacts.application.wrappers.Resources
 import com.afterlogic.auroracontacts.data.api.ApiNullResultError
 import com.afterlogic.auroracontacts.data.contacts.ContactGroupInfo
 import com.afterlogic.auroracontacts.data.contacts.ContactsRepository
@@ -22,17 +24,19 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class ContactsSyncOperation private constructor(
+        private val res: Resources,
         private val account: Account,
         contentClient: ContentProviderClient,
         private val repository: ContactsRepository
 ) : BaseSyncOperation(account, contentClient) {
 
     class Factory @Inject constructor(
+            private val res: Resources,
             private val repository: ContactsRepository
     ) {
 
         fun create(account: Account, client: ContentProviderClient) : ContactsSyncOperation {
-            return ContactsSyncOperation(account, client, repository)
+            return ContactsSyncOperation(res, account, client, repository)
         }
 
     }
@@ -231,13 +235,21 @@ class ContactsSyncOperation private constructor(
 
             }
 
-            if (fullContact.notes != null) {
-
-                insertData(rawId, ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE) {
-                    put(ContactsContract.CommonDataKinds.Note.NOTE, fullContact.notes)
-                }
-
+            val noteParts = if (fullContact.isReadOnly) {
+                arrayOf(res.strings[R.string.value_note_read_only], fullContact.notes)
+            } else {
+                arrayOf(fullContact.notes)
             }
+
+            noteParts
+                    .filterNot { it.isNullOrEmpty() }
+                    .joinToString("\n")
+                    .takeIf { it.isNotEmpty() }
+                    ?.let {
+                        insertData(rawId, ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE) {
+                            put(ContactsContract.CommonDataKinds.Note.NOTE, it)
+                        }
+                    }
 
         } else {
 
@@ -253,6 +265,10 @@ class ContactsSyncOperation private constructor(
             val otherEmails = contact.emails.filter { it == contact.email }
             insertEmail(rawId, ContactsContract.CommonDataKinds.Email.TYPE_WORK, otherEmails.getOrNull(0))
             insertEmail(rawId, ContactsContract.CommonDataKinds.Email.TYPE_OTHER, otherEmails.getOrNull(1))
+
+            insertData(rawId, ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE) {
+                put(ContactsContract.CommonDataKinds.Note.NOTE, res.strings[R.string.value_note_read_only])
+            }
 
         }
 

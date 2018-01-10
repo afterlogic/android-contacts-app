@@ -51,5 +51,6 @@
     <string name="value_contacts_personal">Personal</string>
     <string name="value_contacts_shared">Shared to all</string>
     <string name="value_contacts_team">Team</string>
+    <string name="value_note_read_only">It\'s read-only contact. Any changes will be ignored and restored on next sync.</string>
 
 </resources>

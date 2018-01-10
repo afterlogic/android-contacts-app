@@ -33,7 +33,7 @@ class Dependencies {
 
     class Versions {
 
-        public def android_plugin = '3.1.0-alpha06'
+        public def android_plugin = '3.1.0-alpha07'
         public def fabric_gradle_plugin = '1.25.0'
         public def gms_gradle_plugin = '3.1.2'
         public def autoversion_gradle_plugin = '0.0.8'
