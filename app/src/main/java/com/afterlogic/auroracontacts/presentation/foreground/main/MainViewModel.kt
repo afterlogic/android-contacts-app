@@ -19,6 +19,8 @@ import com.afterlogic.auroracontacts.presentation.common.base.ObservableRxViewMo
 import com.afterlogic.auroracontacts.presentation.common.databinding.bindable
 import com.afterlogic.auroracontacts.presentation.common.permissions.PermissionRequest
 import com.afterlogic.auroracontacts.presentation.common.permissions.PermissionsInteractor
+import io.reactivex.Observable
+import io.reactivex.subjects.BehaviorSubject
 import timber.log.Timber
 import java.util.*
 import javax.inject.Inject
@@ -30,7 +32,7 @@ import kotlin.properties.Delegates
  */
 class MainViewModel @Inject constructor(
         private val interactor: MainInteractor,
-        res: Resources,
+        private val res: Resources,
         private val permissionsInteractor: PermissionsInteractor,
         subscriber: Subscriber
 ): ObservableRxViewModel(subscriber)  {
@@ -59,6 +61,11 @@ class MainViewModel @Inject constructor(
                 .defaultSchedulers()
                 .subscribeIt()
     }
+
+    val logoutTitle: Observable<String> by lazy { logoutTitleSubject }
+    private val logoutTitleSubject: BehaviorSubject<String> = BehaviorSubject.createDefault(
+            res.strings[R.string.action_logout]
+    )
 
     private val calendarsMap = WeakHashMap<CalendarItemViewModel, AuroraCalendarInfo>()
     private val contactsMap = WeakHashMap<ContactItemViewModel, ContactGroupInfo>()
@@ -109,6 +116,10 @@ class MainViewModel @Inject constructor(
                     syncOnLocalChanges = it
                 }
 
+        interactor.obtainAccountName()
+                .defaultSchedulers()
+                .subscribeIt { logoutTitleSubject.onNext(res.strings[R.string.action_logout_with_name, it]) }
+
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_START)
@@ -128,6 +139,14 @@ class MainViewModel @Inject constructor(
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     fun onViewStop() {
         startedScopeDisposables.dispose()
+    }
+
+    fun onLogoutClicked() {
+
+        interactor.logout()
+                .defaultSchedulers()
+                .subscribeIt()
+
     }
 
     fun onSyncClicked() {

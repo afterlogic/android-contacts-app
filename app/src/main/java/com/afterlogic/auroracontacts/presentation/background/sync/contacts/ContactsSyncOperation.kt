@@ -593,7 +593,7 @@ class ContactsSyncOperation private constructor(
                 fields[RemoteFullContact::firstName.name] as String?,
                 fields[RemoteFullContact::fullName.name] as String?,
                 false,
-                null,
+                (fields[RemoteFullContact::groupsIds.name] as? List<String>) ?: emptyList(),
                 fields[RemoteFullContact::homeCity.name] as String?,
                 fields[RemoteFullContact::homeCountry.name] as String?,
                 fields[RemoteFullContact::homeEmail.name] as String?,

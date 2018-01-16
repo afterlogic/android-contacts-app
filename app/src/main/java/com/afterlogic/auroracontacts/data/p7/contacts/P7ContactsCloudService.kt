@@ -43,11 +43,13 @@ class P7ContactsCloudService @Inject constructor(
             api.flatMap { it.getFullContact(contactId) }
                     .checkResponseAndGetData()
 
-    fun createContact(contact: P7RemoteFullContact) : Single<Boolean> = Single.defer {
+    fun createContact(contact: P7RemoteFullContact) : Single<Long> = Single.defer {
 
         val fieldsMap = contact.toFieldsMap()
+
         api.flatMap { it.createContact(fieldsMap) }
                 .checkResponseAndGetData()
+                .map { it.idContact.toLong() }
 
     }
 
@@ -63,7 +65,6 @@ class P7ContactsCloudService @Inject constructor(
 
         val skipFields = arrayOf(
                 "Global",
-                "GroupsIds",
                 "IdContact",
                 "IdUser",
                 "ItsMe",
@@ -86,7 +87,11 @@ class P7ContactsCloudService @Inject constructor(
                     f.isAccessible = true
                     (sn.value to f.get(this)).also { f.isAccessible = accessible }
                 }
-                .filterValues { it == null }
+                .filterValues { it != null }
+                .mapKeys { (key, _) -> when(key) {
+                    "GroupsIds" -> "GroupsIds[]"
+                    else -> key
+                } }
 
     }
 

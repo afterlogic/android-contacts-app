@@ -46,7 +46,7 @@ class P7ContactsRemoteService @Inject constructor(
     override fun createContact(contact: RemoteFullContact): Completable = Completable.defer {
         cloudService.createContact(mapper.toDto(contact))
                 .retryWhen(authResolver.checkAndResolveAuth)
-                .doOnSuccess { if (!it) throw IllegalStateException("Api return false.") }
+                //.doOnSuccess { if (!it) throw IllegalStateException("Api return false.") }
                 .toCompletable()
     }
 

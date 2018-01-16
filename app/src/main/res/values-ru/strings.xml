@@ -5,6 +5,7 @@
 
     <string name="action_sign_in">Войти</string>
     <string name="action_sign_in_short">Войти</string>
+    <string name="action_logout">Выйти</string>
     <string name="action_logout_with_name">Выйти из %s</string>
 
     <string name="dialog_button_no">Нет</string>

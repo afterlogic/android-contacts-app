@@ -1,6 +1,7 @@
 package com.afterlogic.auroracontacts.presentation.foreground.main
 
 import com.afterlogic.auroracontacts.data.SyncPeriod
+import com.afterlogic.auroracontacts.data.account.AccountService
 import com.afterlogic.auroracontacts.data.calendar.AuroraCalendarInfo
 import com.afterlogic.auroracontacts.data.calendar.CalendarsRepository
 import com.afterlogic.auroracontacts.data.contacts.ContactGroupInfo
@@ -18,6 +19,7 @@ import javax.inject.Inject
  * mail: mail@sunnydaydev.me
  */
 class MainInteractor @Inject constructor(
+        private val accountService: AccountService,
         private val calendarsRepository: CalendarsRepository,
         private val contactsRepository: ContactsRepository,
         private val prefs: Prefs,
@@ -51,5 +53,11 @@ class MainInteractor @Inject constructor(
     fun listenSyncingState(): Observable<Boolean> = syncInteractor.isAnySyncRunning
 
     fun requestStartSyncImmediately() : Completable = syncInteractor.requestSyncImmediately()
+
+    fun obtainAccountName() : Observable<String> = accountService.account
+            .filter { it.isNotNull }
+            .map { it.get()!!.name }
+
+    fun logout() : Completable = accountService.removeCurrentAccount()
 
 }

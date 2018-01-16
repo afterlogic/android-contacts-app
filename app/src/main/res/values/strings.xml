@@ -9,6 +9,8 @@
 
     <string name="value_webView_localization">en-GB</string>
 
+
+    <string name="action_logout">Logout</string>
     <string name="action_logout_with_name">Logout %s</string>
     <string name="action_sign_in">Log in</string>
     <string name="action_sign_in_short">Sign in</string>

@@ -38,8 +38,8 @@
         </DataKind>
 
         <DataKind kind="postal" needsStructured="true" maxOccurs="2">
-            <Type type="home" maxOccurs="1" needsStructured="false" />
-            <Type type="work" maxOccurs="1" needsStructured="false" />
+            <Type type="home" maxOccurs="1"/>
+            <Type type="work" maxOccurs="1"/>
         </DataKind>
 
         <DataKind kind="website" maxOccurs="2"/>
