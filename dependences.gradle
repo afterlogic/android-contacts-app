@@ -33,16 +33,16 @@ class Dependencies {
 
     class Versions {
 
-        public def android_plugin = '3.1.0-alpha07'
-        public def fabric_gradle_plugin = '1.25.0'
+        public def android_plugin = '3.1.0-alpha08'
+        public def fabric_gradle_plugin = '1.25.1'
         public def gms_gradle_plugin = '3.1.2'
         public def autoversion_gradle_plugin = '0.0.8'
-        public def kotlin = "1.2.20-eap-33"
+        public def kotlin = "1.2.20-eap-71"
         public def dependencies_versions_plugin = '0.17.0'
 
         public def multidexVersion = '1.0.2'
-        public def daggerVersion = '2.13'
-        public def rxVersion = '2.1.7'
+        public def daggerVersion = '2.14.1'
+        public def rxVersion = '2.1.8'
         public def rxAndroidVersion = '2.0.1'
         public def rxKotlinVersion = '2.2.0'
         public def eventBusVersion = '3.1.1'
@@ -50,7 +50,7 @@ class Dependencies {
 
         public def architectureComponentsLifeCycle = '1.0.3'
         public def architectureComponentsVersion = '1.0.0'
-        public def ciceroneVersion = '2.1.0'
+        public def ciceroneVersion = '3.0.0'
         public def mapstructVersion = '1.2.0.Final'
         public def firebaseJobDispatcherVersion = '0.8.5'
         public def googleServicesVersion = '11.6.2'
@@ -60,10 +60,10 @@ class Dependencies {
         public def trayPrefsVersion = '0.12.0'
         public def glideVersion = '4.3.1'
         public def caligraphyVersion = '2.3.0'
-        public def constraintVersion = '1.1.0-beta3'
+        public def constraintVersion = '1.1.0-beta4'
         public def lastAdapterVersion = '2.3.0-ex'
         public def flex_layout = '0.3.1'
-        public def gson = '2.8.0'
+        public def gson = '2.8.2'
         public def timber = '4.6.0'
 
         public def ical4j = '2.1.5'

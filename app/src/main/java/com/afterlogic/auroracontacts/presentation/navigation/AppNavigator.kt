@@ -1,5 +1,6 @@
 package com.afterlogic.auroracontacts.presentation.navigation
 
+import android.content.Context
 import android.content.Intent
 import android.support.annotation.IdRes
 import android.support.v4.app.Fragment
@@ -19,7 +20,7 @@ class AppNavigator @Inject constructor(
         activity: FragmentActivity, @IdRes contentId: Int = R.id.content
 ): SupportAppNavigator(activity, contentId) {
 
-    override fun createActivityIntent(screenKey: String, data: Any?): Intent? = null
+    override fun createActivityIntent(context: Context, screenKey: String, data: Any?): Intent? = null
 
     override fun createFragment(screenKey: String, data: Any?): Fragment? = when(screenKey) {
 
