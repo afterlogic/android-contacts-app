@@ -159,6 +159,11 @@ class ContactsRepository @Inject constructor(
         return remoteService.flatMapCompletable { it.updateContact(contact) }
     }
 
+    fun deleteContact(id: Long) : Completable {
+        if (id < 0) return Completable.error(IllegalStateException("Can't delete contact with negative id."))
+        return remoteService.flatMapCompletable { it.deleteContact(id) }
+    }
+
     class CrossProcessContactsDBChangedPublisher @Inject constructor(
             private val context: App
     ) {

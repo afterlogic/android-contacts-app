@@ -61,6 +61,7 @@ interface P7ContactsApi {
     @FormUrlEncoded
     @POST(P7Api.AJAX)
     fun createContact(
+            @Field(value = "GroupsIds[]", encoded = true) groupIds: List<String>?,
             @FieldMap contact: Map<String, @JvmSuppressWildcards Any?>,
             @Field(P7Api.Fields.ACTION) action: String = "ContactCreate",
             @Auth(AuthValue.APP_TOKEN) @Field(P7Api.Fields.TOKEN) appToken: String = AuthValue.STRING,
@@ -75,6 +76,15 @@ interface P7ContactsApi {
             @Field(value = "GroupsIds[]", encoded = true) groupIds: List<String>?,
             @FieldMap contact: Map<String, @JvmSuppressWildcards Any?>,
             @Field(P7Api.Fields.ACTION) action: String = "ContactUpdate",
+            @Auth(AuthValue.APP_TOKEN) @Field(P7Api.Fields.TOKEN) appToken: String = AuthValue.STRING,
+            @Auth(AuthValue.AUTH_TOKEN) @Field(P7Api.Fields.AUTH_TOKEN) authToken: String = AuthValue.STRING,
+            @Auth(AuthValue.ACCOUNT_ID) @Field(P7Api.Fields.ACCOUNT_ID) accountId: Long = AuthValue.LONG
+    ) : Single<P7ApiResponse<Boolean>>
+
+    @FormUrlEncoded
+    @POST(P7Api.AJAX)
+    fun deleteContact(
+            @Field("ContactsId") id: Long,
             @Auth(AuthValue.APP_TOKEN) @Field(P7Api.Fields.TOKEN) appToken: String = AuthValue.STRING,
             @Auth(AuthValue.AUTH_TOKEN) @Field(P7Api.Fields.AUTH_TOKEN) authToken: String = AuthValue.STRING,
             @Auth(AuthValue.ACCOUNT_ID) @Field(P7Api.Fields.ACCOUNT_ID) accountId: Long = AuthValue.LONG

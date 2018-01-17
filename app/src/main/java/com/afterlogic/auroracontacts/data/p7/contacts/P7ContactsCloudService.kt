@@ -47,7 +47,7 @@ class P7ContactsCloudService @Inject constructor(
 
         val fieldsMap = contact.toFieldsMap()
 
-        api.flatMap { it.createContact(fieldsMap) }
+        api.flatMap { it.createContact(contact.groupsIds, fieldsMap) }
                 .checkResponseAndGetData()
                 .map { it.idContact.toLong() }
 
@@ -56,10 +56,17 @@ class P7ContactsCloudService @Inject constructor(
     fun updateContact(contact: P7RemoteFullContact) : Single<Boolean> = Single.defer {
 
         val fieldsMap = contact.toFieldsMap()
-        api.flatMap { it.updateContact(contact.idContact!!.toLong(), contact.groupsIds, fieldsMap) }
+
+        api
+                .flatMap {
+                    it.updateContact(contact.idContact!!.toLong(), contact.groupsIds, fieldsMap)
+                }
                 .checkResponseAndGetData()
 
     }
+
+    fun deleteContact(id: Long) : Single<Boolean> = api.flatMap { it.deleteContact(id) }
+            .checkResponseAndGetData()
 
     private fun P7RemoteFullContact.toFieldsMap() : Map<String, Any?> {
 

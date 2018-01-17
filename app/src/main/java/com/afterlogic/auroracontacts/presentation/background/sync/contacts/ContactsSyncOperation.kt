@@ -21,6 +21,7 @@ import io.reactivex.Completable
 import io.reactivex.Single
 import timber.log.Timber
 import java.security.MessageDigest
+import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -43,6 +44,12 @@ class ContactsSyncOperation private constructor(
 
     }
 
+    companion object {
+
+        private val BIRTHDAY_FORMATTER: SimpleDateFormat get() = SimpleDateFormat("M/d/yy", Locale.US)
+
+    }
+
     private val rawContactsClient = getContentClientHelper(ContactsContract.RawContacts.CONTENT_URI)
     private val dataClient = getContentClientHelper(ContactsContract.Data.CONTENT_URI)
 
@@ -58,6 +65,7 @@ class ContactsSyncOperation private constructor(
     }
 
     fun sync() : Completable = uploadLocalChanges()
+            .andThen(uploadDeletes())
             .andThen(repository.loadRemote())
             .flatMap { getFirstLocal() }
             .flatMapCompletable {
@@ -104,13 +112,14 @@ class ContactsSyncOperation private constructor(
             val new = remoteId == null
 
             val request =
-                    if (new) repository.createContact(remoteContactData)
+                    if (new) uploadNewContact(remoteContactData)
                     else repository.updateContact(remoteContactData)
 
             request.doOnComplete {
 
                 val contactCV = ContentValues().apply {
                     put(ContactsContract.RawContacts.DIRTY, 0)
+                    put(CustomContract.Contacts.SYNCED, 1)
                 }
 
                 rawContactsClient.update(
@@ -120,6 +129,68 @@ class ContactsSyncOperation private constructor(
             }
 
         } .let { Completable.concat(it) }
+
+    }
+
+    private fun uploadDeletes() : Completable = Completable.defer {
+
+        val c = rawContactsClient.query(
+                arrayOf(ContactsContract.RawContacts._ID, CustomContract.Contacts.REMOTE_ID),
+                """
+                    ${ContactsContract.RawContacts.DIRTY} = 1 AND
+                    ${ContactsContract.RawContacts.DELETED} = 0
+                """.trimIndent()
+        ) ?: throw UnexpectedNullCursorException()
+
+        val ids: Map<Long, Long?> = mutableMapOf<Long, Long?>()
+                .apply{
+
+                    while (c.moveToNext()) {
+                        this[c.getLong(0)] = c.getLong(CustomContract.Contacts.REMOTE_ID)
+                    }
+
+                }
+
+        c.close()
+
+        // Delete all not synced items
+        ids.filter { it.value == null } .also {
+
+            val sqlIn = it.keys.map { it.toString() } .toSqlIn()
+
+            rawContactsClient.delete("${ContactsContract.RawContacts._ID} IN $sqlIn")
+
+        }
+
+        // Delete remote items
+        ids.filter { it.value != null } .mapValues { it.value!! } .map {
+
+            val localId = it.key
+            val remoteId = it.value
+
+            repository.deleteContact(remoteId).doOnComplete {
+
+                rawContactsClient.delete("${ContactsContract.RawContacts._ID} = $localId")
+
+            }
+
+        } .let { Completable.concat(it) }
+
+    }
+
+    private fun uploadNewContact(contact: RemoteFullContact) : Completable {
+
+        return repository.getContactsGroupsInfo(false)
+                .firstElement()
+                .map { it.filter { it.id > 0 && it.syncing } }
+                .flatMapCompletable {
+
+                    val groupIds = it.map { it.id.toString() }
+                    val newContact = contact.copy(groupsIds = groupIds)
+
+                    repository.createContact(newContact)
+
+                }
 
     }
 
@@ -306,24 +377,26 @@ class ContactsSyncOperation private constructor(
 
                 insertData(rawId, ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE) {
 
+                    val date = GregorianCalendar().apply {
+                        this[Calendar.DAY_OF_MONTH] = fullContact.birthdayDay
+                        this[Calendar.MONTH] = fullContact.birthdayMonth - 1
+                        this[Calendar.YEAR] = fullContact.birthdayYear
+                    }.time
+
                     put(ContactsContract.CommonDataKinds.Event.TYPE, ContactsContract.CommonDataKinds.Event.TYPE_BIRTHDAY)
-                    val date = arrayOf(
-                            String.format("%02d", fullContact.birthdayDay),
-                            String.format("%02d", fullContact.birthdayMonth),
-                            String.format("%04d", fullContact.birthdayYear)
-                    )
-                            .joinToString(separator = ".")
-                    put(ContactsContract.CommonDataKinds.Event.START_DATE, date)
+                    put(ContactsContract.CommonDataKinds.Event.START_DATE, BIRTHDAY_FORMATTER.format(date))
 
                 }
 
-            }
+            } else {
 
-            insertData(rawId, CustomContract.Contacts.Birthday.CONTENT_ITEM_TYPE) {
+                insertData(rawId, CustomContract.Contacts.Birthday.CONTENT_ITEM_TYPE) {
 
-                put(CustomContract.Contacts.Birthday.DAY, fullContact.birthdayDay)
-                put(CustomContract.Contacts.Birthday.MONTH, fullContact.birthdayMonth)
-                put(CustomContract.Contacts.Birthday.YEAR, fullContact.birthdayYear)
+                    put(CustomContract.Contacts.Birthday.DAY, fullContact.birthdayDay)
+                    put(CustomContract.Contacts.Birthday.MONTH, fullContact.birthdayMonth)
+                    put(CustomContract.Contacts.Birthday.YEAR, fullContact.birthdayYear)
+
+                }
 
             }
 
@@ -357,6 +430,7 @@ class ContactsSyncOperation private constructor(
 
         ContentValues().apply {
             put(ContactsContract.RawContacts.RAW_CONTACT_IS_READ_ONLY, fullContact == null || contact.isReadOnly)
+            put(ContactsContract.RawContacts.DIRTY, 0)
             put(CustomContract.Contacts.SYNCED, 1)
             put(CustomContract.Contacts.ETAG, contact.eTag)
         } .also { rawContactsClient.update(it, "${ContactsContract.RawContacts._ID} = $rawId") }
@@ -675,6 +749,30 @@ class ContactsSyncOperation private constructor(
 
             ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE -> {
                 fields[RemoteFullContact::notes.name] = c.getString(ContactsContract.CommonDataKinds.Note.NOTE)
+            }
+
+            ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE -> {
+
+                c.getString(ContactsContract.CommonDataKinds.Event.START_DATE)?.let {
+
+                      try {
+                          BIRTHDAY_FORMATTER.parse(it)
+                      } catch (e: Throwable) {
+                          null
+                      }
+
+                } ?.let {
+
+                    GregorianCalendar().apply { time = it }
+
+                } ?.also {
+
+                    fields[RemoteFullContact::birthdayDay.name] = it[Calendar.DAY_OF_MONTH]
+                    fields[RemoteFullContact::birthdayMonth.name] = it[Calendar.MONTH] + 1
+                    fields[RemoteFullContact::birthdayYear.name] = it[Calendar.YEAR]
+
+                }
+
             }
 
             CustomContract.Contacts.Birthday.CONTENT_ITEM_TYPE -> {

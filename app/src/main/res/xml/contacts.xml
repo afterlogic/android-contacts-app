@@ -3,6 +3,19 @@
 
     <EditSchema>
 
+        <!-- Fallback/Google implementation -->
+        <DataKind kind="name"
+            maxOccurs="1"
+            supportsDisplayName="true"
+            supportsPrefix="true"
+            supportsMiddleName="true"
+            supportsSuffix="true"
+            supportsPhoneticFamilyName="true"
+            supportsPhoneticMiddleName="true"
+            supportsPhoneticGivenName="true"
+            />
+
+        <!-- Not working.
         <DataKind
             kind="name"
             maxOccurs="1"
@@ -13,10 +26,11 @@
             supportsPhoneticFamilyName="false"
             supportsPhoneticMiddleName="false"
             supportsPhoneticGivenName="false" />
+            -->
 
         <DataKind kind="nickname" maxOccurs="1" />
 
-        <!--DataKind kind="photo" maxOccurs="1" /-->
+        <DataKind kind="photo" maxOccurs="1" />
 
         <DataKind kind="phone" maxOccurs="5">
             <Type type="mobile" maxOccurs="1" />
@@ -37,7 +51,7 @@
             <Type type="custom" maxOccurs="1" />
         </DataKind>
 
-        <DataKind kind="postal" needsStructured="true" maxOccurs="2">
+        <DataKind kind="postal" needsStructured="false" maxOccurs="2">
             <Type type="home" maxOccurs="1"/>
             <Type type="work" maxOccurs="1"/>
         </DataKind>
@@ -52,7 +66,7 @@
             kind="event"
             dateWithTime="false"
             maxOccurs="1">
-            <Type type="birthday" maxOccurs="1" />
+            <Type type="birthday" maxOccurs="1" yearOptional="false"/>
         </DataKind>
 
     </EditSchema>

@@ -20,4 +20,6 @@ interface ContactsRemoteService {
 
     fun updateContact(contact: RemoteFullContact) : Completable
 
+    fun deleteContact(id: Long) : Completable
+
 }

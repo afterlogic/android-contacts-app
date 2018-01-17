@@ -46,7 +46,6 @@ class P7ContactsRemoteService @Inject constructor(
     override fun createContact(contact: RemoteFullContact): Completable = Completable.defer {
         cloudService.createContact(mapper.toDto(contact))
                 .retryWhen(authResolver.checkAndResolveAuth)
-                //.doOnSuccess { if (!it) throw IllegalStateException("Api return false.") }
                 .toCompletable()
     }
 
@@ -56,6 +55,10 @@ class P7ContactsRemoteService @Inject constructor(
                 .doOnSuccess { if (!it) throw IllegalStateException("Api return false.") }
                 .toCompletable()
     }
+
+    override fun deleteContact(id: Long) : Completable = cloudService.deleteContact(id)
+            .retryWhen(authResolver.checkAndResolveAuth)
+            .toCompletable()
 
     private fun collectAll(groupId: Long, data: P7ContactsData): Single<List<RemoteContact>> {
 
