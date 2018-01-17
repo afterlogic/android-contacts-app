@@ -4,6 +4,7 @@ import android.accounts.Account
 import android.content.ContentProviderClient
 import android.content.ContentUris
 import android.content.ContentValues
+import android.database.Cursor
 import android.provider.ContactsContract
 import com.afterlogic.auroracontacts.R
 import com.afterlogic.auroracontacts.application.wrappers.Resources
@@ -76,7 +77,7 @@ class ContactsSyncOperation private constructor(
     private fun uploadLocalChanges() : Completable = Completable.defer {
 
         val c = rawContactsClient.query(
-                arrayOf(ContactsContract.RawContacts._ID, CustomContract.RawContacts.REMOTE_ID),
+                arrayOf(ContactsContract.RawContacts._ID, CustomContract.Contacts.REMOTE_ID),
                 "${ContactsContract.RawContacts.DIRTY} = 1"
         ) ?: throw UnexpectedNullCursorException()
 
@@ -85,7 +86,7 @@ class ContactsSyncOperation private constructor(
             val result = mutableMapOf<Long, Long?>()
 
             while (c.moveToNext()) {
-                result[c.getLong(0)] = c.getLong(CustomContract.RawContacts.REMOTE_ID)
+                result[c.getLong(0)] = c.getLong(CustomContract.Contacts.REMOTE_ID)
             }
 
             result
@@ -111,7 +112,7 @@ class ContactsSyncOperation private constructor(
                     if (it.isEmpty()) {
 
                         rawContactsClient.delete(
-                                "${CustomContract.RawContacts.SYNCED} = 1"
+                                "${CustomContract.Contacts.SYNCED} = 1"
                         )
 
                     } else {
@@ -120,8 +121,8 @@ class ContactsSyncOperation private constructor(
                         val idsSqlIn = it.map { it.toString() } .toSqlIn()
 
                         rawContactsClient.delete("""
-                            ${CustomContract.RawContacts.SYNCED} = 1 AND
-                            ${CustomContract.RawContacts.REMOTE_ID} NOT IN $idsSqlIn
+                            ${CustomContract.Contacts.SYNCED} = 1 AND
+                            ${CustomContract.Contacts.REMOTE_ID} NOT IN $idsSqlIn
                         """.trimIndent())
 
                     }
@@ -190,7 +191,7 @@ class ContactsSyncOperation private constructor(
 
         if (!isNew) {
             // Delete all current data
-            dataClient.delete("${CustomContract.RawContacts.REMOTE_ID} = ${contact.id}")
+            dataClient.delete("${CustomContract.Contacts.REMOTE_ID} = ${contact.id}")
         }
 
         insertData(rawId, ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE) {
@@ -282,6 +283,38 @@ class ContactsSyncOperation private constructor(
                         }
                     }
 
+            if (fullContact.birthdayDay != 0 && fullContact.birthdayMonth != 0 && fullContact.birthdayYear != 0) {
+
+                insertData(rawId, ContactsContract.CommonDataKinds.Event.CONTENT_ITEM_TYPE) {
+
+                    put(ContactsContract.CommonDataKinds.Event.TYPE, ContactsContract.CommonDataKinds.Event.TYPE_BIRTHDAY)
+                    val date = arrayOf(
+                            String.format("%02d", fullContact.birthdayDay),
+                            String.format("%02d", fullContact.birthdayMonth),
+                            String.format("%04d", fullContact.birthdayYear)
+                    )
+                            .joinToString(separator = ".")
+                    put(ContactsContract.CommonDataKinds.Event.START_DATE, date)
+
+                }
+
+            }
+
+            insertData(rawId, CustomContract.Contacts.Birthday.CONTENT_ITEM_TYPE) {
+
+                put(CustomContract.Contacts.Birthday.DAY, fullContact.birthdayDay)
+                put(CustomContract.Contacts.Birthday.MONTH, fullContact.birthdayMonth)
+                put(CustomContract.Contacts.Birthday.YEAR, fullContact.birthdayYear)
+
+            }
+
+            insertData(rawId, CustomContract.Contacts.Groups.CONTENT_ITEM_TYPE) {
+
+                val groups = fullContact.groupsIds?.joinToString(",")
+                put(CustomContract.Contacts.Groups.GROUPS, groups)
+
+            }
+
         } else {
 
             val phones = contact.phones.reversed()
@@ -305,8 +338,8 @@ class ContactsSyncOperation private constructor(
 
         ContentValues().apply {
             put(ContactsContract.RawContacts.RAW_CONTACT_IS_READ_ONLY, fullContact == null || contact.isReadOnly)
-            put(CustomContract.RawContacts.SYNCED, 1)
-            put(CustomContract.RawContacts.ETAG, contact.eTag)
+            put(CustomContract.Contacts.SYNCED, 1)
+            put(CustomContract.Contacts.ETAG, contact.eTag)
         } .also { rawContactsClient.update(it, "${ContactsContract.RawContacts._ID} = $rawId") }
 
     }
@@ -317,7 +350,7 @@ class ContactsSyncOperation private constructor(
             put(ContactsContract.RawContacts.ACCOUNT_NAME, account.name)
             put(ContactsContract.RawContacts.ACCOUNT_TYPE, account.type)
             put(ContactsContract.RawContacts.AGGREGATION_MODE, ContactsContract.RawContacts.AGGREGATION_MODE_DEFAULT)
-            put(CustomContract.RawContacts.REMOTE_ID, id)
+            put(CustomContract.Contacts.REMOTE_ID, id)
         }
 
         return ContentUris.parseId(rawContactsClient.insert(cv))
@@ -398,8 +431,8 @@ class ContactsSyncOperation private constructor(
         return rawContactsClient.query(
                 arrayOf(ContactsContract.RawContacts._ID),
                 """
-                    ${CustomContract.RawContacts.REMOTE_ID} = ${contact.id} AND
-                    ${CustomContract.RawContacts.ETAG} LIKE '${contact.eTag}'
+                    ${CustomContract.Contacts.REMOTE_ID} = ${contact.id} AND
+                    ${CustomContract.Contacts.ETAG} LIKE '${contact.eTag}'
                 """.trimIndent()
                 )
                 ?.letAndClose { it.count == 1 } ?: throw UnexpectedNullCursorException()
@@ -410,7 +443,7 @@ class ContactsSyncOperation private constructor(
 
         val cursor = rawContactsClient.query(
                 arrayOf(ContactsContract.RawContacts._ID),
-                "${CustomContract.RawContacts.REMOTE_ID} = $remoteId"
+                "${CustomContract.Contacts.REMOTE_ID} = $remoteId"
         ) ?: throw UnexpectedNullCursorException()
 
         return cursor.letAndClose { if (it.moveToFirst()) it.getLong(0) else null }
@@ -422,159 +455,26 @@ class ContactsSyncOperation private constructor(
         val c = dataClient.query(selection = "${ContactsContract.Data.RAW_CONTACT_ID} = $rawContactId")
                 ?: throw UnexpectedNullCursorException()
 
-        val fields = {
+        val fields: Map<String, Any?> = {
 
-            val fields = mutableMapOf<String, Any?>(
-                    RemoteFullContact::id.name to (remoteId ?: -1L)
-            )
+            mutableMapOf<String, Any?>().apply {
 
-            while (c.moveToNext()) {
+                while (c.moveToNext()) {
 
-                val mimeType = c.getString(ContactsContract.Data.MIMETYPE)
-
-                when(mimeType) {
-
-                    ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE -> {
-
-                        fields[RemoteFullContact::fullName.name] = c.getString(ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME)
-                        fields[RemoteFullContact::firstName.name] = c.getString(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME)
-                        fields[RemoteFullContact::lastName.name] = c.getString(ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME)
-
-                    }
-
-                    ContactsContract.CommonDataKinds.Nickname.CONTENT_ITEM_TYPE -> {
-                        fields[RemoteFullContact::nickName.name] = c.getString(ContactsContract.CommonDataKinds.Nickname.NAME)
-                    }
-
-                    ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE -> {
-
-                        val names = mapOf(
-                                ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE to RemoteFullContact::homeMobile.name,
-                                ContactsContract.CommonDataKinds.Phone.TYPE_HOME to RemoteFullContact::homePhone.name,
-                                ContactsContract.CommonDataKinds.Phone.TYPE_FAX_HOME to RemoteFullContact::homeFax.name,
-                                ContactsContract.CommonDataKinds.Phone.TYPE_WORK to RemoteFullContact::businessPhone.name,
-                                ContactsContract.CommonDataKinds.Phone.TYPE_WORK_MOBILE to RemoteFullContact::businessMobile.name,
-                                ContactsContract.CommonDataKinds.Phone.TYPE_FAX_WORK to RemoteFullContact::businessFax.name
-                        )
-
-                        val type = c.getInt(ContactsContract.CommonDataKinds.Phone.TYPE)
-                        val name = names[type]!!
-
-                        fields[name] = c.getString(ContactsContract.CommonDataKinds.Phone.NUMBER)
-
-                    }
-
-                    ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE -> {
-
-                        val names = mapOf(
-                                ContactsContract.CommonDataKinds.Email.TYPE_HOME to RemoteFullContact::homeEmail.name,
-                                ContactsContract.CommonDataKinds.Email.TYPE_WORK to RemoteFullContact::businessEmail.name,
-                                ContactsContract.CommonDataKinds.Email.TYPE_OTHER to RemoteFullContact::otherEmail.name
-                        )
-
-                        val type = c.getInt(ContactsContract.CommonDataKinds.Email.TYPE)
-                        val name = names[type]!!
-
-                        fields[name] = c.getString(ContactsContract.CommonDataKinds.Email.ADDRESS)
-
-                    }
-
-                    ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE -> {
-
-                        val type = c.getInt(ContactsContract.CommonDataKinds.StructuredPostal.TYPE)
-
-                        val names = when(type) {
-
-                            ContactsContract.CommonDataKinds.StructuredPostal.TYPE_HOME -> mapOf(
-                                    ContactsContract.CommonDataKinds.StructuredPostal.COUNTRY to RemoteFullContact::homeCountry.name,
-                                    ContactsContract.CommonDataKinds.StructuredPostal.REGION to RemoteFullContact::homeState.name,
-                                    ContactsContract.CommonDataKinds.StructuredPostal.CITY to RemoteFullContact::homeCity.name,
-                                    ContactsContract.CommonDataKinds.StructuredPostal.STREET to RemoteFullContact::homeStreet.name,
-                                    ContactsContract.CommonDataKinds.StructuredPostal.POSTCODE to RemoteFullContact::homeZip.name
-                            )
-
-                            ContactsContract.CommonDataKinds.StructuredPostal.TYPE_WORK -> mapOf(
-                                    ContactsContract.CommonDataKinds.StructuredPostal.COUNTRY to RemoteFullContact::businessCountry.name,
-                                    ContactsContract.CommonDataKinds.StructuredPostal.REGION to RemoteFullContact::businessState.name,
-                                    ContactsContract.CommonDataKinds.StructuredPostal.CITY to RemoteFullContact::businessCity.name,
-                                    ContactsContract.CommonDataKinds.StructuredPostal.STREET to RemoteFullContact::businessStreet.name,
-                                    ContactsContract.CommonDataKinds.StructuredPostal.POSTCODE to RemoteFullContact::businessZip.name
-                            )
-
-                            else -> null
-
-                        }
-
-                        names?.also {
-                            it.map { it.value to c.getString(it.key) } .also { fields.putAll(it) }
-                        }
-
-                    }
-
-                    ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE -> {
-
-                        val names = mapOf(
-                                ContactsContract.CommonDataKinds.Website.TYPE_HOME to RemoteFullContact::homeWeb.name,
-                                ContactsContract.CommonDataKinds.Website.TYPE_WORK to RemoteFullContact::businessWeb.name
-                        )
-
-                        val type = c.getInt(ContactsContract.CommonDataKinds.Email.TYPE)
-                        val name = names[type]!!
-
-                        fields[name] = c.getString(ContactsContract.CommonDataKinds.Website.URL)
-
-                    }
-
-                    ContactsContract.CommonDataKinds.Im.CONTENT_ITEM_TYPE -> {
-
-                        val protocol = c.getInt(ContactsContract.CommonDataKinds.Im.PROTOCOL)
-
-                        val name = when(protocol) {
-                            ContactsContract.CommonDataKinds.Im.PROTOCOL_SKYPE -> RemoteFullContact::skype.name
-                            ContactsContract.CommonDataKinds.Im.PROTOCOL_CUSTOM -> {
-                                val customType = c.getString(ContactsContract.CommonDataKinds.Im.CUSTOM_PROTOCOL)
-                                when(customType?.toLowerCase()) {
-                                    "fb", "facebook" -> RemoteFullContact::facebook.name
-                                    else -> null
-                                }
-                            }
-                            else -> null
-                        }
-
-                        name?.also {
-                            fields[name] = c.getString(ContactsContract.CommonDataKinds.Im.DATA)
-                        }
-
-                    }
-
-                    ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE -> {
-
-                        val names = mapOf(
-                                ContactsContract.CommonDataKinds.Organization.TITLE to RemoteFullContact::businessJobTitle.name,
-                                ContactsContract.CommonDataKinds.Organization.DEPARTMENT to RemoteFullContact::businessDepartment.name,
-                                ContactsContract.CommonDataKinds.Organization.OFFICE_LOCATION to RemoteFullContact::businessOffice.name
-                        )
-
-                        names.map { it.value to c.getString(it.key) } .also { fields.putAll(it) }
-
-                    }
-
-                    ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE -> {
-                        fields[RemoteFullContact::notes.name] = c.getString(ContactsContract.CommonDataKinds.Note.NOTE)
-                    }
+                    putAll(collectRemoteFullContactFieldsFromData(c))
 
                 }
 
             }
-
-            fields.toMap()
 
         }()
 
         c.close()
 
         return RemoteFullContact(
-                0, 0, 0,
+                fields[RemoteFullContact::birthdayDay.name] as Int? ?: 0,
+                fields[RemoteFullContact::birthdayMonth.name] as Int? ?: 0,
+                fields[RemoteFullContact::birthdayYear.name] as Int? ?: 0,
                 fields[RemoteFullContact::businessCity.name] as String?,
                 fields[RemoteFullContact::businessCompany.name] as String?,
                 fields[RemoteFullContact::businessCountry.name] as String?,
@@ -593,7 +493,7 @@ class ContactsSyncOperation private constructor(
                 fields[RemoteFullContact::firstName.name] as String?,
                 fields[RemoteFullContact::fullName.name] as String?,
                 false,
-                (fields[RemoteFullContact::groupsIds.name] as? List<String>) ?: emptyList(),
+                (fields[RemoteFullContact::groupsIds.name] as List<String>?) ?: emptyList(),
                 fields[RemoteFullContact::homeCity.name] as String?,
                 fields[RemoteFullContact::homeCountry.name] as String?,
                 fields[RemoteFullContact::homeEmail.name] as String?,
@@ -618,6 +518,166 @@ class ContactsSyncOperation private constructor(
                 fields[RemoteFullContact::title.name] as String?,
                 false
         )
+
+    }
+
+    private fun collectRemoteFullContactFieldsFromData(c: Cursor): Map<String, Any?> {
+
+        val fields = mutableMapOf<String, Any?>()
+
+        val mimeType = c.getString(ContactsContract.Data.MIMETYPE)
+
+        when(mimeType) {
+
+            ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE -> {
+
+                fields[RemoteFullContact::fullName.name] = c.getString(ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME)
+                fields[RemoteFullContact::firstName.name] = c.getString(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME)
+                fields[RemoteFullContact::lastName.name] = c.getString(ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME)
+
+            }
+
+            ContactsContract.CommonDataKinds.Nickname.CONTENT_ITEM_TYPE -> {
+                fields[RemoteFullContact::nickName.name] = c.getString(ContactsContract.CommonDataKinds.Nickname.NAME)
+            }
+
+            ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE -> {
+
+                val names = mapOf(
+                        ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE to RemoteFullContact::homeMobile.name,
+                        ContactsContract.CommonDataKinds.Phone.TYPE_HOME to RemoteFullContact::homePhone.name,
+                        ContactsContract.CommonDataKinds.Phone.TYPE_FAX_HOME to RemoteFullContact::homeFax.name,
+                        ContactsContract.CommonDataKinds.Phone.TYPE_WORK to RemoteFullContact::businessPhone.name,
+                        ContactsContract.CommonDataKinds.Phone.TYPE_WORK_MOBILE to RemoteFullContact::businessMobile.name,
+                        ContactsContract.CommonDataKinds.Phone.TYPE_FAX_WORK to RemoteFullContact::businessFax.name
+                )
+
+                val type = c.getInt(ContactsContract.CommonDataKinds.Phone.TYPE)
+                val name = names[type]!!
+
+                fields[name] = c.getString(ContactsContract.CommonDataKinds.Phone.NUMBER)
+
+            }
+
+            ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE -> {
+
+                val names = mapOf(
+                        ContactsContract.CommonDataKinds.Email.TYPE_HOME to RemoteFullContact::homeEmail.name,
+                        ContactsContract.CommonDataKinds.Email.TYPE_WORK to RemoteFullContact::businessEmail.name,
+                        ContactsContract.CommonDataKinds.Email.TYPE_OTHER to RemoteFullContact::otherEmail.name
+                )
+
+                val type = c.getInt(ContactsContract.CommonDataKinds.Email.TYPE)
+                val name = names[type]!!
+
+                fields[name] = c.getString(ContactsContract.CommonDataKinds.Email.ADDRESS)
+
+            }
+
+            ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE -> {
+
+                val type = c.getInt(ContactsContract.CommonDataKinds.StructuredPostal.TYPE)
+
+                val names = when(type) {
+
+                    ContactsContract.CommonDataKinds.StructuredPostal.TYPE_HOME -> mapOf(
+                            ContactsContract.CommonDataKinds.StructuredPostal.COUNTRY to RemoteFullContact::homeCountry.name,
+                            ContactsContract.CommonDataKinds.StructuredPostal.REGION to RemoteFullContact::homeState.name,
+                            ContactsContract.CommonDataKinds.StructuredPostal.CITY to RemoteFullContact::homeCity.name,
+                            ContactsContract.CommonDataKinds.StructuredPostal.STREET to RemoteFullContact::homeStreet.name,
+                            ContactsContract.CommonDataKinds.StructuredPostal.POSTCODE to RemoteFullContact::homeZip.name
+                    )
+
+                    ContactsContract.CommonDataKinds.StructuredPostal.TYPE_WORK -> mapOf(
+                            ContactsContract.CommonDataKinds.StructuredPostal.COUNTRY to RemoteFullContact::businessCountry.name,
+                            ContactsContract.CommonDataKinds.StructuredPostal.REGION to RemoteFullContact::businessState.name,
+                            ContactsContract.CommonDataKinds.StructuredPostal.CITY to RemoteFullContact::businessCity.name,
+                            ContactsContract.CommonDataKinds.StructuredPostal.STREET to RemoteFullContact::businessStreet.name,
+                            ContactsContract.CommonDataKinds.StructuredPostal.POSTCODE to RemoteFullContact::businessZip.name
+                    )
+
+                    else -> null
+
+                }
+
+                names?.also {
+                    it.map { it.value to c.getString(it.key) } .also { fields.putAll(it) }
+                }
+
+            }
+
+            ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE -> {
+
+                val names = mapOf(
+                        ContactsContract.CommonDataKinds.Website.TYPE_HOME to RemoteFullContact::homeWeb.name,
+                        ContactsContract.CommonDataKinds.Website.TYPE_WORK to RemoteFullContact::businessWeb.name
+                )
+
+                val type = c.getInt(ContactsContract.CommonDataKinds.Email.TYPE)
+                val name = names[type]!!
+
+                fields[name] = c.getString(ContactsContract.CommonDataKinds.Website.URL)
+
+            }
+
+            ContactsContract.CommonDataKinds.Im.CONTENT_ITEM_TYPE -> {
+
+                val protocol = c.getInt(ContactsContract.CommonDataKinds.Im.PROTOCOL)
+
+                val name = when(protocol) {
+                    ContactsContract.CommonDataKinds.Im.PROTOCOL_SKYPE -> RemoteFullContact::skype.name
+                    ContactsContract.CommonDataKinds.Im.PROTOCOL_CUSTOM -> {
+                        val customType = c.getString(ContactsContract.CommonDataKinds.Im.CUSTOM_PROTOCOL)
+                        when(customType?.toLowerCase()) {
+                            "fb", "facebook" -> RemoteFullContact::facebook.name
+                            else -> null
+                        }
+                    }
+                    else -> null
+                }
+
+                name?.also {
+                    fields[name] = c.getString(ContactsContract.CommonDataKinds.Im.DATA)
+                }
+
+            }
+
+            ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE -> {
+
+                val names = mapOf(
+                        ContactsContract.CommonDataKinds.Organization.TITLE to RemoteFullContact::businessJobTitle.name,
+                        ContactsContract.CommonDataKinds.Organization.DEPARTMENT to RemoteFullContact::businessDepartment.name,
+                        ContactsContract.CommonDataKinds.Organization.OFFICE_LOCATION to RemoteFullContact::businessOffice.name
+                )
+
+                names.map { it.value to c.getString(it.key) } .also { fields.putAll(it) }
+
+            }
+
+            ContactsContract.CommonDataKinds.Note.CONTENT_ITEM_TYPE -> {
+                fields[RemoteFullContact::notes.name] = c.getString(ContactsContract.CommonDataKinds.Note.NOTE)
+            }
+
+            CustomContract.Contacts.Birthday.CONTENT_ITEM_TYPE -> {
+
+                fields[RemoteFullContact::birthdayDay.name] = c.getInt(CustomContract.Contacts.Birthday.DAY)
+                fields[RemoteFullContact::birthdayMonth.name] = c.getInt(CustomContract.Contacts.Birthday. MONTH)
+                fields[RemoteFullContact::birthdayYear.name] = c.getInt(CustomContract.Contacts.Birthday.YEAR)
+
+            }
+
+            CustomContract.Contacts.Groups.CONTENT_ITEM_TYPE -> {
+
+                val groups = c.getString(CustomContract.Contacts.Groups.GROUPS)
+                        ?.split(",")
+
+                fields[RemoteFullContact::groupsIds.name] = groups
+
+            }
+
+        }
+
+        return fields
 
     }
 

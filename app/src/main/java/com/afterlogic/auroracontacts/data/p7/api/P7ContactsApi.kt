@@ -72,6 +72,7 @@ interface P7ContactsApi {
     @POST(P7Api.AJAX)
     fun updateContact(
             @Field("ContactId") id: Long,
+            @Field(value = "GroupsIds[]", encoded = true) groupIds: List<String>?,
             @FieldMap contact: Map<String, @JvmSuppressWildcards Any?>,
             @Field(P7Api.Fields.ACTION) action: String = "ContactUpdate",
             @Auth(AuthValue.APP_TOKEN) @Field(P7Api.Fields.TOKEN) appToken: String = AuthValue.STRING,

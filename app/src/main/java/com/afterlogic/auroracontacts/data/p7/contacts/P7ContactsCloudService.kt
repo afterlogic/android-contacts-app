@@ -56,7 +56,7 @@ class P7ContactsCloudService @Inject constructor(
     fun updateContact(contact: P7RemoteFullContact) : Single<Boolean> = Single.defer {
 
         val fieldsMap = contact.toFieldsMap()
-        api.flatMap { it.updateContact(contact.idContact!!.toLong(), fieldsMap) }
+        api.flatMap { it.updateContact(contact.idContact!!.toLong(), contact.groupsIds, fieldsMap) }
                 .checkResponseAndGetData()
 
     }
@@ -71,7 +71,8 @@ class P7ContactsCloudService @Inject constructor(
                 "PrimaryEmail",
                 "ReadOnly",
                 "SharedToAll",
-                "UseFriendlyName"
+                "UseFriendlyName",
+                "GroupsIds"
         )
 
         val fields = P7RemoteFullContact::class.java.declaredFields
@@ -88,10 +89,6 @@ class P7ContactsCloudService @Inject constructor(
                     (sn.value to f.get(this)).also { f.isAccessible = accessible }
                 }
                 .filterValues { it != null }
-                .mapKeys { (key, _) -> when(key) {
-                    "GroupsIds" -> "GroupsIds[]"
-                    else -> key
-                } }
 
     }
 

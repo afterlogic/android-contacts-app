@@ -19,7 +19,6 @@ object CustomContract {
         const val REMOTE_CTAG = _Calendar.CAL_SYNC2
     }
 
-
     object Events {
         const val REMOTE_ID = _Events.SYNC_DATA1
         const val REQURENCE_ID = _Events.SYNC_DATA2
@@ -28,10 +27,31 @@ object CustomContract {
 
     }
 
-    object RawContacts {
+    object Contacts {
+
         const val REMOTE_ID = _RawContacts.SYNC1
         const val SYNCED = _RawContacts.SYNC2
         const val ETAG = _RawContacts.SYNC3
+
+
+        object Groups {
+
+            const val CONTENT_ITEM_TYPE = "vnd.android.cursor.item/com.afterlogic.aurora.contacts.GroupsIds"
+
+            const val GROUPS = ContactsContract.Data.DATA1
+
+        }
+
+        object Birthday {
+
+            const val CONTENT_ITEM_TYPE = "vnd.android.cursor.item/com.afterlogic.aurora.contacts.Birthday"
+
+            const val DAY = ContactsContract.Data.DATA1
+            const val MONTH = ContactsContract.Data.DATA2
+            const val YEAR = ContactsContract.Data.DATA3
+
+        }
+
     }
 
 }
