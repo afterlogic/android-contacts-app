@@ -8,6 +8,7 @@ import android.database.Cursor
 import android.provider.ContactsContract
 import com.afterlogic.auroracontacts.R
 import com.afterlogic.auroracontacts.application.wrappers.Resources
+import com.afterlogic.auroracontacts.core.util.cast
 import com.afterlogic.auroracontacts.data.api.ApiNullResultError
 import com.afterlogic.auroracontacts.data.contacts.ContactGroupInfo
 import com.afterlogic.auroracontacts.data.contacts.ContactsRepository
@@ -47,14 +48,13 @@ class ContactsSyncOperation private constructor(
 
     private val eTags = WeakHashMap<RemoteContact, String>()
     private val RemoteContact.eTag: String get() = eTags.getOrPut(this) {
+
         // TODO: replace reflection
         RemoteContact::class.java.methods
                 .map { it.invoke(this) ?: "" }
                 .joinToString(":")
-                .also {
-                    Timber.d("Hash source: $it")
-                }
                 .let { DigestUtil.toSha256(it) }
+
     }
 
     fun sync() : Completable = uploadLocalChanges()
@@ -78,29 +78,48 @@ class ContactsSyncOperation private constructor(
 
         val c = rawContactsClient.query(
                 arrayOf(ContactsContract.RawContacts._ID, CustomContract.Contacts.REMOTE_ID),
-                "${ContactsContract.RawContacts.DIRTY} = 1"
+                """
+                    ${ContactsContract.RawContacts.DIRTY} = 1 AND
+                    ${ContactsContract.RawContacts.DELETED} = 0
+                """.trimIndent()
         ) ?: throw UnexpectedNullCursorException()
 
-        val ids = {
+        val ids: Map<Long, Long?> = mutableMapOf<Long, Long?>()
+                .apply{
 
-            val result = mutableMapOf<Long, Long?>()
+                    while (c.moveToNext()) {
+                        this[c.getLong(0)] = c.getLong(CustomContract.Contacts.REMOTE_ID)
+                    }
 
-            while (c.moveToNext()) {
-                result[c.getLong(0)] = c.getLong(CustomContract.Contacts.REMOTE_ID)
-            }
-
-            result
-
-        }()
+                }
 
         c.close()
 
-        ids.map { (it.value == null) to collectRemoteContact(it.key, it.value) }
-                .map { (new, contact) ->
-                    if (new) repository.createContact(contact)
-                    else repository.updateContact(contact)
+        ids.map {
+
+            val localId = it.key
+            val remoteId = it.value
+
+            val remoteContactData = collectRemoteContact(localId, remoteId)
+            val new = remoteId == null
+
+            val request =
+                    if (new) repository.createContact(remoteContactData)
+                    else repository.updateContact(remoteContactData)
+
+            request.doOnComplete {
+
+                val contactCV = ContentValues().apply {
+                    put(ContactsContract.RawContacts.DIRTY, 0)
                 }
-                .let { Completable.concat(it) }
+
+                rawContactsClient.update(
+                        contactCV, "${ContactsContract.RawContacts._ID} = $localId"
+                )
+
+            }
+
+        } .let { Completable.concat(it) }
 
     }
 
@@ -493,7 +512,7 @@ class ContactsSyncOperation private constructor(
                 fields[RemoteFullContact::firstName.name] as String?,
                 fields[RemoteFullContact::fullName.name] as String?,
                 false,
-                (fields[RemoteFullContact::groupsIds.name] as List<String>?) ?: emptyList(),
+                fields[RemoteFullContact::groupsIds.name]?.cast() ?: emptyList(),
                 fields[RemoteFullContact::homeCity.name] as String?,
                 fields[RemoteFullContact::homeCountry.name] as String?,
                 fields[RemoteFullContact::homeEmail.name] as String?,
