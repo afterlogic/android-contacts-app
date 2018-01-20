@@ -85,6 +85,7 @@ interface P7ContactsApi {
     @POST(P7Api.AJAX)
     fun deleteContact(
             @Field("ContactsId") id: Long,
+            @Field(P7Api.Fields.ACTION) action: String = "ContactDelete",
             @Auth(AuthValue.APP_TOKEN) @Field(P7Api.Fields.TOKEN) appToken: String = AuthValue.STRING,
             @Auth(AuthValue.AUTH_TOKEN) @Field(P7Api.Fields.AUTH_TOKEN) authToken: String = AuthValue.STRING,
             @Auth(AuthValue.ACCOUNT_ID) @Field(P7Api.Fields.ACCOUNT_ID) accountId: Long = AuthValue.LONG

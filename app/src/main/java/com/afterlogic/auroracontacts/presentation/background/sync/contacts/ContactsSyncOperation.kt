@@ -136,10 +136,7 @@ class ContactsSyncOperation private constructor(
 
         val c = rawContactsClient.query(
                 arrayOf(ContactsContract.RawContacts._ID, CustomContract.Contacts.REMOTE_ID),
-                """
-                    ${ContactsContract.RawContacts.DIRTY} = 1 AND
-                    ${ContactsContract.RawContacts.DELETED} = 0
-                """.trimIndent()
+                "${ContactsContract.RawContacts.DELETED} = 1"
         ) ?: throw UnexpectedNullCursorException()
 
         val ids: Map<Long, Long?> = mutableMapOf<Long, Long?>()
@@ -154,7 +151,7 @@ class ContactsSyncOperation private constructor(
         c.close()
 
         // Delete all not synced items
-        ids.filter { it.value == null } .also {
+        ids.filter { (_, value) -> value == null } .also {
 
             val sqlIn = it.keys.map { it.toString() } .toSqlIn()
 
@@ -168,11 +165,14 @@ class ContactsSyncOperation private constructor(
             val localId = it.key
             val remoteId = it.value
 
-            repository.deleteContact(remoteId).doOnComplete {
+            repository.deleteContact(remoteId)
+                    .doOnComplete {
 
-                rawContactsClient.delete("${ContactsContract.RawContacts._ID} = $localId")
+                        rawContactsClient.delete(
+                                "${ContactsContract.RawContacts._ID} = $localId"
+                        )
 
-            }
+                    }
 
         } .let { Completable.concat(it) }
 
@@ -196,29 +196,41 @@ class ContactsSyncOperation private constructor(
 
     private fun syncGroups(groupIds: List<Long>): Completable {
 
-        return syncGroupsRecursively(groupIds)
-                .doOnSuccess {
+        if (groupIds.isEmpty()) {
 
-                    if (it.isEmpty()) {
+            return Completable.fromAction {
 
-                        rawContactsClient.delete(
-                                "${CustomContract.Contacts.SYNCED} = 1"
-                        )
+                rawContactsClient.delete("1")
 
-                    } else {
+            }
 
-                        // Remote not exists in remote rawContactsClient
-                        val idsSqlIn = it.map { it.toString() } .toSqlIn()
+        } else {
 
-                        rawContactsClient.delete("""
-                            ${CustomContract.Contacts.SYNCED} = 1 AND
-                            ${CustomContract.Contacts.REMOTE_ID} NOT IN $idsSqlIn
-                        """.trimIndent())
+            return syncGroupsRecursively(groupIds)
+                    .doOnSuccess {
+
+                        if (it.isEmpty()) {
+
+                            rawContactsClient.delete(
+                                    "${CustomContract.Contacts.SYNCED} = 1"
+                            )
+
+                        } else {
+
+                            // Remote not exists in remote rawContactsClient
+                            val idsSqlIn = it.map { it.toString() } .toSqlIn()
+
+                            rawContactsClient.delete("""
+                                ${CustomContract.Contacts.SYNCED} = 1 AND
+                                ${CustomContract.Contacts.REMOTE_ID} NOT IN $idsSqlIn
+                            """.trimIndent())
+
+                        }
 
                     }
+                    .toCompletable()
 
-                }
-                .toCompletable()
+        }
 
     }
 
