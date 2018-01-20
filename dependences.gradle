@@ -37,7 +37,7 @@ class Dependencies {
         public def fabric_gradle_plugin = '1.25.1'
         public def gms_gradle_plugin = '3.1.2'
         public def autoversion_gradle_plugin = '0.0.8'
-        public def kotlin = "1.2.20-eap-71"
+        public def kotlin = "1.2.20"
         public def dependencies_versions_plugin = '0.17.0'
 
         public def multidexVersion = '1.0.2'
