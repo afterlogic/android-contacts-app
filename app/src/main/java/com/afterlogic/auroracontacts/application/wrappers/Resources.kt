@@ -19,7 +19,7 @@ class Resources @Inject constructor(private val context: App) {
         }
 
         operator fun get(@StringRes id: Int, vararg args: Any?): String {
-            return context.getString(id, args)
+            return context.getString(id, *args)
         }
 
     }

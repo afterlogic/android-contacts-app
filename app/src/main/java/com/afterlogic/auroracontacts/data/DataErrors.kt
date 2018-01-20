@@ -14,4 +14,13 @@ class IllegalApiDataException(message: String): Exception(message)
 
 class LocalDataNotExistsError: Throwable()
 
-class AuthFailedError(cause: Throwable? = null): Throwable(cause)
+class AuthFailedError(cause: Throwable? = null): Throwable(cause) {
+
+    var checked: Boolean = false
+        private set
+
+    fun markChecked() {
+        checked = true
+    }
+
+}

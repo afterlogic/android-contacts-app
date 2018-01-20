@@ -6,7 +6,7 @@ import com.google.gson.annotations.SerializedName
  * Created by sunny on 04.12.2017.
  * mail: mail@sunnydaydev.me
  */
-class ApiResponseP7<T>{
+class P7ApiResponse<T>{
 
     companion object {
         const val NAME_ERROR_CODE = "ErrorCode"
@@ -27,6 +27,6 @@ class ApiResponseP7<T>{
     val errorMessage: String? = null
 
     val isSuccess: Boolean
-        get() = errorCode == null && data != null
+        get() = errorCode == null && errorMessage == null && data != null
 
 }

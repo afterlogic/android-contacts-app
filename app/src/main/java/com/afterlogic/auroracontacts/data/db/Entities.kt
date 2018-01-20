@@ -24,6 +24,10 @@ data class SyncSettings (
         val syncEnabled: Boolean
 )
 
-data class CalendarEventDbe(
-        val id: String
+@Entity(tableName = "contact_groups")
+data class ContactGroupDbe(
+        @PrimaryKey
+        val id: Long,
+        val name: String,
+        val syncEnabled: Boolean
 )

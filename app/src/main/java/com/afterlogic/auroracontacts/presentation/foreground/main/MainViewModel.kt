@@ -10,16 +10,21 @@ import com.afterlogic.auroracontacts.application.wrappers.Resources
 import com.afterlogic.auroracontacts.core.rx.DisposableBag
 import com.afterlogic.auroracontacts.core.rx.Subscriber
 import com.afterlogic.auroracontacts.core.rx.disposeBy
+import com.afterlogic.auroracontacts.core.util.StringIdProvider
 import com.afterlogic.auroracontacts.core.util.setSequentiallyFrom
 import com.afterlogic.auroracontacts.data.SyncPeriod
 import com.afterlogic.auroracontacts.data.calendar.AuroraCalendarInfo
+import com.afterlogic.auroracontacts.data.contacts.ContactGroupInfo
 import com.afterlogic.auroracontacts.presentation.common.base.ObservableRxViewModel
 import com.afterlogic.auroracontacts.presentation.common.databinding.bindable
 import com.afterlogic.auroracontacts.presentation.common.permissions.PermissionRequest
 import com.afterlogic.auroracontacts.presentation.common.permissions.PermissionsInteractor
+import io.reactivex.Observable
+import io.reactivex.subjects.BehaviorSubject
 import timber.log.Timber
 import java.util.*
 import javax.inject.Inject
+import kotlin.properties.Delegates
 
 /**
  * Created by sunny on 06.12.2017.
@@ -27,14 +32,15 @@ import javax.inject.Inject
  */
 class MainViewModel @Inject constructor(
         private val interactor: MainInteractor,
-        res: Resources,
+        private val res: Resources,
         private val permissionsInteractor: PermissionsInteractor,
         subscriber: Subscriber
 ): ObservableRxViewModel(subscriber)  {
 
     companion object {
 
-        private val TYPE_CALENDAR = 1
+        private const val TYPE_CALENDAR = 1
+        private const val TYPE_CONTACTS = 2
 
     }
 
@@ -56,7 +62,13 @@ class MainViewModel @Inject constructor(
                 .subscribeIt()
     }
 
+    val logoutTitle: Observable<String> by lazy { logoutTitleSubject }
+    private val logoutTitleSubject: BehaviorSubject<String> = BehaviorSubject.createDefault(
+            res.strings[R.string.action_logout]
+    )
+
     private val calendarsMap = WeakHashMap<CalendarItemViewModel, AuroraCalendarInfo>()
+    private val contactsMap = WeakHashMap<ContactItemViewModel, ContactGroupInfo>()
 
     private val startedScopeDisposables = DisposableBag()
 
@@ -64,8 +76,21 @@ class MainViewModel @Inject constructor(
     private val calendarsCard = CardViewModel(
             TYPE_CALENDAR, res.strings[R.string.prompt_main_calendars_title], calendars
     )
-    private val calendarItemStableIds = WeakHashMap<String, Long>()
-    private var lastCaledarStableId = 0L
+    private val calendarItemIdProvider = StringIdProvider()
+
+    private val contacts: MutableList<ContactItemViewModel> = ObservableArrayList()
+    private val contactsCard = CardViewModel(
+            TYPE_CONTACTS, res.strings[R.string.prompt_main_contacts_title], contacts
+    )
+
+    private var calendarsLoading by Delegates.observable(true) { _, _, _ ->
+        updateLoadingStatus()
+    }
+
+    private var contactsLoading by Delegates.observable(true) { _, _, _ ->
+        updateLoadingStatus()
+    }
+
 
     init {
 
@@ -73,7 +98,13 @@ class MainViewModel @Inject constructor(
                 .map { it.toTypedArray() }
                 .distinctUntilChanged { f, s -> f contentEquals s }
                 .defaultSchedulers()
-                .subscribeIt(onNext = this::handle)
+                .subscribeIt(onNext = this::handleCalendars)
+
+        interactor.getContactGroups()
+                .map { it.toTypedArray() }
+                .distinctUntilChanged { f, s -> f contentEquals s }
+                .defaultSchedulers()
+                .subscribeIt(onNext = this::handleContacts)
 
         interactor.syncPeriod
                 .subscribeIt {
@@ -84,6 +115,10 @@ class MainViewModel @Inject constructor(
                 .subscribeIt {
                     syncOnLocalChanges = it
                 }
+
+        interactor.obtainAccountName()
+                .defaultSchedulers()
+                .subscribeIt { logoutTitleSubject.onNext(res.strings[R.string.action_logout_with_name, it]) }
 
     }
 
@@ -96,6 +131,9 @@ class MainViewModel @Inject constructor(
                 .defaultSchedulers()
                 .subscribeIt { syncing = it }
 
+        permissionsInteractor.requirePermission(PermissionRequest.CALENDAR_AND_CONTACTS)
+                .subscribeIt()
+
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
@@ -103,12 +141,17 @@ class MainViewModel @Inject constructor(
         startedScopeDisposables.dispose()
     }
 
+    fun onLogoutClicked() {
+
+        interactor.logout()
+                .defaultSchedulers()
+                .subscribeIt()
+
+    }
+
     fun onSyncClicked() {
 
         if (syncing) return
-
-        permissionsInteractor.requirePermission(PermissionRequest.CALENDAR)
-                .subscribeIt()
 
         interactor.requestStartSyncImmediately()
                 .defaultSchedulers()
@@ -116,9 +159,9 @@ class MainViewModel @Inject constructor(
 
     }
 
-    private fun handle(calendars: Array<AuroraCalendarInfo>) {
+    private fun handleCalendars(calendars: Array<AuroraCalendarInfo>) {
 
-        if (loadingData) loadingData = false
+        calendarsLoading = false
 
         calendars
                 .map { mapCalendar(it) to it  }
@@ -147,14 +190,74 @@ class MainViewModel @Inject constructor(
 
     }
 
+    private fun handleContacts(contacts: Array<ContactGroupInfo>) {
+
+        contactsLoading = false
+
+        // Check exists
+        val sameContent by lazy {
+            val currents = contactsMap.values
+            if (currents.size != contacts.size) return@lazy false
+            val currentIds = currents.map { it.id }.toTypedArray()
+            val fetchedIds = contacts.map { it.id }.toTypedArray()
+            currentIds contentEquals fetchedIds
+        }
+
+        if (sameContent) {
+
+            contactsMap.forEach { (key, value) ->
+
+                val contact = contacts.find { it.id == value.id } ?: throw error("Contact not exists.")
+
+                key.name = contact.name
+                key.checked = contact.syncing
+
+            }
+
+            return
+
+        }
+
+        contacts
+                .map { mapContactsGroup(it) to it  }
+                .also {
+
+                    contactsMap.clear()
+
+                    if (it.isEmpty()) {
+
+                        cards.remove(contactsCard)
+
+                    } else {
+
+                        contactsMap.putAll(it)
+
+                        val contactsVMs = it.map { (vm , _) -> vm }
+                        this.contacts.setSequentiallyFrom(contactsVMs)
+
+                        if(!cards.contains(contactsCard)) {
+                            cards.add(0, contactsCard)
+                        }
+
+                    }
+
+                }
+
+    }
+
     private fun mapCalendar(calendar: AuroraCalendarInfo) : CalendarItemViewModel =
             CalendarItemViewModel(
-                    calendarItemStableIds.getOrPut(calendar.id) { ++lastCaledarStableId },
+                    calendarItemIdProvider[calendar.id],
                     calendar.name, calendar.color,
-                    calendar.settings.syncEnabled, this::onCheckedChanged
+                    calendar.settings.syncEnabled, this::onCalendarCheckedChanged
             )
 
-    private fun onCheckedChanged(vm: CalendarItemViewModel, checked: Boolean) {
+    private fun mapContactsGroup(group: ContactGroupInfo) : ContactItemViewModel =
+            ContactItemViewModel(
+                    group.id, group.name, group.syncing, this::onContactGroupCheckedChanged
+            )
+
+    private fun onCalendarCheckedChanged(vm: CalendarItemViewModel, checked: Boolean) {
 
         val calendar = calendarsMap[vm] ?: return
 
@@ -164,6 +267,23 @@ class MainViewModel @Inject constructor(
                 .defaultSchedulers()
                 .subscribeIt()
 
+    }
+
+    private fun onContactGroupCheckedChanged(vm: ContactItemViewModel, checked: Boolean) {
+
+        val calendar = contactsMap[vm] ?: return
+
+        Timber.d("onChanged: ${calendar.name} : $checked")
+
+        interactor.setSyncEnabled(calendar, checked)
+                .defaultSchedulers()
+                .subscribeIt()
+
+    }
+
+    private fun updateLoadingStatus() {
+        val loading = calendarsLoading || contactsLoading
+        if (loading != this.loadingData) loadingData = loading
     }
 
 }

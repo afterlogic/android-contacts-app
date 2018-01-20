@@ -18,7 +18,8 @@ import dagger.Provides
         version = 1,
         exportSchema = true,
         entities = [
-            CalendarDbe::class
+            CalendarDbe::class,
+            ContactGroupDbe::class
         ]
 )
 abstract class AuroraDB: RoomDatabase() {

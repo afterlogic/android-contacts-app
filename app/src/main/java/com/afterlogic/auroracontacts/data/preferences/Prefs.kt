@@ -21,13 +21,24 @@ class Prefs @Inject constructor(context: App) {
 
     var syncOnLocalChanges by booleanPref("syncOnLocalChanges")
 
-    var syncPeriod by longPref("syncPeriod")
+    var syncPeriod by longPref("syncPeriod", -1L)
+
+    var syncAllContacts by booleanPref("syncAllContacts")
+
+    var syncSharedContacts by booleanPref("syncSharedContacts")
+
+    var syncTeamContacts by booleanPref("syncTeamContacts")
+
+    var syncPersonalContacts by booleanPref("syncPersonalContacts")
 
     private fun booleanPref(name: String, defaultValue: Boolean = false): ReadWriteProperty<Prefs, Boolean> =
             property({ it.getBoolean(name, defaultValue) }, { p, v -> p.put(name, v) } )
 
-    private fun longPref(name: String, defaultValue: Long = -1): ReadWriteProperty<Prefs, Long> =
+    private fun longPref(name: String, defaultValue: Long = 0): ReadWriteProperty<Prefs, Long> =
             property({ it.getLong(name, defaultValue) }, { p, v -> p.put(name, v) } )
+
+    private fun intPref(name: String, defaultValue: Int = 0): ReadWriteProperty<Prefs, Int> =
+            property({ it.getInt(name, defaultValue) }, { p, v -> p.put(name, v) } )
 
     inline private fun <T> property(
             crossinline getter: (AppPreferences) -> T,

@@ -1,11 +1,11 @@
 package com.afterlogic.auroracontacts.data.p7.auth
 
-import com.afterlogic.auroracontacts.data.api.ApiType
+import com.afterlogic.auroracontacts.data.IllegalApiDataException
 import com.afterlogic.auroracontacts.data.api.ApiReturnedError
+import com.afterlogic.auroracontacts.data.api.ApiType
 import com.afterlogic.auroracontacts.data.api.p7.model.SystemAppDataP7
 import com.afterlogic.auroracontacts.data.auth.AuthenticatorSubService
 import com.afterlogic.auroracontacts.data.auth.model.AuthorizedAuroraSession
-import com.afterlogic.auroracontacts.data.IllegalApiDataException
 import com.google.gson.JsonSyntaxException
 import io.reactivex.Single
 import okhttp3.HttpUrl
@@ -22,8 +22,9 @@ constructor(private val service: P7AuthenticatorNetworkService) : AuthenticatorS
     override fun login(host: HttpUrl, email: String, pass: String): Single<AuthorizedAuroraSession> {
 
         return service.login(host, email, pass)
-                .flatMap { (token, _) -> service.getLoggedSystemAppData(host, token)
-                        .map { LoginResult(token, it) }
+                .flatMap { (accountId, token) ->
+                    service.getSystemAppData(host, token.token)
+                            .map { LoginResult(accountId, token.token, it) }
                 }
                 .map { handleLoginResult(it, host, email, pass) }
 
@@ -45,7 +46,7 @@ constructor(private val service: P7AuthenticatorNetworkService) : AuthenticatorS
                                   email: String,
                                   pass: String): AuthorizedAuroraSession {
 
-        return (loginResult.systemAppData ?: throw IllegalApiDataException("SystemAppData is null."))
+        return loginResult.systemAppData
                 .let(this::checkAuthorized)
                 .let(this::extractAccountUserAndToken)
                 .let { (user, appToken) ->
@@ -81,16 +82,14 @@ constructor(private val service: P7AuthenticatorNetworkService) : AuthenticatorS
 
     }
 
-    private inner class LoginResult(val token: String,
-                                    private val systemAppDataPair: Pair<Long, SystemAppDataP7>) {
-
-        val accountId: Long get() = systemAppDataPair.first
-        val systemAppData: SystemAppDataP7? get() = systemAppDataPair.second
-
-    }
-
     private fun isIncorrectApiVersionError(error: Throwable): Boolean {
         return error is JsonSyntaxException || error is ApiReturnedError
     }
+
+    private data class LoginResult(
+            val accountId: Long,
+            val token: String,
+            val systemAppData: SystemAppDataP7
+    )
 
 }

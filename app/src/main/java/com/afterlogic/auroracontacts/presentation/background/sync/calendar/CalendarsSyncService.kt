@@ -48,7 +48,7 @@ class CalendarsSyncInjection @Inject constructor(
 @AppScope
 class CalendarSyncAdapter @Inject constructor(
         context: App,
-        private val calendarSyncOperation: CalendarSyncOperation.Factory
+        private val calendarsSyncOperation: CalendarsSyncOperation.Factory
 ): AbstractThreadedSyncAdapter(context, true, false) {
 
     override fun onPerformSync(account: Account,
@@ -59,7 +59,7 @@ class CalendarSyncAdapter @Inject constructor(
 
         Timber.d("onPerformSync")
 
-        calendarSyncOperation.create(account, contentProviderClient)
+        calendarsSyncOperation.create(account, contentProviderClient)
                 .sync()
                 .blockingGet()
                 ?.let(Timber::e)

@@ -7,7 +7,7 @@ package com.afterlogic.auroracontacts.data.p7.api
  * mail: sunnyday.development@gmail.com
  */
 
-object ApiP7 {
+object P7Api {
 
     const val AJAX = "?/Ajax/"
 

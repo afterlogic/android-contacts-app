@@ -1,23 +1,56 @@
 package com.afterlogic.auroracontacts.presentation.background.sync
 
+import android.provider.CalendarContract
+import android.provider.ContactsContract
+
 /**
  * Created by sunny on 11.12.2017.
  * mail: mail@sunnydaydev.me
  */
 
-object CustomContact {
+private typealias _Calendar = CalendarContract.Calendars
+private typealias _Events = CalendarContract.Events
+private typealias _RawContacts = ContactsContract.RawContacts
+
+object CustomContract {
 
     object Calendar {
-        const val REMOTE_ID = "cal_sync1"
-        const val REMOTE_CTAG = "cal_sync2"
+        const val REMOTE_ID = _Calendar.CAL_SYNC1
+        const val REMOTE_CTAG = _Calendar.CAL_SYNC2
     }
 
-
     object Events {
-        const val REMOTE_ID = "sync_data1"
-        const val REQURENCE_ID = "sync_data2"
-        const val REMOTE_ETAG = "sync_data3"
-        const val SYNCED = "sync_data4"
+        const val REMOTE_ID = _Events.SYNC_DATA1
+        const val REQURENCE_ID = _Events.SYNC_DATA2
+        const val REMOTE_ETAG = _Events.SYNC_DATA3
+        const val SYNCED = _Events.SYNC_DATA4
+
+    }
+
+    object Contacts {
+
+        const val REMOTE_ID = _RawContacts.SYNC1
+        const val SYNCED = _RawContacts.SYNC2
+        const val ETAG = _RawContacts.SYNC3
+
+
+        object Groups {
+
+            const val CONTENT_ITEM_TYPE = "vnd.android.cursor.item/com.afterlogic.aurora.contacts.GroupsIds"
+
+            const val GROUPS = ContactsContract.Data.DATA1
+
+        }
+
+        object Birthday {
+
+            const val CONTENT_ITEM_TYPE = "vnd.android.cursor.item/com.afterlogic.aurora.contacts.Birthday"
+
+            const val DAY = ContactsContract.Data.DATA1
+            const val MONTH = ContactsContract.Data.DATA2
+            const val YEAR = ContactsContract.Data.DATA3
+
+        }
 
     }
 

@@ -24,6 +24,7 @@ class SyncInteractor @Inject constructor(
 ) {
 
     private val calendarAuthority = res.strings[R.string.calendar_authority]
+    private val contactsAuthority = res.strings[R.string.contacts_authority]
 
     val isAnySyncRunning: Observable<Boolean> get() = syncStateConnections.anySync
 
@@ -38,9 +39,8 @@ class SyncInteractor @Inject constructor(
                     settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true)
                     settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true)
 
-                    ContentResolver.setIsSyncable(it, calendarAuthority, 1)
-
                     ContentResolver.requestSync(it, calendarAuthority, settingsBundle)
+                    ContentResolver.requestSync(it, contactsAuthority, settingsBundle)
 
                     Timber.d("requestSyncImmediately")
 

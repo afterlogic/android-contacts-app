@@ -9,8 +9,6 @@ import com.google.gson.annotations.SerializedName
 data class AuthTokenP7 (
 
     @SerializedName("AuthToken")
-    val token: String,
-
-    val userId: Long
+    val token: String
 
 )

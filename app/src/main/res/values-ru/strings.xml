@@ -5,6 +5,7 @@
 
     <string name="action_sign_in">Войти</string>
     <string name="action_sign_in_short">Войти</string>
+    <string name="action_logout">Выйти</string>
     <string name="action_logout_with_name">Выйти из %s</string>
 
     <string name="dialog_button_no">Нет</string>
@@ -45,5 +46,6 @@
     <string name="value_contacts_personal">Личные</string>
     <string name="value_contacts_shared">Доступные всем</string>
     <string name="value_contacts_team">Коллеги</string>
+    <string name="value_note_read_only">Этот контакт только для чтения, все изменения будут проигнорированны при следующей синхронизации.</string>
 
 </resources>

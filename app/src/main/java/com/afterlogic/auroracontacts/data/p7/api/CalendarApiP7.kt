@@ -3,15 +3,15 @@ package com.afterlogic.auroracontacts.data.p7.api
 import com.afterlogic.auroracontacts.data.api.Json
 import com.afterlogic.auroracontacts.data.api.p7.util.Auth
 import com.afterlogic.auroracontacts.data.api.p7.util.AuthValue
-import com.afterlogic.auroracontacts.data.p7.api.ApiP7.AJAX
-import com.afterlogic.auroracontacts.data.p7.api.ApiP7.Fields.ACCOUNT_ID
-import com.afterlogic.auroracontacts.data.p7.api.ApiP7.Fields.ACTION
-import com.afterlogic.auroracontacts.data.p7.api.ApiP7.Fields.AUTH_TOKEN
-import com.afterlogic.auroracontacts.data.p7.api.ApiP7.Fields.TOKEN
-import com.afterlogic.auroracontacts.data.p7.api.model.ApiResponseP7
+import com.afterlogic.auroracontacts.data.p7.api.P7Api.AJAX
+import com.afterlogic.auroracontacts.data.p7.api.P7Api.Fields.ACCOUNT_ID
+import com.afterlogic.auroracontacts.data.p7.api.P7Api.Fields.ACTION
+import com.afterlogic.auroracontacts.data.p7.api.P7Api.Fields.AUTH_TOKEN
+import com.afterlogic.auroracontacts.data.p7.api.P7Api.Fields.TOKEN
 import com.afterlogic.auroracontacts.data.p7.api.model.CalendarEventP7
 import com.afterlogic.auroracontacts.data.p7.api.model.CalendarP7
 import com.afterlogic.auroracontacts.data.p7.api.model.JsonList
+import com.afterlogic.auroracontacts.data.p7.api.model.P7ApiResponse
 import com.afterlogic.auroracontacts.data.util.BooleanInt
 import io.reactivex.Single
 import retrofit2.http.Field
@@ -34,7 +34,7 @@ interface CalendarApiP7 {
             @Auth(AuthValue.APP_TOKEN) @Field(TOKEN) appToken: String = AuthValue.STRING,
             @Auth(AuthValue.AUTH_TOKEN) @Field(AUTH_TOKEN) authToken: String = AuthValue.STRING,
             @Auth(AuthValue.ACCOUNT_ID) @Field(ACCOUNT_ID) accountId: Long = AuthValue.LONG
-    ): Single<ApiResponseP7<List<CalendarP7>>>
+    ): Single<P7ApiResponse<List<CalendarP7>>>
 
     @FormUrlEncoded
     @POST(AJAX)
@@ -45,7 +45,7 @@ interface CalendarApiP7 {
             @Auth(AuthValue.APP_TOKEN) @Field(TOKEN) appToken: String = AuthValue.STRING,
             @Auth(AuthValue.AUTH_TOKEN) @Field(AUTH_TOKEN) authToken: String = AuthValue.STRING,
             @Auth(AuthValue.ACCOUNT_ID) @Field(ACCOUNT_ID) accountId: Long = AuthValue.LONG
-    ): Single<ApiResponseP7<Map<String, List<CalendarEventP7>>>>
+    ): Single<P7ApiResponse<Map<String, List<CalendarEventP7>>>>
 
     @FormUrlEncoded
     @POST(AJAX)
@@ -57,7 +57,7 @@ interface CalendarApiP7 {
             @Auth(AuthValue.APP_TOKEN) @Field(TOKEN) appToken: String = AuthValue.STRING,
             @Auth(AuthValue.AUTH_TOKEN) @Field(AUTH_TOKEN) authToken: String = AuthValue.STRING,
             @Auth(AuthValue.ACCOUNT_ID) @Field(ACCOUNT_ID) accountId: Long = AuthValue.LONG
-    ) : Single<ApiResponseP7<Boolean>>
+    ) : Single<P7ApiResponse<Boolean>>
 
     @FormUrlEncoded
     @POST(AJAX)
@@ -68,6 +68,6 @@ interface CalendarApiP7 {
             @Auth(AuthValue.APP_TOKEN) @Field(TOKEN) appToken: String = AuthValue.STRING,
             @Auth(AuthValue.AUTH_TOKEN) @Field(AUTH_TOKEN) authToken: String = AuthValue.STRING,
             @Auth(AuthValue.ACCOUNT_ID) @Field(ACCOUNT_ID) accountId: Long = AuthValue.LONG
-    ) : Single<ApiResponseP7<Boolean>>
+    ) : Single<P7ApiResponse<Boolean>>
 
 }
