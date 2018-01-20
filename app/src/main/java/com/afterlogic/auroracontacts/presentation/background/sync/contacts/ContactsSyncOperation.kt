@@ -66,21 +66,16 @@ class ContactsSyncOperation private constructor(
 
     fun sync() : Completable = uploadLocalChanges()
             .andThen(uploadDeletes())
-            .andThen(repository.loadRemote())
-            .flatMap { getFirstLocal() }
+            .andThen(repository.loadRemote()).toCompletable() // Reload remote contacts groups
+            .andThen(getSyncableContactsGroups())
             .flatMapCompletable {
 
-                // Check all
-                val groupIds = if (it.isAllSyncEnabled()) {
-                    listOf(ContactsRepository.GROUP_ALL)
-                } else {
-                    it.filter { it.syncing } .map { it.id }
-                }
+                val groupIds = it.map { it.id }
 
-                syncGroups(groupIds)
+                syncRemoteGroups(groupIds)
 
             }
-            .doOnError(Timber::d)
+            .doOnError(Timber::e)
 
     private fun uploadLocalChanges() : Completable = Completable.defer {
 
@@ -124,7 +119,9 @@ class ContactsSyncOperation private constructor(
 
                 rawContactsClient.update(
                         contactCV, "${ContactsContract.RawContacts._ID} = $localId"
-                )
+                ).also {
+                    Timber.d("Local contact with rawId = $localId successfully updated.")
+                }
 
             }
 
@@ -194,7 +191,7 @@ class ContactsSyncOperation private constructor(
 
     }
 
-    private fun syncGroups(groupIds: List<Long>): Completable {
+    private fun syncRemoteGroups(groupIds: List<Long>): Completable {
 
         if (groupIds.isEmpty()) {
 
@@ -221,8 +218,10 @@ class ContactsSyncOperation private constructor(
                             val idsSqlIn = it.map { it.toString() } .toSqlIn()
 
                             rawContactsClient.delete("""
-                                ${CustomContract.Contacts.SYNCED} = 1 AND
-                                ${CustomContract.Contacts.REMOTE_ID} NOT IN $idsSqlIn
+                                ${CustomContract.Contacts.SYNCED} = 1 AND (
+                                    ${CustomContract.Contacts.REMOTE_ID} IS NULL OR
+                                    ${CustomContract.Contacts.REMOTE_ID} NOT IN $idsSqlIn
+                                )
                             """.trimIndent())
 
                         }
@@ -523,13 +522,18 @@ class ContactsSyncOperation private constructor(
 
     }
 
-    private fun getFirstLocal(): Single<List<ContactGroupInfo>> =
+    private fun getSyncableContactsGroups(): Single<List<ContactGroupInfo>> =
             repository.getContactsGroupsInfo(false)
                     .timeout(5, TimeUnit.SECONDS)
                     .firstOrError()
+                    .map {
 
-    private fun List<ContactGroupInfo>.isAllSyncEnabled(): Boolean =
-            find { it.id == ContactsRepository.GROUP_ALL }?.syncing == true
+                        val syncable = it.filter { it.syncing }
+
+                        syncable.find { it.id == ContactsRepository.GROUP_ALL }
+                                ?.let { listOf(it) } ?: syncable
+
+                    }
 
     private fun isNotChanged(contact: RemoteContact): Boolean {
 

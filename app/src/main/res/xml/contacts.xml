@@ -3,7 +3,9 @@
 
     <EditSchema>
 
-        <!-- Fallback/Google implementation -->
+        <!-- Fallback, but supportsPrefix, supportsMiddleName, supportsSuffix,
+             supportsPhoneticFamilyName, supportsPhoneticMiddleName, supportsPhoneticGivenName
+             not allowed in the Aurora. -->
         <DataKind kind="name"
             maxOccurs="1"
             supportsDisplayName="true"
@@ -30,6 +32,7 @@
 
         <DataKind kind="nickname" maxOccurs="1" />
 
+        <!-- Fallback, but not allowed in the Aurora. -->
         <DataKind kind="photo" maxOccurs="1" />
 
         <DataKind kind="phone" maxOccurs="5">
