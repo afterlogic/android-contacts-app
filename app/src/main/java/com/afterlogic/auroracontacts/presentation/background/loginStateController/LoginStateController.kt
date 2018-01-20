@@ -1,11 +1,14 @@
-package com.afterlogic.auroracontacts.data.loginStateDataController
+package com.afterlogic.auroracontacts.presentation.background.loginStateController
 
 import com.afterlogic.auroracontacts.core.rx.Subscriber
 import com.afterlogic.auroracontacts.core.rx.with
 import com.afterlogic.auroracontacts.core.util.compareAndSet
 import com.afterlogic.auroracontacts.data.account.AccountService
 import com.afterlogic.auroracontacts.data.db.CalendarsDao
+import com.afterlogic.auroracontacts.data.db.ContactsDao
 import com.afterlogic.auroracontacts.data.preferences.Prefs
+import com.afterlogic.auroracontacts.data.sync.SyncRepository
+import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
@@ -16,17 +19,21 @@ import javax.inject.Inject
  * mail: mail@sunnydaydev.me
  */
 
-class LoginStateDataController @Inject constructor(
+class LoginStateController @Inject constructor(
         private val accountService: AccountService,
+        private val syncRepository: SyncRepository,
         private val subscriber: Subscriber,
         private val calendarsDao: CalendarsDao,
+        private val contactsDao: ContactsDao,
         private val prefs: Prefs
 ) {
 
     private val started = AtomicBoolean(false)
     private var firstResult = AtomicBoolean(true)
 
-    private var wasLoggedIn = false
+    private var wasLoggedIn
+        get() = prefs.loggedIn
+        set(value) { prefs.loggedIn = value }
 
     fun start() {
 
@@ -34,16 +41,24 @@ class LoginStateDataController @Inject constructor(
 
         accountService.account
                 .doOnError(Timber::e)
-                .retry()
-                .observeOn(Schedulers.io())
-                .with(subscriber)
-                .subscribe {
+                .map { it.isNotNull }
+                .flatMap {
 
-                    val loggedIn = it.isNotNull
+                    if (it && !wasLoggedIn) {
+                        syncRepository.setSyncable(true)
+                                .onErrorComplete()
+                                .andThen(Observable.just(it))
+                    } else {
+                        Observable.just(it)
+                    }
+
+                }
+                .observeOn(Schedulers.io())
+                .doOnNext { loggedIn ->
 
                     if (firstResult.getAndSet(false)) {
                         wasLoggedIn = loggedIn
-                        return@subscribe
+                        return@doOnNext
                     }
 
                     if (!loggedIn && wasLoggedIn) {
@@ -51,8 +66,10 @@ class LoginStateDataController @Inject constructor(
                     }
 
                     wasLoggedIn = loggedIn
-
                 }
+                .retry()
+                .with(subscriber)
+                .subscribe()
 
     }
 
@@ -62,10 +79,9 @@ class LoginStateDataController @Inject constructor(
 
         prefs.calendarsFetched = false
         prefs.contactsFetched = false
-        prefs.syncOnLocalChanges = false
-        prefs.syncPeriod = -1
 
         calendarsDao.deleteAll()
+        contactsDao.deleteAll()
 
     }
 

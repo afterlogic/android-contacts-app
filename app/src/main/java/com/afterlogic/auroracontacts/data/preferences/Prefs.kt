@@ -19,10 +19,6 @@ class Prefs @Inject constructor(context: App) {
 
     var contactsFetched by booleanPref("contactsFetched")
 
-    var syncOnLocalChanges by booleanPref("syncOnLocalChanges")
-
-    var syncPeriod by longPref("syncPeriod", -1L)
-
     var syncAllContacts by booleanPref("syncAllContacts")
 
     var syncSharedContacts by booleanPref("syncSharedContacts")
@@ -30,6 +26,8 @@ class Prefs @Inject constructor(context: App) {
     var syncTeamContacts by booleanPref("syncTeamContacts")
 
     var syncPersonalContacts by booleanPref("syncPersonalContacts")
+
+    var loggedIn by booleanPref("loggedIn")
 
     private fun booleanPref(name: String, defaultValue: Boolean = false): ReadWriteProperty<Prefs, Boolean> =
             property({ it.getBoolean(name, defaultValue) }, { p, v -> p.put(name, v) } )
