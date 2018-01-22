@@ -7,7 +7,7 @@ import com.afterlogic.auroracontacts.data.api.ApiType
  * mail: mail@sunnydaydev.me
  */
 
-class NotSupportedApiError(val api: ApiType = ApiType.UNKNOWN, message: String? = null):
+class UnsupportedApiError(val api: ApiType = ApiType.UNKNOWN, message: String? = null):
         Throwable(message ?: "Not supported api.")
 
 class IllegalApiDataException(message: String): Exception(message)

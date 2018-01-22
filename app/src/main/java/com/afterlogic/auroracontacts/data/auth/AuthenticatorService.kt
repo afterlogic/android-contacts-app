@@ -1,7 +1,7 @@
 package com.afterlogic.auroracontacts.data.auth
 
 import com.afterlogic.auroracontacts.application.AppScope
-import com.afterlogic.auroracontacts.data.NotSupportedApiError
+import com.afterlogic.auroracontacts.data.UnsupportedApiError
 import com.afterlogic.auroracontacts.data.api.ApiType
 import com.afterlogic.auroracontacts.data.auth.model.AuthorizedAuroraSession
 import com.afterlogic.auroracontacts.data.p7.auth.P7AuthenticatorSubService
@@ -56,8 +56,12 @@ internal constructor(
 
         return getApiType(host)
                 .map {
-                    if (it == ApiType.P7) p7AuthenticatorSubService
-                    else throw NotSupportedApiError(it)
+
+                    when(it) {
+                        ApiType.P7 -> p7AuthenticatorSubService
+                        else -> throw UnsupportedApiError(it)
+                    }
+
                 }
 
     }

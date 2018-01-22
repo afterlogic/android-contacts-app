@@ -10,6 +10,16 @@ import android.view.View
 object ViewBindings {
 
     @JvmStatic
+    @BindingAdapter("onClick")
+    fun bindOnClick(view: View, onClick: Runnable?) {
+        if (onClick == null) {
+            view.setOnClickListener(null)
+        } else {
+            view.setOnClickListener { onClick.run() }
+        }
+    }
+
+    @JvmStatic
     @BindingAdapter("focusCommand", "focusTag")
     fun <T> bindFocus(view: View, command: T?, tag: T) {
         if (command == tag) {

@@ -1,6 +1,6 @@
 package com.afterlogic.auroracontacts.data.util
 
-import com.afterlogic.auroracontacts.data.NotSupportedApiError
+import com.afterlogic.auroracontacts.data.UnsupportedApiError
 import com.afterlogic.auroracontacts.data.account.AccountService
 import com.afterlogic.auroracontacts.data.api.ApiType
 import com.afterlogic.auroracontacts.data.api.UserNotAuthorizedException
@@ -23,9 +23,9 @@ class RemoteServiceProvider<T> @Inject constructor(
             .map {
 
                 val session = it.get() ?: throw UserNotAuthorizedException()
-                val apiType = ApiType.byCode(session.apiVersion) ?: throw NotSupportedApiError()
+                val apiType = ApiType.byCode(session.apiVersion) ?: throw UnsupportedApiError()
 
-                services[apiType]?.get() ?: throw NotSupportedApiError()
+                services[apiType]?.get() ?: throw UnsupportedApiError()
 
             }
 

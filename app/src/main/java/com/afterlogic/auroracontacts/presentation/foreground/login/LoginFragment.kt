@@ -17,7 +17,7 @@ class LoginFragment: MVVMFragment<LoginViewModel, LoginFragmentBinding, LoginInj
 
     companion object {
 
-        fun instance(): LoginFragment = LoginFragment()
+        fun newInstance(): LoginFragment = LoginFragment()
 
     }
 

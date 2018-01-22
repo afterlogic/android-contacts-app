@@ -8,6 +8,7 @@ import android.support.v4.app.FragmentActivity
 import com.afterlogic.auroracontacts.R
 import com.afterlogic.auroracontacts.presentation.foreground.login.LoginFragment
 import com.afterlogic.auroracontacts.presentation.foreground.main.MainFragment
+import com.afterlogic.auroracontacts.presentation.foreground.unsuportedApi.UnsupportedApiFragment
 import ru.terrakok.cicerone.android.SupportAppNavigator
 import javax.inject.Inject
 
@@ -24,8 +25,9 @@ class AppNavigator @Inject constructor(
 
     override fun createFragment(screenKey: String, data: Any?): Fragment? = when(screenKey) {
 
-        Screens.LOGIN -> LoginFragment.instance()
-        Screens.MAIN -> MainFragment.instance()
+        Screens.LOGIN -> LoginFragment.newInstance()
+        Screens.MAIN -> MainFragment.newInstance()
+        Screens.UNSUPPORTED_API -> UnsupportedApiFragment.newInstance()
 
         else -> null
 

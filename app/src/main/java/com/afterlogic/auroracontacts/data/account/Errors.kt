@@ -5,7 +5,7 @@ package com.afterlogic.auroracontacts.data.account
  * mail: mail@sunnydaydev.me
  */
 
-class AnotherAcountExistError(val user: String): Throwable()
+class AnotherAccountExistError(val user: String, domain: String): Throwable()
 
 class AccountNotExistError: Throwable()
 
