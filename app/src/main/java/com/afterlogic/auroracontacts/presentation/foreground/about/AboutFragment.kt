@@ -1,11 +1,11 @@
-package com.afterlogic.auroracontacts.presentation.foreground.login
+package com.afterlogic.auroracontacts.presentation.foreground.about
 
 import android.arch.lifecycle.ViewModelProvider
 import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.afterlogic.auroracontacts.R
-import com.afterlogic.auroracontacts.databinding.LoginFragmentBinding
+import com.afterlogic.auroracontacts.databinding.AboutFragmentBinding
 import com.afterlogic.auroracontacts.presentation.common.FragmentCreator
 import com.afterlogic.auroracontacts.presentation.common.base.MVVMFragment
 import com.afterlogic.auroracontacts.presentation.common.databinding.get
@@ -13,20 +13,22 @@ import com.afterlogic.auroracontacts.presentation.common.databinding.inflateBind
 import javax.inject.Inject
 
 /**
- * Created by sunny on 05.12.2017.
+ * Created by sunny on 22.01.2018.
  * mail: mail@sunnydaydev.me
  */
-class LoginFragment: MVVMFragment<LoginViewModel, LoginFragmentBinding, LoginInjection>() {
+
+class AboutFragment: MVVMFragment
+<AboutViewModel, AboutFragmentBinding, AboutInjection>() {
 
     class Creator @Inject constructor() : FragmentCreator {
 
-        override fun create(seed: Any?) : Fragment = LoginFragment()
+        override fun create(seed: Any?): Fragment = AboutFragment()
 
     }
 
-    override fun bindView(inflater: LayoutInflater, container: ViewGroup?): LoginFragmentBinding =
-            inflater.inflateBinding(R.layout.login_fragment, container)
+    override fun bindView(inflater: LayoutInflater, container: ViewGroup?): AboutFragmentBinding =
+            inflater.inflateBinding(R.layout.about_fragment, container)
 
-    override fun getViewModel(provider: ViewModelProvider): LoginViewModel = provider.get()
+    override fun getViewModel(provider: ViewModelProvider): AboutViewModel = provider.get()
 
 }

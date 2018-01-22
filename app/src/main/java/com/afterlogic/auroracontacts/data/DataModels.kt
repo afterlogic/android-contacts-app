@@ -27,3 +27,5 @@ enum class SyncPeriod(val durationInSeconds: Long) {
     }
 
 }
+
+data class LicenceInfo(val library: String, val type: String, val licenceText: String)

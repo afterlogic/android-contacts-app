@@ -2,12 +2,15 @@ package com.afterlogic.auroracontacts.presentation.foreground.main
 
 import android.arch.lifecycle.ViewModelProvider
 import android.os.Bundle
+import android.support.v4.app.Fragment
 import android.view.*
 import com.afterlogic.auroracontacts.R
 import com.afterlogic.auroracontacts.databinding.MainFragmentBinding
+import com.afterlogic.auroracontacts.presentation.common.FragmentCreator
 import com.afterlogic.auroracontacts.presentation.common.base.MVVMFragment
 import com.afterlogic.auroracontacts.presentation.common.databinding.get
 import com.afterlogic.auroracontacts.presentation.common.databinding.inflateBinding
+import javax.inject.Inject
 
 /**
  * Created by sunny on 06.12.2017.
@@ -16,9 +19,9 @@ import com.afterlogic.auroracontacts.presentation.common.databinding.inflateBind
 
 class MainFragment: MVVMFragment<MainViewModel, MainFragmentBinding, MainInjection>() {
 
-    companion object {
+    class Creator @Inject constructor() : FragmentCreator {
 
-        fun newInstance(): MainFragment = MainFragment()
+        override fun create(seed: Any?): Fragment = MainFragment()
 
     }
 

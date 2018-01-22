@@ -8,7 +8,6 @@ import com.afterlogic.auroracontacts.databinding.MainActivityBinding
 import com.afterlogic.auroracontacts.presentation.common.base.MVVMActivity
 import com.afterlogic.auroracontacts.presentation.common.databinding.get
 import com.afterlogic.auroracontacts.presentation.common.databinding.setContentBinding
-import com.afterlogic.auroracontacts.presentation.navigation.AppNavigator
 
 class MainActivity : MVVMActivity<MainActivityViewModel, MainActivityBinding, MainActivityInjection>() {
 
@@ -20,13 +19,15 @@ class MainActivity : MVVMActivity<MainActivityViewModel, MainActivityBinding, Ma
 
     private val navigationHolder by inject { it.navigationHolder }
 
+    private val navigatorFactory by inject { it.navigatorFactory }
+
     override fun bindView(): MainActivityBinding = setContentBinding(R.layout.main_activity)
 
     override fun getViewModel(provider: ViewModelProvider): MainActivityViewModel = provider.get()
 
     override fun onResumeFragments() {
         super.onResumeFragments()
-        navigationHolder.setNavigator(AppNavigator(this))
+        navigationHolder.setNavigator(navigatorFactory.create(this))
     }
 
     override fun onPause() {
