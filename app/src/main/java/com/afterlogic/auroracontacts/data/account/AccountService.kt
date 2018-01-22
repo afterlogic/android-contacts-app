@@ -25,15 +25,15 @@ class AccountService @Inject constructor(context: App) {
 
     companion object {
 
-        val ACCOUNT_TYPE = "com.afterlogic.aurora"
+        const val ACCOUNT_TYPE = "com.afterlogic.aurora"
 
-        val ACCOUNT_ID = "account_id"
-        val APP_TOKEN = "app_token"
-        val AUTH_TOKEN = "auth_token"
-        val DOMAIN = "domain"
-        val API_VERSION = "apiVersion"
-        val HAS_SESSION = "hasSession"
-        val EMAIL = "email"
+        private const val ACCOUNT_ID = "account_id"
+        private const val APP_TOKEN = "app_token"
+        private const val AUTH_TOKEN = "auth_token"
+        private const val DOMAIN = "domain"
+        private const val API_VERSION = "apiVersion"
+        private const val HAS_SESSION = "hasSession"
+        private const val EMAIL = "email"
 
     }
 
@@ -69,8 +69,10 @@ class AccountService @Inject constructor(context: App) {
 
                     val account = it.get() ?: throw AccountNotExistError()
 
-                    if (account.name != authData.user) {
-                        throw AnotherAcountExistError(account.name)
+                    val currentDomain = account.userData[DOMAIN]
+
+                    if (account.name != authData.user || currentDomain != null && currentDomain != authData.domain.toString()) {
+                        throw AnotherAccountExistError(account.name, account.userData[DOMAIN] ?: "")
                     }
                     
                     val userData = account.userData
@@ -178,7 +180,13 @@ class AccountService @Inject constructor(context: App) {
     private val Account.userData: AccountService.AccountUserData get() = AccountUserData(this)
 
     private var AccountUserData.hasSessionData: Boolean
-        get() = this[HAS_SESSION]?.toBoolean() == true
+        get() {
+            return this[HAS_SESSION]?.toBoolean() == true ||
+                    this[APP_TOKEN] != null &&
+                    this[AUTH_TOKEN] != null &&
+                    this[ACCOUNT_ID] != null &&
+                    this[DOMAIN] != null
+        }
         set(value) { this[HAS_SESSION] = if (value) "true" else "false" }
     
     private inner class AccountUserData(private val account: Account) {

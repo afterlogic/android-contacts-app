@@ -11,6 +11,7 @@ object Screens {
 
     const val LOGIN = "login"
     const val MAIN = "main"
+    const val UNSUPPORTED_API = "unsupported_api"
 
 }
 

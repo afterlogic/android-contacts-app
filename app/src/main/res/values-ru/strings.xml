@@ -47,5 +47,6 @@
     <string name="value_contacts_shared">Доступные всем</string>
     <string name="value_contacts_team">Коллеги</string>
     <string name="value_note_read_only">Этот контакт только для чтения, все изменения будут проигнорированны при следующей синхронизации.</string>
+    <string name="prompt_unsupported_api_version">К сожалению, вы авторизовались учетной записью использующую версию сервера не поддерживаемую в текущей версии приложения.</string>
 
 </resources>

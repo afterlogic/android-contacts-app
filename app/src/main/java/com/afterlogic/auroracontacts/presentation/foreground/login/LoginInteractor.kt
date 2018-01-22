@@ -1,9 +1,9 @@
 package com.afterlogic.auroracontacts.presentation.foreground.login
 
+import com.afterlogic.auroracontacts.data.UnsupportedApiError
 import com.afterlogic.auroracontacts.data.account.AccountService
 import com.afterlogic.auroracontacts.data.api.ApiType
 import com.afterlogic.auroracontacts.data.auth.AuthenticatorService
-import com.afterlogic.auroracontacts.data.NotSupportedApiError
 import io.reactivex.Completable
 import io.reactivex.Maybe
 import io.reactivex.Single
@@ -28,7 +28,7 @@ class LoginInteractor @Inject constructor(
                     .map(this::checkApiType)
                     .let { Maybe.concat(it) }
                     .firstElement()
-                    .switchIfEmpty(Maybe.error(NotSupportedApiError()))
+                    .switchIfEmpty(Maybe.error(UnsupportedApiError()))
                     .toSingle()
 
         }
@@ -70,7 +70,7 @@ class LoginInteractor @Inject constructor(
     private fun checkApiType(url: HttpUrl): Maybe<HttpUrl> {
 
         return authenticatorService.getApiType(url)
-                .filter { it != ApiType.UNKNOWN }
+                .filter { ApiType.supportedApiTypes.contains(it) }
                 .map { url }
 
     }

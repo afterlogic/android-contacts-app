@@ -8,6 +8,8 @@ import com.afterlogic.auroracontacts.presentation.foreground.login.LoginFragment
 import com.afterlogic.auroracontacts.presentation.foreground.login.LoginFragmentModule
 import com.afterlogic.auroracontacts.presentation.foreground.main.MainFragment
 import com.afterlogic.auroracontacts.presentation.foreground.main.MainFragmentModule
+import com.afterlogic.auroracontacts.presentation.foreground.unsuportedApi.UnsupportedApiDIModule
+import com.afterlogic.auroracontacts.presentation.foreground.unsuportedApi.UnsupportedApiFragment
 import dagger.Binds
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
@@ -36,6 +38,10 @@ internal abstract class MainActivityModule {
     @FragmentScope
     @ContributesAndroidInjector(modules = [MainFragmentModule::class])
     abstract fun bindMain(): MainFragment
+
+    @FragmentScope
+    @ContributesAndroidInjector(modules = [UnsupportedApiDIModule::class])
+    abstract fun bindUnsupportedApi(): UnsupportedApiFragment
 
 }
 

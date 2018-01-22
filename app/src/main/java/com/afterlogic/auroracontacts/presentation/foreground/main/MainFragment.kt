@@ -18,7 +18,7 @@ class MainFragment: MVVMFragment<MainViewModel, MainFragmentBinding, MainInjecti
 
     companion object {
 
-        fun instance(): MainFragment = MainFragment()
+        fun newInstance(): MainFragment = MainFragment()
 
     }
 

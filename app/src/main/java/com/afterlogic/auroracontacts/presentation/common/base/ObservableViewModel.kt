@@ -33,7 +33,7 @@ open class ObservableViewModel : android.arch.lifecycle.ViewModel(), LifecycleOb
     }
 
     /**
-     * Notifies listeners that all properties of this instance have changed.
+     * Notifies listeners that all properties of this newInstance have changed.
      */
     fun notifyChange() {
         synchronized(this) {
