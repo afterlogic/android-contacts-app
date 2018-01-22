@@ -14,6 +14,8 @@ import io.reactivex.Observable
 import okhttp3.HttpUrl
 import timber.log.Timber
 import javax.inject.Inject
+import kotlin.properties.ReadWriteProperty
+import kotlin.reflect.KProperty
 
 /**
  * Created by sunny on 06.12.2017.
@@ -26,14 +28,6 @@ class AccountService @Inject constructor(context: App) {
     companion object {
 
         const val ACCOUNT_TYPE = "com.afterlogic.aurora"
-
-        private const val ACCOUNT_ID = "account_id"
-        private const val APP_TOKEN = "app_token"
-        private const val AUTH_TOKEN = "auth_token"
-        private const val DOMAIN = "domain"
-        private const val API_VERSION = "apiVersion"
-        private const val HAS_SESSION = "hasSession"
-        private const val EMAIL = "email"
 
     }
 
@@ -69,22 +63,25 @@ class AccountService @Inject constructor(context: App) {
 
                     val account = it.get() ?: throw AccountNotExistError()
 
-                    val currentDomain = account.userData[DOMAIN]
-
-                    if (account.name != authData.user || currentDomain != null && currentDomain != authData.domain.toString()) {
-                        throw AnotherAccountExistError(account.name, account.userData[DOMAIN] ?: "")
-                    }
-                    
                     val userData = account.userData
+
+                    val currentDomain = userData.domain
+
+                    if (account.name != authData.user ||
+                            currentDomain != null && currentDomain != authData.domain.toString()) {
+
+                        throw AnotherAccountExistError(account.name, currentDomain ?: "")
+
+                    }
                     
                     userData.hasSessionData = true
 
-                    userData[ACCOUNT_ID] = authData.accountId.toString()
-                    userData[DOMAIN] = authData.domain.toString()
-                    userData[APP_TOKEN] = authData.appToken
-                    userData[AUTH_TOKEN] = authData.authToken
-                    userData[API_VERSION] = authData.apiVersion.toString()
-                    userData[EMAIL] = authData.email
+                    userData.accountId = authData.accountId
+                    userData.domain = authData.domain.toString()
+                    userData.appToken = authData.appToken
+                    userData.authToken = authData.authToken
+                    userData.apiVersion = authData.apiVersion
+                    userData.email = authData.email
                     
                     account.password = authData.password
 
@@ -157,18 +154,18 @@ class AccountService @Inject constructor(context: App) {
         }
 
         if (!userData.hasSessionData) {
-            error("Session has no data")
+            error("Session has no data.")
         }
 
         return AuroraSession(
                 name,
-                userData[APP_TOKEN] ?: error(),
-                userData[AUTH_TOKEN] ?: error(),
-                userData[ACCOUNT_ID]?.toLongOrNull() ?: error(),
-                userData[EMAIL] ?: error(),
+                userData.appToken ?: error(),
+                userData.authToken ?: error(),
+                userData.accountId ?: error(),
+                userData.email ?: error(),
                 password ?: error(),
-                userData[DOMAIN]?.let { HttpUrl.parse(it) } ?: error(),
-                userData[API_VERSION]?.toIntOrNull() ?: error()
+                userData.domain?.let { HttpUrl.parse(it) } ?: error(),
+                userData.apiVersion ?: error()
         )
 
     }
@@ -177,28 +174,58 @@ class AccountService @Inject constructor(context: App) {
         get() = accountManager.getPassword(this)
         set(value) { accountManager.setPassword(this, value) }
     
-    private val Account.userData: AccountService.AccountUserData get() = AccountUserData(this)
-
-    private var AccountUserData.hasSessionData: Boolean
-        get() {
-            return this[HAS_SESSION]?.toBoolean() == true ||
-                    this[APP_TOKEN] != null &&
-                    this[AUTH_TOKEN] != null &&
-                    this[ACCOUNT_ID] != null &&
-                    this[DOMAIN] != null
-        }
-        set(value) { this[HAS_SESSION] = if (value) "true" else "false" }
+    private val Account.userData: AccountService.AccountUserData get() =
+        AccountUserData(this, accountManager)
     
-    private inner class AccountUserData(private val account: Account) {
+    private class AccountUserData(private val account: Account, private val accountManager: AccountManager) {
 
-        operator fun get(key: String): String? {
-            return accountManager.getUserData(account, key)
+        companion object {
+
+            private const val ACCOUNT_ID = "account_id"
+            private const val APP_TOKEN = "app_token"
+            private const val AUTH_TOKEN = "auth_token"
+            private const val DOMAIN = "domain"
+            private const val API_VERSION = "apiVersion"
+            private const val HAS_SESSION = "hasSession"
+            private const val EMAIL = "email"
+
         }
 
-        operator fun set(key: String, value: String?) {
-            accountManager.setUserData(account, key, value)
+        var accountId by userData(ACCOUNT_ID) { it.toLongOrNull() }
+        var email by userData(EMAIL) { it }
+        var domain by userData(DOMAIN) { it }
+        var apiVersion by userData(API_VERSION) { it.toIntOrNull() }
+        var appToken by userData(APP_TOKEN) { it }
+        var authToken by userData(AUTH_TOKEN) { it }
+
+        private var hasSessionFlag by userData(HAS_SESSION) { it.toBoolean() }
+
+        var hasSessionData: Boolean
+            get() {
+                return hasSessionFlag == true ||
+                        appToken != null &&
+                        authToken != null &&
+                        accountId != null &&
+                        domain != null
+            }
+            set(value) { hasSessionFlag = value }
+
+        private inline fun <reified T> userData(
+                name: String,
+                crossinline set: (T) -> String? = { it?.toString() },
+                crossinline get: (String) -> T?
+        ): ReadWriteProperty<AccountUserData, T?> = object: ReadWriteProperty<AccountUserData, T?> {
+
+            override fun setValue(thisRef: AccountUserData, property: KProperty<*>, value: T?) {
+                accountManager.setUserData(account, name, value?.let(set))
+            }
+
+            override fun getValue(thisRef: AccountUserData, property: KProperty<*>): T? {
+                return accountManager.getUserData(account, name)?.let(get)
+            }
+
         }
-        
+
     }
 
 }
