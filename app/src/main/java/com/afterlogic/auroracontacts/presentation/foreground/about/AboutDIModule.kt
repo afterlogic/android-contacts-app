@@ -3,7 +3,6 @@ package com.afterlogic.auroracontacts.presentation.foreground.about
 import android.arch.lifecycle.ViewModel
 import com.afterlogic.auroracontacts.presentation.common.base.MVVMInjection
 import com.afterlogic.auroracontacts.presentation.common.databinding.ViewModelKey
-import com.afterlogic.auroracontacts.presentation.foreground.login.LoginViewModel
 import dagger.Binds
 import dagger.Module
 import dagger.multibindings.IntoMap
@@ -19,7 +18,7 @@ abstract class AboutDIModule {
 
     @Binds
     @IntoMap
-    @ViewModelKey(LoginViewModel::class)
+    @ViewModelKey(AboutViewModel::class)
     abstract fun bindLoginViewModel(vm: AboutViewModel): ViewModel
 
     @Binds

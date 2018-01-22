@@ -55,5 +55,6 @@
     <string name="value_contacts_team">Team</string>
     <string name="value_note_read_only">It\'s read-only contact. Any changes will be ignored and restored on next sync.</string>
     <string name="prompt_unsupported_api_version">Unfortunately, you are authorized by an account that uses a server version not supported in the current version of the application.</string>
+    <string name="prompt_about">About</string>
 
 </resources>

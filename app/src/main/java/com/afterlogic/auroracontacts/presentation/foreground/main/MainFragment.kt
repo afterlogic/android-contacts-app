@@ -46,6 +46,7 @@ class MainFragment: MVVMFragment<MainViewModel, MainFragmentBinding, MainInjecti
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when(item.itemId) {
             R.id.logout -> viewModel.onLogoutClicked()
+            R.id.about -> viewModel.onAboutClicked()
             else -> return super.onOptionsItemSelected(item)
         }
         return true
