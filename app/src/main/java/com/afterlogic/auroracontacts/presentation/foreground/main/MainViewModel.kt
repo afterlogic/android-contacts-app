@@ -19,6 +19,8 @@ import com.afterlogic.auroracontacts.presentation.common.base.ObservableRxViewMo
 import com.afterlogic.auroracontacts.presentation.common.databinding.bindable
 import com.afterlogic.auroracontacts.presentation.common.permissions.PermissionRequest
 import com.afterlogic.auroracontacts.presentation.common.permissions.PermissionsInteractor
+import com.afterlogic.auroracontacts.presentation.navigation.AppRouter
+import com.afterlogic.auroracontacts.presentation.navigation.Screens
 import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
 import timber.log.Timber
@@ -34,6 +36,7 @@ class MainViewModel @Inject constructor(
         private val interactor: MainInteractor,
         private val res: Resources,
         private val permissionsInteractor: PermissionsInteractor,
+        private val router: AppRouter,
         subscriber: Subscriber
 ): ObservableRxViewModel(subscriber)  {
 
@@ -157,6 +160,10 @@ class MainViewModel @Inject constructor(
                 .defaultSchedulers()
                 .subscribeIt()
 
+    }
+
+    fun onAboutClicked() {
+        router.navigateTo(Screens.ABOUT)
     }
 
     private fun handleCalendars(calendars: Array<AuroraCalendarInfo>) {

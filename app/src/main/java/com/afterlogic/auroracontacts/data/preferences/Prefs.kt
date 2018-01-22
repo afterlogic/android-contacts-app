@@ -33,6 +33,8 @@ class Prefs @Inject constructor(context: App) {
 
     var automaticallySyncOnChanges by booleanPref("automaticallySyncOnChanges", true)
 
+    var licencesVersion by intPref("licencesVersion", -1)
+
     fun clear() {
         prefs.clear()
     }

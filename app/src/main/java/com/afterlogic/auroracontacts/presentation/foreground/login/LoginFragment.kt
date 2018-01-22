@@ -1,13 +1,16 @@
 package com.afterlogic.auroracontacts.presentation.foreground.login
 
 import android.arch.lifecycle.ViewModelProvider
+import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.afterlogic.auroracontacts.R
 import com.afterlogic.auroracontacts.databinding.LoginFragmentBinding
+import com.afterlogic.auroracontacts.presentation.common.FragmentCreator
 import com.afterlogic.auroracontacts.presentation.common.base.MVVMFragment
 import com.afterlogic.auroracontacts.presentation.common.databinding.get
 import com.afterlogic.auroracontacts.presentation.common.databinding.inflateBinding
+import javax.inject.Inject
 
 /**
  * Created by sunny on 05.12.2017.
@@ -15,9 +18,9 @@ import com.afterlogic.auroracontacts.presentation.common.databinding.inflateBind
  */
 class LoginFragment: MVVMFragment<LoginViewModel, LoginFragmentBinding, LoginInjection>() {
 
-    companion object {
+    class Creator @Inject constructor() : FragmentCreator {
 
-        fun newInstance(): LoginFragment = LoginFragment()
+        override fun create(seed: Any?) : Fragment = LoginFragment()
 
     }
 

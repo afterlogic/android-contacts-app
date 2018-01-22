@@ -37,7 +37,7 @@ class DataBaseModule {
     @Provides
     fun provideDataBase(context: App): AuroraDB {
 
-        return Room.databaseBuilder(context, AuroraDB::class.java, "main-db")
+        return Room.databaseBuilder(context, AuroraDB::class.java, "aurora.db")
                 .build()
 
     }
