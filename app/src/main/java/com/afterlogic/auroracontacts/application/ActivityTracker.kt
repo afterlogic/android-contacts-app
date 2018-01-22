@@ -92,7 +92,7 @@ internal constructor(context: App) {
 
     }
 
-    fun register() {
+    fun start() {
         application.registerActivityLifecycleCallbacks(lifecycleCallbacks)
     }
 

@@ -29,6 +29,14 @@ class Prefs @Inject constructor(context: App) {
 
     var loggedIn by booleanPref("loggedIn")
 
+    var automaticallySyncPeriod by longPref("automaticallySyncPeriod", -1L)
+
+    var automaticallySyncOnChanges by booleanPref("automaticallySyncOnChanges", true)
+
+    fun clear() {
+        prefs.clear()
+    }
+
     private fun booleanPref(name: String, defaultValue: Boolean = false): ReadWriteProperty<Prefs, Boolean> =
             property({ it.getBoolean(name, defaultValue) }, { p, v -> p.put(name, v) } )
 
@@ -38,7 +46,7 @@ class Prefs @Inject constructor(context: App) {
     private fun intPref(name: String, defaultValue: Int = 0): ReadWriteProperty<Prefs, Int> =
             property({ it.getInt(name, defaultValue) }, { p, v -> p.put(name, v) } )
 
-    inline private fun <T> property(
+    private inline fun <T> property(
             crossinline getter: (AppPreferences) -> T,
             crossinline setter: (AppPreferences, T) -> Unit
     ): ReadWriteProperty<Prefs, T> {

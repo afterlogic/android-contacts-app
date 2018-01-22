@@ -2,8 +2,8 @@ package com.afterlogic.auroracontacts.application
 
 import com.afterlogic.auroracontacts.core.CoreModule
 import com.afterlogic.auroracontacts.data.DataModule
-import com.afterlogic.auroracontacts.presentation.background.loginStateController.LoginStateController
 import com.afterlogic.auroracontacts.presentation.PresentationModule
+import com.afterlogic.auroracontacts.presentation.background.appStarter.AppStarter
 import com.afterlogic.auroracontacts.presentation.navigation.AppRouter
 import dagger.Component
 import dagger.Module
@@ -12,7 +12,6 @@ import dagger.android.AndroidInjector
 import ru.terrakok.cicerone.Cicerone
 import ru.terrakok.cicerone.NavigatorHolder
 import javax.inject.Inject
-import javax.inject.Provider
 import javax.inject.Scope
 
 /**
@@ -59,6 +58,5 @@ class NavigationModule {
 }
 
 data class AppInjection @Inject constructor(
-        val activityTracker: Provider<ActivityTracker>,
-        val loginStateDataController: Provider<LoginStateController>
+        val appStarter: AppStarter
 )

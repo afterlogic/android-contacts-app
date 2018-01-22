@@ -40,12 +40,11 @@ class LoginStateController @Inject constructor(
         if (!started.compareAndSet(true)) return
 
         accountService.account
-                .doOnError(Timber::e)
                 .map { it.isNotNull }
                 .flatMap {
 
                     if (it && !wasLoggedIn) {
-                        syncRepository.setSyncable(true)
+                        syncRepository.evaluateSyncSettings()
                                 .onErrorComplete()
                                 .andThen(Observable.just(it))
                     } else {
@@ -66,7 +65,9 @@ class LoginStateController @Inject constructor(
                     }
 
                     wasLoggedIn = loggedIn
+
                 }
+                .doOnError(Timber::e)
                 .retry()
                 .with(subscriber)
                 .subscribe()
@@ -77,8 +78,7 @@ class LoginStateController @Inject constructor(
 
         Timber.d("Logged out. Delete all user depended data.")
 
-        prefs.calendarsFetched = false
-        prefs.contactsFetched = false
+        prefs.clear()
 
         calendarsDao.deleteAll()
         contactsDao.deleteAll()

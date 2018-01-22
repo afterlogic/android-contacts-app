@@ -6,7 +6,6 @@ import com.afterlogic.auroracontacts.data.calendar.AuroraCalendarInfo
 import com.afterlogic.auroracontacts.data.calendar.CalendarsRepository
 import com.afterlogic.auroracontacts.data.contacts.ContactGroupInfo
 import com.afterlogic.auroracontacts.data.contacts.ContactsRepository
-import com.afterlogic.auroracontacts.data.preferences.Prefs
 import com.afterlogic.auroracontacts.data.sync.SyncRepository
 import io.reactivex.Completable
 import io.reactivex.Flowable
@@ -22,23 +21,24 @@ class MainInteractor @Inject constructor(
         private val accountService: AccountService,
         private val calendarsRepository: CalendarsRepository,
         private val contactsRepository: ContactsRepository,
-        private val prefs: Prefs,
         private val syncRepository: SyncRepository
 ) {
 
-    val syncOnLocalChanges: Single<Boolean> get() = syncRepository.syncable
+    val syncOnLocalChanges: Single<Boolean> get() = syncRepository.syncOnChanges
 
     fun setSyncOnLocalChanges(enabled: Boolean) : Completable =
-            syncRepository.setSyncable(enabled)
+            syncRepository.setSyncOnChanges(enabled)
 
     val syncPeriod: Single<SyncPeriod> get() = syncRepository.periodicallySyncPeriod
-            .map { SyncPeriod.byDuration(it * 1000) ?: SyncPeriod.OFF }
+            .map { SyncPeriod.byDuration(it) ?: SyncPeriod.OFF }
 
-    fun setSyncPeriod(period: SyncPeriod) : Completable = syncRepository.setPeriodicallySync(period.duration / 1000)
+    fun setSyncPeriod(period: SyncPeriod) : Completable =
+            syncRepository.setPeriodicallySync(period.durationInSeconds)
 
     fun getCalendars(): Flowable<List<AuroraCalendarInfo>> = calendarsRepository.getCalendarsInfo()
 
-    fun getContactGroups(): Flowable<List<ContactGroupInfo>> = contactsRepository.getContactsGroupsInfo()
+    fun getContactGroups(): Flowable<List<ContactGroupInfo>> =
+            contactsRepository.getContactsGroupsInfo()
 
     fun setSyncEnabled(calendar: AuroraCalendarInfo, enabled: Boolean): Completable =
             calendarsRepository.setSyncEnabled(calendar, enabled)

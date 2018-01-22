@@ -4,10 +4,12 @@ import android.accounts.Account
 import android.content.ContentResolver
 import android.os.Bundle
 import com.afterlogic.auroracontacts.R
+import com.afterlogic.auroracontacts.application.AppScope
 import com.afterlogic.auroracontacts.application.wrappers.Resources
 import com.afterlogic.auroracontacts.core.util.rem
 import com.afterlogic.auroracontacts.data.account.AccountService
 import com.afterlogic.auroracontacts.data.api.UserNotAuthorizedException
+import com.afterlogic.auroracontacts.data.preferences.Prefs
 import com.afterlogic.auroracontacts.presentation.background.syncStateService.SyncStateService
 import io.reactivex.Completable
 import io.reactivex.Observable
@@ -20,14 +22,25 @@ import javax.inject.Inject
  * mail: mail@sunnydaydev.me
  */
 
+@AppScope
 class SyncRepository @Inject constructor(
         res: Resources,
         private val accountService: AccountService,
-        private val syncStateConnections: SyncStateService.Connections
+        private val syncStateConnections: SyncStateService.Connections,
+        private val prefs: Prefs
 ) {
+
+    companion object {
+        private const val KEY_TYPE = "com.afterlogic.aurora.syncType"
+        private const val TYPE_PERIODIC = 1
+    }
 
     private val calendarAuthority = res.strings[R.string.calendar_authority]
     private val contactsAuthority = res.strings[R.string.contacts_authority]
+
+    private val periodicSyncBundle get() = Bundle().apply {
+        putInt(KEY_TYPE, TYPE_PERIODIC)
+    }
 
     val isAnySyncRunning: Observable<Boolean> get() = syncStateConnections.anySync
 
@@ -45,49 +58,66 @@ class SyncRepository @Inject constructor(
     }
 
     val periodicallySyncPeriod: Single<Long> get() = singleByAccount {
-        ContentResolver.getPeriodicSyncs(it, contactsAuthority)
-                .firstOrNull()?.period ?: -1L
+        prefs.automaticallySyncPeriod
     }
 
-    val syncable: Single<Boolean> get() = singleByAccount {
-        ContentResolver.getSyncAutomatically(it, contactsAuthority)
+    val syncOnChanges: Single<Boolean> get() = singleByAccount {
+        prefs.automaticallySyncOnChanges
     }
 
     fun setPeriodicallySync(intervalInSeconds: Long) : Completable = completableByAccount {
 
-        if (!ContentResolver.getSyncAutomatically(it, contactsAuthority) ||
-                !ContentResolver.getSyncAutomatically(it, calendarAuthority)) {
+        prefs.automaticallySyncPeriod = intervalInSeconds
 
-            throw IllegalStateException("Sync not enabled.")
-
-        }
+        checkAndSetIsSyncable(it)
 
         if (intervalInSeconds > 0) {
 
-            ContentResolver.addPeriodicSync(it, contactsAuthority, Bundle.EMPTY, intervalInSeconds)
-            ContentResolver.addPeriodicSync(it, calendarAuthority, Bundle.EMPTY, intervalInSeconds)
+            val bundle = periodicSyncBundle
 
-        } else {
-
-            ContentResolver.removePeriodicSync(it, contactsAuthority, Bundle.EMPTY)
-            ContentResolver.removePeriodicSync(it, calendarAuthority, Bundle.EMPTY)
+            ContentResolver.addPeriodicSync(it, contactsAuthority, bundle, intervalInSeconds)
+            ContentResolver.addPeriodicSync(it, calendarAuthority, bundle, intervalInSeconds)
 
         }
 
     }
 
-    fun setSyncable(syncable: Boolean) : Completable = completableByAccount {
+    fun setSyncOnChanges(syncable: Boolean) : Completable = completableByAccount {
 
-        ContentResolver.setIsSyncable(it, contactsAuthority, syncable % { 1 } ?: 0)
-        ContentResolver.setIsSyncable(it, calendarAuthority, syncable % { 1 } ?: 0)
+        prefs.automaticallySyncOnChanges = syncable
 
-        ContentResolver.setSyncAutomatically(it, contactsAuthority, syncable)
-        ContentResolver.setSyncAutomatically(it, calendarAuthority, syncable)
+        checkAndSetIsSyncable(it)
+
+    }
+
+    fun evaluateSyncSettings() : Completable = Completable.defer {
+
+        Completable.concat(listOf(
+                setSyncOnChanges(prefs.automaticallySyncOnChanges).onErrorComplete(),
+                setPeriodicallySync(prefs.automaticallySyncPeriod).onErrorComplete()
+        ))
+
+    }
+
+    fun isPeriodicallySync(requestBundle: Bundle) : Boolean =
+            requestBundle.getInt(KEY_TYPE) == TYPE_PERIODIC
+
+    private fun checkAndSetIsSyncable(account: Account) {
+
+        val syncable = prefs.automaticallySyncOnChanges || prefs.automaticallySyncPeriod > 0L
+
+        ContentResolver.setIsSyncable(account, contactsAuthority, syncable % { 1 } ?: 0)
+        ContentResolver.setIsSyncable(account, calendarAuthority, syncable % { 1 } ?: 0)
+
+        ContentResolver.setSyncAutomatically(account, contactsAuthority, syncable)
+        ContentResolver.setSyncAutomatically(account, calendarAuthority, syncable)
 
         if (!syncable) {
 
-            ContentResolver.removePeriodicSync(it, contactsAuthority, Bundle.EMPTY)
-            ContentResolver.removePeriodicSync(it, calendarAuthority, Bundle.EMPTY)
+            val periodicBundle = periodicSyncBundle
+
+            ContentResolver.removePeriodicSync(account, contactsAuthority, periodicBundle)
+            ContentResolver.removePeriodicSync(account, calendarAuthority, periodicBundle)
 
         }
 

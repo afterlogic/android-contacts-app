@@ -59,7 +59,9 @@ class ContactsSyncAdapter @Inject constructor(
 
         Timber.d("onPerformSync")
 
-        contactsSyncOperationFactory.create(account, contentProviderClient)
+        contactsSyncOperationFactory.create(account,
+                                            contentProviderClient,
+                                            params ?: Bundle.EMPTY)
                 .sync()
                 .blockingGet()
                 ?.let(Timber::e)
