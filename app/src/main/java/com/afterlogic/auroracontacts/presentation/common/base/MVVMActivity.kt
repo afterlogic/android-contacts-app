@@ -28,7 +28,6 @@ abstract class MVVMActivity
 
     override val subscriber by inject { it.config.subscriber }
 
-
     protected val binding: VDB by lazy { bindView() }
 
     protected val viewModel: VM by lazy {

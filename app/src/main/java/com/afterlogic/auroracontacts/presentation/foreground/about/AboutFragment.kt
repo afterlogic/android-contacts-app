@@ -7,7 +7,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.afterlogic.auroracontacts.R
 import com.afterlogic.auroracontacts.databinding.AboutFragmentBinding
-import com.afterlogic.auroracontacts.presentation.FragmentTitleProvider
+import com.afterlogic.auroracontacts.presentation.common.FragmentTitleProvider
 import com.afterlogic.auroracontacts.presentation.common.FragmentCreator
 import com.afterlogic.auroracontacts.presentation.common.base.MVVMFragment
 import com.afterlogic.auroracontacts.presentation.common.databinding.get

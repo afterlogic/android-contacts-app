@@ -23,13 +23,13 @@ abstract class AboutDIModule {
 
     @Binds
     @IntoMap
-    @ViewModelKey(LicencesViewModel::class)
-    abstract fun bindLicencesViewModel(vm: LicencesViewModel): ViewModel
+    @ViewModelKey(LicensesViewModel::class)
+    abstract fun bindLicencesViewModel(vm: LicensesViewModel): ViewModel
 
     @Binds
     @IntoMap
-    @ViewModelKey(LicenceViewModel::class)
-    abstract fun bindLicenceViewModel(vm: LicenceViewModel): ViewModel
+    @ViewModelKey(LicenseViewModel::class)
+    abstract fun bindLicenceViewModel(vm: LicenseViewModel): ViewModel
 
 }
 

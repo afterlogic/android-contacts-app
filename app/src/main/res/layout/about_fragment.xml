@@ -62,11 +62,12 @@
                     android:text="@string/url_privacy_policy" />
 
                 <Button
+                    style="@style/Widget.AppCompat.Button.Borderless.Colored"
                     android:id="@+id/licenses"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
                     android:text="@string/prompt_third_party_libraries_licenses"
+                    android:textColor="@color/colorAccent"
                     app:layout_constraintBottom_toBottomOf="@+id/scrollView2"
                     app:layout_constraintEnd_toStartOf="@+id/scrollView2"
                     app:layout_constraintHorizontal_bias="0.5"

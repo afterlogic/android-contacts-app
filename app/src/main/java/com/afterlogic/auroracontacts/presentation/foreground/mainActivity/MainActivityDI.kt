@@ -7,8 +7,8 @@ import com.afterlogic.auroracontacts.presentation.common.databinding.ViewModelKe
 import com.afterlogic.auroracontacts.presentation.foreground.FragmentScope
 import com.afterlogic.auroracontacts.presentation.foreground.about.AboutDIModule
 import com.afterlogic.auroracontacts.presentation.foreground.about.AboutFragment
-import com.afterlogic.auroracontacts.presentation.foreground.about.LicenceFragment
-import com.afterlogic.auroracontacts.presentation.foreground.about.LicencesFragment
+import com.afterlogic.auroracontacts.presentation.foreground.about.LicenseFragment
+import com.afterlogic.auroracontacts.presentation.foreground.about.LicensesFragment
 import com.afterlogic.auroracontacts.presentation.foreground.login.LoginFragment
 import com.afterlogic.auroracontacts.presentation.foreground.login.LoginFragmentModule
 import com.afterlogic.auroracontacts.presentation.foreground.main.MainFragment
@@ -78,20 +78,20 @@ internal abstract class MainActivityModule {
     @Binds
     @IntoMap
     @StringKey(Screens.LICENCES)
-    abstract fun bindLicencesProvider(f: LicencesFragment.Creator): FragmentCreator
+    abstract fun bindLicencesProvider(f: LicensesFragment.Creator): FragmentCreator
 
     @FragmentScope
     @ContributesAndroidInjector(modules = [AboutDIModule::class])
-    abstract fun contributeLicences(): LicencesFragment
+    abstract fun contributeLicences(): LicensesFragment
 
     @Binds
     @IntoMap
     @StringKey(Screens.LICENCE)
-    abstract fun bindLicenceProvider(f: LicenceFragment.Creator): FragmentCreator
+    abstract fun bindLicenceProvider(f: LicenseFragment.Creator): FragmentCreator
 
     @FragmentScope
     @ContributesAndroidInjector(modules = [AboutDIModule::class])
-    abstract fun contributeLicence(): LicenceFragment
+    abstract fun contributeLicence(): LicenseFragment
 
 }
 

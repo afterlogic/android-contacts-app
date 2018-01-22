@@ -7,9 +7,13 @@ import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.view.MenuItem
 import com.afterlogic.auroracontacts.R
+import com.afterlogic.auroracontacts.core.rx.OptionalDisposable
+import com.afterlogic.auroracontacts.core.rx.disposeBy
+import com.afterlogic.auroracontacts.core.rx.with
 import com.afterlogic.auroracontacts.core.util.IntentUtil
 import com.afterlogic.auroracontacts.databinding.MainActivityBinding
-import com.afterlogic.auroracontacts.presentation.FragmentTitleProvider
+import com.afterlogic.auroracontacts.presentation.common.FragmentObservableTitleProvider
+import com.afterlogic.auroracontacts.presentation.common.FragmentTitleProvider
 import com.afterlogic.auroracontacts.presentation.common.base.MVVMActivity
 import com.afterlogic.auroracontacts.presentation.common.databinding.get
 import com.afterlogic.auroracontacts.presentation.common.databinding.setContentBinding
@@ -25,6 +29,8 @@ class MainActivity : MVVMActivity<MainActivityViewModel, MainActivityBinding, Ma
     private val navigationHolder by inject { it.navigationHolder }
 
     private val navigatorFactory by inject { it.navigatorFactory }
+
+    private val titleDisposable = OptionalDisposable()
 
     override fun bindView(): MainActivityBinding = setContentBinding(R.layout.main_activity)
 
@@ -47,14 +53,31 @@ class MainActivity : MVVMActivity<MainActivityViewModel, MainActivityBinding, Ma
 
             override fun onFragmentResumed(fm: FragmentManager, f: Fragment) {
                 super.onFragmentResumed(fm, f)
-                title = when(f) {
-                    is FragmentTitleProvider -> f.getFragmentTitle(this@MainActivity)
-                    else -> getString(R.string.app_name)
+
+                titleDisposable.disposeAndClear()
+
+                when(f) {
+
+                    is FragmentTitleProvider -> title = f.getFragmentTitle(this@MainActivity)
+
+                    is FragmentObservableTitleProvider -> f.getFragmentTitle()
+                            .disposeBy(titleDisposable)
+                            .with(subscriber)
+                            .subscribe { title = it }
+
+                    else -> title = getString(R.string.app_name)
+
                 }
+
             }
 
         }, false)
 
+    }
+
+    override fun onStop() {
+        super.onStop()
+        titleDisposable.disposeAndClear()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

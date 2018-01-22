@@ -22,7 +22,7 @@ object Screens {
     const val MAIN = "main"
     const val UNSUPPORTED_API = "unsupported_api"
     const val ABOUT = "about"
-    const val LICENCES = "licences"
+    const val LICENCES = "licenses"
     const val LICENCE = "licence"
 
 }

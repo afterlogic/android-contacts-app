@@ -7,7 +7,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.afterlogic.auroracontacts.R
 import com.afterlogic.auroracontacts.databinding.LicencesFragmentBinding
-import com.afterlogic.auroracontacts.presentation.FragmentTitleProvider
+import com.afterlogic.auroracontacts.presentation.common.FragmentTitleProvider
 import com.afterlogic.auroracontacts.presentation.common.FragmentCreator
 import com.afterlogic.auroracontacts.presentation.common.base.MVVMFragment
 import com.afterlogic.auroracontacts.presentation.common.databinding.get
@@ -19,12 +19,12 @@ import javax.inject.Inject
  * mail: mail@sunnydaydev.me
  */
 
-class LicencesFragment : MVVMFragment
-<LicencesViewModel, LicencesFragmentBinding, LicencesInjection>(), FragmentTitleProvider {
+class LicensesFragment : MVVMFragment
+<LicensesViewModel, LicencesFragmentBinding, LicencesInjection>(), FragmentTitleProvider {
 
     class Creator @Inject constructor() : FragmentCreator {
 
-        override fun create(seed: Any?): Fragment = LicencesFragment()
+        override fun create(seed: Any?): Fragment = LicensesFragment()
 
     }
 
@@ -33,6 +33,6 @@ class LicencesFragment : MVVMFragment
     override fun bindView(inflater: LayoutInflater, container: ViewGroup?): LicencesFragmentBinding =
             inflater.inflateBinding(R.layout.licences_fragment, container)
 
-    override fun getViewModel(provider: ViewModelProvider): LicencesViewModel = provider.get()
+    override fun getViewModel(provider: ViewModelProvider): LicensesViewModel = provider.get()
 
 }

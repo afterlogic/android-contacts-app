@@ -60,5 +60,6 @@
     <string name="prompt_about_privacy_policy_title">Privacy policy:</string>
     <string name="url_privacy_policy" translatable="false">http://afterlogic.com/privacy-policy</string>
     <string name="prompt_third_party_libraries_licenses">Third party libraries licenses</string>
+    <string name="prompt_author" translatable="false" >© %s</string>
 
 </resources>
