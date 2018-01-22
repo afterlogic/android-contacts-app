@@ -75,14 +75,14 @@ class AccountService @Inject constructor(context: App) {
                     }
                     
                     userData.hasSessionData = true
-
                     userData.accountId = authData.accountId
                     userData.domain = authData.domain.toString()
                     userData.appToken = authData.appToken
                     userData.authToken = authData.authToken
                     userData.apiVersion = authData.apiVersion
                     userData.email = authData.email
-                    
+                    userData.credentialsVersion = AccountUserData.CREDENTIALS_VERSION
+
                     account.password = authData.password
 
                 }
@@ -162,8 +162,8 @@ class AccountService @Inject constructor(context: App) {
                 userData.appToken ?: error(),
                 userData.authToken ?: error(),
                 userData.accountId ?: error(),
-                userData.email ?: error(),
-                password ?: error(),
+                userData.email ?: if (userData.credentialsVersion == 2) name else null,
+                password,
                 userData.domain?.let { HttpUrl.parse(it) } ?: error(),
                 userData.apiVersion ?: error()
         )
@@ -181,13 +181,17 @@ class AccountService @Inject constructor(context: App) {
 
         companion object {
 
+            private const val HAS_SESSION = "hasSession"
             private const val ACCOUNT_ID = "account_id"
             private const val APP_TOKEN = "app_token"
             private const val AUTH_TOKEN = "auth_token"
             private const val DOMAIN = "domain"
             private const val API_VERSION = "apiVersion"
-            private const val HAS_SESSION = "hasSession"
             private const val EMAIL = "email"
+
+            private const val KEY_CREDENTIALS_VERSION = "credentials_version"
+
+            const val CREDENTIALS_VERSION = 4
 
         }
 
@@ -197,6 +201,7 @@ class AccountService @Inject constructor(context: App) {
         var apiVersion by userData(API_VERSION) { it.toIntOrNull() }
         var appToken by userData(APP_TOKEN) { it }
         var authToken by userData(AUTH_TOKEN) { it }
+        var credentialsVersion by userData(KEY_CREDENTIALS_VERSION) { it.toIntOrNull() }
 
         private var hasSessionFlag by userData(HAS_SESSION) { it.toBoolean() }
 

@@ -8,7 +8,7 @@ import com.afterlogic.auroracontacts.application.AppScope
 import com.afterlogic.auroracontacts.application.wrappers.Resources
 import com.afterlogic.auroracontacts.core.util.rem
 import com.afterlogic.auroracontacts.data.account.AccountService
-import com.afterlogic.auroracontacts.data.api.UserNotAuthorizedException
+import com.afterlogic.auroracontacts.data.api.UserNotAuthorizedError
 import com.afterlogic.auroracontacts.data.preferences.Prefs
 import com.afterlogic.auroracontacts.presentation.background.syncStateService.SyncStateService
 import io.reactivex.Completable
@@ -126,7 +126,7 @@ class SyncRepository @Inject constructor(
     private fun completableByAccount(action: (Account) -> Unit) : Completable {
         return accountService.account
                 .firstOrError()
-                .map { it.get() ?: throw UserNotAuthorizedException() }
+                .map { it.get() ?: throw UserNotAuthorizedError() }
                 .doOnSuccess(action)
                 .toCompletable()
     }
@@ -134,7 +134,7 @@ class SyncRepository @Inject constructor(
     private fun <T> singleByAccount(action: (Account) -> T) : Single<T> {
         return accountService.account
                 .firstOrError()
-                .map { it.get() ?: throw UserNotAuthorizedException() }
+                .map { it.get() ?: throw UserNotAuthorizedError() }
                 .map(action)
     }
 

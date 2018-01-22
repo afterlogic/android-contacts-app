@@ -4,7 +4,10 @@ import com.afterlogic.auroracontacts.application.AppScope
 import com.afterlogic.auroracontacts.core.rx.toMaybe
 import com.afterlogic.auroracontacts.data.AuthFailedError
 import com.afterlogic.auroracontacts.data.account.AccountService
+import com.afterlogic.auroracontacts.data.api.UserNotAuthorizedError
+import com.afterlogic.auroracontacts.data.auth.model.AuthorizedAuroraSession
 import io.reactivex.Flowable
+import io.reactivex.Single
 import io.reactivex.functions.Function
 import io.reactivex.schedulers.Schedulers
 import org.reactivestreams.Publisher
@@ -62,7 +65,11 @@ class AuthResolver @Inject constructor(
                 .firstOrError()
                 .flatMapMaybe { it.get().toMaybe() }
                 .observeOn(Schedulers.io())
-                .flatMapSingle { authenticatorService.login(it.domain, it.email, it.password) }
+                .flatMapSingle<AuthorizedAuroraSession> map@ {
+                    val password = it.password ?: return@map Single.error(UserNotAuthorizedError())
+                    val email = it.email ?: return@map Single.error(UserNotAuthorizedError())
+                    authenticatorService.login(it.domain, email, password)
+                }
                 .flatMapCompletable { accountService.updateCurrentAccount(it) }
                 .andThen(Flowable.just(ReLoggedIn))
                 .share()

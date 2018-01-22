@@ -11,4 +11,4 @@ open class ApiReturnedError(val code: Int? = null, val apiType: ApiType = ApiTyp
 
 class ApiNullResultError(): ApiReturnedError(message = "Api returned null result.")
 
-class UserNotAuthorizedException: ApiError("User not authorized.")
+class UserNotAuthorizedError : ApiError("User not authorized.")

@@ -2,7 +2,7 @@ package com.afterlogic.auroracontacts.data.api.p7.util
 
 import com.afterlogic.auroracontacts.application.AppScope
 import com.afterlogic.auroracontacts.data.account.AuroraSession
-import com.afterlogic.auroracontacts.data.api.UserNotAuthorizedException
+import com.afterlogic.auroracontacts.data.api.UserNotAuthorizedError
 import okhttp3.MediaType
 import okhttp3.RequestBody
 import retrofit2.Converter
@@ -62,7 +62,7 @@ class AuthConverterFactoryP7 @Inject constructor() : Converter.Factory() {
 
     private fun getAuthValue(annotation: Auth, value: Any): String {
 
-        val session = currentSession ?: throw UserNotAuthorizedException()
+        val session = currentSession ?: throw UserNotAuthorizedError()
 
         return when(annotation.value) {
 

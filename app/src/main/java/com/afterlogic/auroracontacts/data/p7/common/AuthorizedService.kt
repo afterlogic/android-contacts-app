@@ -1,7 +1,7 @@
 package com.afterlogic.auroracontacts.data.p7.common
 
 import com.afterlogic.auroracontacts.data.account.AccountService
-import com.afterlogic.auroracontacts.data.api.UserNotAuthorizedException
+import com.afterlogic.auroracontacts.data.api.UserNotAuthorizedError
 import com.afterlogic.auroracontacts.data.api.p7.util.AuthConverterFactoryP7
 import com.afterlogic.auroracontacts.data.p7.api.DynamicLazyApiP7
 import io.reactivex.Maybe
@@ -24,7 +24,7 @@ open class AuthorizedService<T> @Inject constructor(
             .firstElement()
             .filter { it.get() != null }
             .map { it.get() }
-            .switchIfEmpty(Maybe.error(UserNotAuthorizedException()))
+            .switchIfEmpty(Maybe.error(UserNotAuthorizedError()))
             .toSingle()
             // TODO: better approach?
             .doOnSuccess { authConverterFactory.currentSession = it }

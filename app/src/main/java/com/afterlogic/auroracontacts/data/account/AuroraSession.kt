@@ -8,5 +8,5 @@ import okhttp3.HttpUrl
  */
 data class AuroraSession(
     val user: String, val appToken: String, val authToken: String, val accountId: Long,
-    val email: String, val password: String, val domain: HttpUrl, val apiVersion: Int
+    val email: String?, val password: String?, val domain: HttpUrl, val apiVersion: Int
 )

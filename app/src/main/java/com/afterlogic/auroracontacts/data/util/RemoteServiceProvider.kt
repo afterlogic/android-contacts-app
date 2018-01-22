@@ -3,7 +3,7 @@ package com.afterlogic.auroracontacts.data.util
 import com.afterlogic.auroracontacts.data.UnsupportedApiError
 import com.afterlogic.auroracontacts.data.account.AccountService
 import com.afterlogic.auroracontacts.data.api.ApiType
-import com.afterlogic.auroracontacts.data.api.UserNotAuthorizedException
+import com.afterlogic.auroracontacts.data.api.UserNotAuthorizedError
 import io.reactivex.Single
 import javax.inject.Inject
 import javax.inject.Provider
@@ -22,7 +22,7 @@ class RemoteServiceProvider<T> @Inject constructor(
             .firstOrError()
             .map {
 
-                val session = it.get() ?: throw UserNotAuthorizedException()
+                val session = it.get() ?: throw UserNotAuthorizedError()
                 val apiType = ApiType.byCode(session.apiVersion) ?: throw UnsupportedApiError()
 
                 services[apiType]?.get() ?: throw UnsupportedApiError()
