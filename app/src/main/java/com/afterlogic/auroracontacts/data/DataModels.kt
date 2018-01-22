@@ -1,24 +1,28 @@
 package com.afterlogic.auroracontacts.data
 
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeUnit.DAYS
+import java.util.concurrent.TimeUnit.HOURS
 
 /**
  * Created by sunny on 09.12.2017.
  * mail: mail@sunnydaydev.me
  */
 
-enum class SyncPeriod(val duration: Long) {
+private fun duration(duration: Long, unit: TimeUnit) : Long = unit.toSeconds(duration)
+
+enum class SyncPeriod(val durationInSeconds: Long) {
 
     OFF(-1),
-    HOUR(TimeUnit.HOURS.toMillis(1)),
-    SIX_HOURS(TimeUnit.HOURS.toMillis(6)),
-    HALF_DAY(TimeUnit.HOURS.toMillis(12)),
-    DAY(TimeUnit.DAYS.toMillis(1));
+    HOUR(duration(1, HOURS)),
+    SIX_HOURS(duration(6, HOURS)),
+    HALF_DAY(duration(12, HOURS)),
+    DAY(duration(1, DAYS));
 
     companion object {
 
         fun byDuration(duration: Long): SyncPeriod? = values()
-                .firstOrNull { duration == it.duration }
+                .firstOrNull { duration == it.durationInSeconds }
 
     }
 

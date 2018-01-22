@@ -17,6 +17,4 @@ import dagger.Module
     CalendarDataModule::class,
     ContactsDataModule::class
 ])
-class DataModule {
-
-}
+class DataModule

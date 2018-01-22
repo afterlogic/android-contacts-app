@@ -1,7 +1,6 @@
 package com.afterlogic.auroracontacts.application
 
 import com.afterlogic.auroracontacts.core.util.Tagged
-import com.afterlogic.auroracontacts.core.util.isMainProcess
 import com.afterlogic.auroracontacts.presentation.common.base.InjectionDaggerApplication
 import dagger.android.AndroidInjector
 import timber.log.Timber
@@ -14,9 +13,7 @@ import javax.inject.Inject
  */
 class App: InjectionDaggerApplication<AppInjection>(), Tagged {
 
-    private val activityTracker by inject { it.activityTracker.get() }
-
-    private val loginStateDataController by inject { it.loginStateDataController.get() }
+    private val appStarter by inject { it.appStarter }
 
     @Inject
     fun logInjection() {
@@ -29,13 +26,7 @@ class App: InjectionDaggerApplication<AppInjection>(), Tagged {
 
         super.onCreate()
 
-        if (isMainProcess()) {
-
-            activityTracker.register()
-
-            loginStateDataController.start()
-
-        }
+        appStarter.onAppReady()
 
     }
 

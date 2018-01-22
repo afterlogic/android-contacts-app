@@ -5,6 +5,7 @@ import android.content.ContentProviderClient
 import android.content.ContentUris
 import android.content.ContentValues
 import android.database.Cursor
+import android.os.Bundle
 import android.provider.ContactsContract
 import com.afterlogic.auroracontacts.R
 import com.afterlogic.auroracontacts.application.wrappers.Resources
@@ -14,6 +15,7 @@ import com.afterlogic.auroracontacts.data.contacts.ContactGroupInfo
 import com.afterlogic.auroracontacts.data.contacts.ContactsRepository
 import com.afterlogic.auroracontacts.data.contacts.RemoteContact
 import com.afterlogic.auroracontacts.data.contacts.RemoteFullContact
+import com.afterlogic.auroracontacts.data.sync.SyncRepository
 import com.afterlogic.auroracontacts.presentation.background.sync.BaseSyncOperation
 import com.afterlogic.auroracontacts.presentation.background.sync.CustomContract
 import com.afterlogic.auroracontacts.presentation.background.sync.UnexpectedNullCursorException
@@ -27,19 +29,28 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class ContactsSyncOperation private constructor(
+        private val requestBundle: Bundle,
         private val res: Resources,
         private val account: Account,
         contentClient: ContentProviderClient,
-        private val repository: ContactsRepository
+        private val repository: ContactsRepository,
+        private val syncRepository: SyncRepository
 ) : BaseSyncOperation(account, contentClient) {
 
     class Factory @Inject constructor(
             private val res: Resources,
-            private val repository: ContactsRepository
+            private val repository: ContactsRepository,
+            private val syncRepository: SyncRepository
     ) {
 
-        fun create(account: Account, client: ContentProviderClient) : ContactsSyncOperation {
-            return ContactsSyncOperation(res, account, client, repository)
+        fun create(account: Account,
+                   client: ContentProviderClient,
+                   requestBundle: Bundle) : ContactsSyncOperation {
+
+            return ContactsSyncOperation(
+                    requestBundle, res, account, client, repository, syncRepository
+            )
+
         }
 
     }
@@ -64,18 +75,36 @@ class ContactsSyncOperation private constructor(
 
     }
 
-    fun sync() : Completable = uploadLocalChanges()
-            .andThen(uploadDeletes())
-            .andThen(repository.loadRemote()).toCompletable() // Reload remote contacts groups
-            .andThen(getSyncableContactsGroups())
-            .flatMapCompletable {
+    fun sync() : Completable = checkIsNeedToSync().flatMapCompletable {
 
-                val groupIds = it.map { it.id }
+        if (it) {
+            uploadLocalChanges()
+                    .andThen(uploadDeletes())
+                    .andThen(repository.loadRemote()).toCompletable() // Reload remote contacts groups
+                    .andThen(getSyncableContactsGroups())
+                    .flatMapCompletable {
 
-                syncRemoteGroups(groupIds)
+                        val groupIds = it.map { it.id }
 
-            }
-            .doOnError(Timber::e)
+                        syncRemoteGroups(groupIds)
+
+                    }
+                    .doOnError(Timber::e)
+        } else {
+            Completable.complete()
+        }
+
+    }
+
+    private fun checkIsNeedToSync() : Single<Boolean> {
+
+        return if (syncRepository.isPeriodicallySync(requestBundle)) {
+            syncRepository.periodicallySyncPeriod.map { it > 0L }
+        } else {
+            syncRepository.syncOnChanges
+        }
+
+    }
 
     private fun uploadLocalChanges() : Completable = Completable.defer {
 
