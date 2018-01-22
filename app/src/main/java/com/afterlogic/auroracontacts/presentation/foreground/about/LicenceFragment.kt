@@ -27,7 +27,7 @@ class LicenceFragment : MVVMFragment
     }
 
     override fun bindView(inflater: LayoutInflater, container: ViewGroup?): LicenceFragmentBinding =
-            inflater.inflateBinding(R.layout.about_fragment, container)
+            inflater.inflateBinding(R.layout.licence_fragment, container)
 
     override fun getViewModel(provider: ViewModelProvider): LicenceViewModel = provider.get()
 
