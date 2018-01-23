@@ -25,6 +25,17 @@ object CustomContract {
         const val REMOTE_ETAG = _Events.SYNC_DATA3
         const val SYNCED = _Events.SYNC_DATA4
 
+        const val ATTENDEES_ETAG = _Events.SYNC_DATA5
+        const val ALARMS_ETAG = _Events.SYNC_DATA6
+
+        object Attendees {
+
+            const val PARITCIPATION_STATUS = CalendarContract.Attendees.SYNC_DATA1
+            const val ROLE = CalendarContract.Attendees.SYNC_DATA2
+            const val PARITCIPATION_LEVEL = CalendarContract.Attendees.SYNC_DATA3
+
+        }
+
     }
 
     object Contacts {
