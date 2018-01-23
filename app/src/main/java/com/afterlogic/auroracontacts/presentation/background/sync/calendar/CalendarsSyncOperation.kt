@@ -36,7 +36,7 @@ private typealias Events = CalendarContract.Events
 private typealias AEvents = CustomContract.Events
 private typealias Reminders = CalendarContract.Reminders
 private typealias Attendees = CalendarContract.Attendees
-private typealias CAttendees = CustomContract.Events.Attendees
+private typealias AAttendees = CustomContract.Events.Attendees
 
 class CalendarsSyncOperation private constructor(
         private val account: Account,
@@ -568,7 +568,7 @@ class CalendarsSyncOperation private constructor(
                 }
                 .let { ContactsSyncOperation.DigestUtil.toSha256(it) }
 
-        put(CustomContract.Events.ATTENDEES_ETAG, attendeesETag)
+        put(AEvents.ATTENDEES_ETAG, attendeesETag)
         put(Events.HAS_ATTENDEE_DATA, (attendees?.size ?: 0) > 0 )
 
         val alarmsETag = (alarms ?: emptyList())
@@ -577,7 +577,7 @@ class CalendarsSyncOperation private constructor(
                 }
                 .let { ContactsSyncOperation.DigestUtil.toSha256(it) }
 
-        put(CustomContract.Events.ALARMS_ETAG, alarmsETag)
+        put(AEvents.ALARMS_ETAG, alarmsETag)
         put(Events.HAS_ALARM, (alarms?.size ?: 0) > 0)
 
     }
@@ -589,11 +589,11 @@ class CalendarsSyncOperation private constructor(
             Attendees.ATTENDEE_NAME to (commonName ?: email),
             Attendees.ATTENDEE_EMAIL to email,
             Attendees.ATTENDEE_STATUS to Attendees.ATTENDEE_STATUS_NONE,
-            CustomContract.Events.Attendees.PARITCIPATION_STATUS to participationStatus?.value,
+            AAttendees.PARITCIPATION_STATUS to participationStatus?.value,
             Attendees.ATTENDEE_RELATIONSHIP to Attendees.RELATIONSHIP_NONE,
-            CustomContract.Events.Attendees.ROLE to role?.value,
+            AAttendees.ROLE to role?.value,
             Attendees.ATTENDEE_TYPE to Attendees.TYPE_NONE,
-            CustomContract.Events.Attendees.PARITCIPATION_LEVEL to participationLevel?.toString()
+            AAttendees.PARITCIPATION_LEVEL to participationLevel?.toString()
 
     )
 
