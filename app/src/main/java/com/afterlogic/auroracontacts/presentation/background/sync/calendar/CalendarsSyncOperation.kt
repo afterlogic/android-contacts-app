@@ -34,6 +34,9 @@ import javax.inject.Inject
 
 private typealias Events = CalendarContract.Events
 private typealias AEvents = CustomContract.Events
+private typealias Reminders = CalendarContract.Reminders
+private typealias Attendees = CalendarContract.Attendees
+private typealias CAttendees = CustomContract.Events.Attendees
 
 class CalendarsSyncOperation private constructor(
         private val account: Account,
@@ -226,7 +229,7 @@ class CalendarsSyncOperation private constructor(
 
                     val eventCv = vEvent.toContentValues(it, localCalendarId)
 
-                    CalendarContract.Attendees.EVENT_ID
+                    Attendees.EVENT_ID
 
                     val localInfo = localData[it.id]
 
@@ -258,7 +261,7 @@ class CalendarsSyncOperation private constructor(
 
         val client = contentClient.attendees
 
-        client.delete("${CalendarContract.Attendees.EVENT_ID} = $eventLocalId")
+        client.delete("${Attendees.EVENT_ID} = $eventLocalId")
 
         attendees.forEach {
             val cv = it.toContentValues(eventLocalId)
@@ -271,7 +274,7 @@ class CalendarsSyncOperation private constructor(
 
         val client = contentClient.reminders
 
-        client.delete("${CalendarContract.Reminders.EVENT_ID} = $eventLocalId")
+        client.delete("${Reminders.EVENT_ID} = $eventLocalId")
 
         alarms.forEach {
             val cv = it.toContentValues(eventLocalId)
@@ -370,6 +373,27 @@ class CalendarsSyncOperation private constructor(
 
                 val vEvent = cursor.toVEvent()
 
+                val remindersCursor = contentClient.reminders.query(
+                        null,
+                        "${Reminders.EVENT_ID} = $localId"
+                ) ?: throw UnexpectedNullCursorException()
+
+                remindersCursor.toList { it.toAlarm() } .forEach { vEvent.addAlarm(it) }
+
+                remindersCursor.close()
+
+                val attendeesCursor = contentClient.attendees.query(
+                        null,
+                        "${Attendees.EVENT_ID} = $localId"
+                ) ?: throw UnexpectedNullCursorException()
+
+                attendeesCursor.toList { it.toAttendee() }
+                        .filterNotNull()
+                        .filterNot { it.email == account.name || it.commonName == account.name }
+                        .forEach { vEvent.addAttendee(it) }
+
+                attendeesCursor.close()
+
                 if (vEvent.uid == null) {
                     val uid = UUID.randomUUID().toString().toUpperCase()
                     newUuids[localId] = uid
@@ -450,8 +474,8 @@ class CalendarsSyncOperation private constructor(
         cv.put(CustomContract.Calendar.REMOTE_ID, id)
         cv.put(CalendarContract.Calendars.DIRTY, 0)
 
-        cv.put(CalendarContract.Calendars.ALLOWED_ATTENDEE_TYPES, "${CalendarContract.Attendees.TYPE_NONE}")
-        cv.put(CalendarContract.Calendars.ALLOWED_REMINDERS, "${CalendarContract.Reminders.METHOD_ALERT}")
+        cv.put(CalendarContract.Calendars.ALLOWED_ATTENDEE_TYPES, "${Attendees.TYPE_NONE}")
+        cv.put(CalendarContract.Calendars.ALLOWED_REMINDERS, "${Reminders.METHOD_ALERT}")
         cv.put(CalendarContract.Calendars.ALLOWED_AVAILABILITY, 0)
 
         if (addCTag) {
@@ -558,52 +582,60 @@ class CalendarsSyncOperation private constructor(
 
     }
 
-    private fun Attendee.toContentValues(eventId: Long): ContentValues = ContentValues().applyValues(
+    private fun Attendee.toContentValues(eventId: Long): ContentValues = ContentValues().putall(
 
-            CalendarContract.Attendees.EVENT_ID to eventId,
+            Attendees.EVENT_ID to eventId,
 
-            CalendarContract.Attendees.ATTENDEE_NAME to (commonName ?: email),
-            CalendarContract.Attendees.ATTENDEE_EMAIL to email,
-            CalendarContract.Attendees.ATTENDEE_STATUS to CalendarContract.Attendees.ATTENDEE_STATUS_NONE,
+            Attendees.ATTENDEE_NAME to (commonName ?: email),
+            Attendees.ATTENDEE_EMAIL to email,
+            Attendees.ATTENDEE_STATUS to Attendees.ATTENDEE_STATUS_NONE,
             CustomContract.Events.Attendees.PARITCIPATION_STATUS to participationStatus?.value,
-            CalendarContract.Attendees.ATTENDEE_RELATIONSHIP to CalendarContract.Attendees.RELATIONSHIP_NONE,
+            Attendees.ATTENDEE_RELATIONSHIP to Attendees.RELATIONSHIP_NONE,
             CustomContract.Events.Attendees.ROLE to role?.value,
-            CalendarContract.Attendees.ATTENDEE_TYPE to CalendarContract.Attendees.TYPE_NONE,
+            Attendees.ATTENDEE_TYPE to Attendees.TYPE_NONE,
             CustomContract.Events.Attendees.PARITCIPATION_LEVEL to participationLevel?.toString()
 
     )
 
-    private fun VAlarm.toContentValues(eventId: Long) = ContentValues().applyValues(
-            CalendarContract.Reminders.EVENT_ID to eventId,
-            CalendarContract.Reminders.METHOD to CalendarContract.Reminders.METHOD_ALERT,
-            CalendarContract.Reminders.MINUTES to (this.trigger?.duration ?: Duration.fromMillis(0) )
-                    .let {
-                        listOf(
-                                it.weeks?.let { it * 7 } to TimeUnit.DAYS,
-                                it.days to TimeUnit.DAYS,
-                                it.hours to TimeUnit.HOURS,
-                                it.minutes to TimeUnit.MINUTES
-                        ).filter { it.first != null }
-                                .map { it.second.toMinutes(it.first.toLong()) }
-                                .sum()
-                    }
+    private fun VAlarm.toContentValues(eventId: Long) = ContentValues().putall(
+            Reminders.EVENT_ID to eventId,
+            Reminders.METHOD to Reminders.METHOD_ALERT,
+            Reminders.MINUTES to (trigger?.durationInMunites ?: 0L)
     )
+    
+    private val Trigger.durationInMunites: Long get() {
+        return (duration ?: Duration.fromMillis(0) )
+                .let {
+                    listOf(
+                            it.weeks?.let { it * 7 } to TimeUnit.DAYS,
+                            it.days to TimeUnit.DAYS,
+                            it.hours to TimeUnit.HOURS,
+                            it.minutes to TimeUnit.MINUTES
+                    ).filter { it.first != null }
+                            .map { it.second.toMinutes(it.first.toLong()) }
+                            .sum()
+                }
+    }
 
     private fun Recurrence.toRRule(): String {
+        
+        fun List<Any>.mapToValue(name: String): String? = joinToString(",")
+                .takeIf { it.isNotBlank() }
+                ?.let { "$name=$it" }
 
         return listOfNotNull(
                 frequency?.name?.let { "FREQ=$it" },
                 count?.let { "COUNT=$it" },
                 interval?.let { "INTERVAL=$it" },
-                bySecond?.joinToString(",")?.takeIf { it.isNotBlank() }?.let { "BYSECOND=$it" },
-                byMinute?.joinToString(",")?.takeIf { it.isNotBlank() }?.let { "BYMINUTE=$it" },
-                byHour?.joinToString(",")?.takeIf { it.isNotBlank() }?.let { "BYHOUR=$it" },
-                byDay?.joinToString(",")?.takeIf { it.isNotBlank() }?.let { "BYDAY=$it" },
-                byMonthDay?.joinToString(",")?.takeIf { it.isNotBlank() }?.let { "BYMONTHDAY=$it" },
-                byYearDay?.joinToString(",")?.takeIf { it.isNotBlank() }?.let { "BYYEARDAY=$it" },
-                byWeekNo?.joinToString(",")?.takeIf { it.isNotBlank() }?.let { "BYWEEKNO=$it" },
-                byMonth?.joinToString(",")?.takeIf { it.isNotBlank() }?.let { "BYMONTH=$it" },
-                bySetPos?.joinToString(",")?.takeIf { it.isNotBlank() }?.let { "BYSETPOS=$it" },
+                bySecond?.mapToValue("BYSECOND"),
+                byMinute?.mapToValue("BYMINUTE"),
+                byHour?.mapToValue("BYHOUR"),
+                byDay?.mapToValue("BYDAY"),
+                byMonthDay?.mapToValue("BYMONTHDAY"),
+                byYearDay?.mapToValue("BYYEARDAY"),
+                byWeekNo?.mapToValue("BYWEEKNO"),
+                byMonth?.mapToValue("BYMONTH"),
+                bySetPos?.mapToValue("BYSETPOS"),
                 workweekStarts?.name?.takeIf { it.isNotBlank() }?.let { "WKST=$it" }
                 // TODO: xRules?
         ).joinToString(separator = ";")
@@ -619,17 +651,20 @@ class CalendarsSyncOperation private constructor(
 
         return Recurrence.Builder(Frequency.valueOf(ruleMap["FREQ"]!!)).apply {
 
+            fun <T> List<T>.takeIfNotEmpty(): List<T>? = takeIf { it.isNotEmpty() }
+            fun String.toNotEmptyIntList(): List<Int>? = toIntList().takeIfNotEmpty()
+
             ruleMap["COUNT"]?.also { count(it.toInt()) }
             ruleMap["INTERVAL"]?.also { interval(it.toInt()) }
-            ruleMap["BYSECOND"]?.toIntList()?.takeIf { it.isNotEmpty() }?.also { bySecond(it) }
-            ruleMap["BYMINUTE"]?.toIntList()?.takeIf { it.isNotEmpty() }?.also { byMinute(it) }
-            ruleMap["BYHOUR"]?.toIntList()?.takeIf { it.isNotEmpty() }?.also { byHour(it) }
-            ruleMap["BYDAY"]?.toList { DayOfWeek.valueOfAbbr(it) } ?.takeIf { it.isNotEmpty() }?.also { byDay(it) }
-            ruleMap["BYMONTHDAY"]?.toIntList()?.takeIf { it.isNotEmpty() }?.also { byMonthDay() }
-            ruleMap["BYYEARDAY"]?.toIntList()?.takeIf { it.isNotEmpty() }?.also { byYearDay(it) }
-            ruleMap["BYWEEKNO"]?.toIntList()?.takeIf { it.isNotEmpty() }?.also { byWeekNo(it) }
-            ruleMap["BYMONTH"]?.toIntList()?.takeIf { it.isNotEmpty() }?.also { byMonth(it) }
-            ruleMap["BYSETPOS"]?.toIntList()?.takeIf { it.isNotEmpty() }?.also { bySetPos(it) }
+            ruleMap["BYSECOND"]?.toNotEmptyIntList()?.also { bySecond(it) }
+            ruleMap["BYMINUTE"]?.toNotEmptyIntList()?.also { byMinute(it) }
+            ruleMap["BYHOUR"]?.toNotEmptyIntList()?.also { byHour(it) }
+            ruleMap["BYDAY"]?.toList { DayOfWeek.valueOfAbbr(it) } ?.takeIfNotEmpty()?.also { byDay(it) }
+            ruleMap["BYMONTHDAY"]?.toNotEmptyIntList()?.also { byMonthDay() }
+            ruleMap["BYYEARDAY"]?.toNotEmptyIntList()?.also { byYearDay(it) }
+            ruleMap["BYWEEKNO"]?.toNotEmptyIntList()?.also { byWeekNo(it) }
+            ruleMap["BYMONTH"]?.toNotEmptyIntList()?.also { byMonth(it) }
+            ruleMap["BYSETPOS"]?.toNotEmptyIntList()?.also { bySetPos(it) }
             ruleMap["WKST"]?.also { workweekStarts(DayOfWeek.valueOfAbbr(it)) }
 
             until?.also { until(Date(it)) }
@@ -701,7 +736,32 @@ class CalendarsSyncOperation private constructor(
 
     }
 
-    inline private fun <T> Cursor.toList(mapper: (Cursor) -> T): List<T> {
+    private fun Cursor.toAttendee(): Attendee? {
+
+        val email = getString(Attendees.ATTENDEE_EMAIL) ?: return null
+        val name = getString(Attendees.ATTENDEE_NAME)
+                .takeIf { !it.isNullOrBlank() } ?: email
+
+        return Attendee(name, email).apply {
+            rsvp = true
+            commonName = name
+            uri = "mailto:$email"
+        }
+
+    }
+
+    private fun Cursor.toAlarm(): VAlarm {
+
+        val duration = (getLong(Reminders.MINUTES, true) ?: 0L)
+                .let { Duration.fromMillis(-TimeUnit.MINUTES.toMillis(it)) }
+
+        return VAlarm(Action.display(), Trigger(duration, null)).apply {
+            description = Description("Alarm")
+        }
+
+    }
+
+    private inline fun <T> Cursor.toList(mapper: (Cursor) -> T): List<T> {
         val list = mutableListOf<T>()
         while (moveToNext()) {
             list.add(mapper(this))
@@ -734,12 +794,12 @@ class CalendarsSyncOperation private constructor(
         get() = ContentClientHelper(this, getSyncUri(Events.CONTENT_URI))
 
     private val ContentProviderClient.reminders: ContentClientHelper
-        get() = ContentClientHelper(this, getSyncUri(CalendarContract.Reminders.CONTENT_URI))
+        get() = ContentClientHelper(this, getSyncUri(Reminders.CONTENT_URI))
 
     private val ContentProviderClient.attendees: ContentClientHelper
-        get() = ContentClientHelper(this, getSyncUri(CalendarContract.Attendees.CONTENT_URI))
+        get() = ContentClientHelper(this, getSyncUri(Attendees.CONTENT_URI))
 
-    private fun ContentValues.applyValues(vararg values: Pair<String, Any?>): ContentValues {
+    private fun ContentValues.putall(vararg values: Pair<String, Any?>): ContentValues {
 
         values.filterNot { it.second == null }
                 .forEach { (key, value) ->
